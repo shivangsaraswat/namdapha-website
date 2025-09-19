@@ -287,31 +287,31 @@ export default function EventsPage() {
 							</p>
 						</div>
 
-						{/* Upcoming Events - single horizontal card with navigation */}
+						{/* Upcoming Events - responsive single card with navigation */}
 						<div className="relative mb-16">
-							{/* Navigation Container */}
-							<div className="flex items-center gap-4">
+							{/* Desktop & Tablet Layout */}
+							<div className="hidden md:flex items-center gap-4">
 								{/* Previous Button */}
 								<button
 									onClick={prevEvent}
-									className="flex-shrink-0 w-12 h-12 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
+									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
 									aria-label="Previous event"
 								>
-									<svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
 									</svg>
 								</button>
 
-								{/* Event Card */}
+								{/* Event Card - Desktop/Tablet */}
 								<div className="flex-1 group cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
-									<div className="relative w-full h-[280px] md:h-[320px] rounded-[24px] overflow-hidden">
+									<div className="relative w-full h-[280px] lg:h-[320px] xl:h-[360px] rounded-[20px] lg:rounded-[24px] overflow-hidden">
 										{/* Background SVG from council page */}
 										<div className="absolute inset-0">
 											<Image
 												src="/council-card-bg.svg"
 												alt="Card background"
 												width={1000}
-												height={320}
+												height={360}
 												className="w-full h-full object-cover"
 											/>
 										</div>
@@ -319,34 +319,34 @@ export default function EventsPage() {
 										{/* Card Content - Horizontal Layout */}
 										<div className="relative z-10 h-full flex">
 											{/* Left: Event Image */}
-											<div className="w-[320px] md:w-[380px] flex-shrink-0 p-6">
-												<div className="w-full h-full rounded-[16px] overflow-hidden shadow-xl">
+											<div className="w-[240px] lg:w-[320px] xl:w-[380px] flex-shrink-0 pl-0 pr-4 py-4 lg:pr-6 lg:py-6">
+												<div className="w-full h-full rounded-[12px] lg:rounded-[16px] overflow-hidden shadow-xl">
 													<Image
 														src={currentEvent.image}
 														alt={`${currentEvent.title} Poster`}
 														width={380}
-														height={260}
+														height={300}
 														className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 													/>
 												</div>
 											</div>
 
 											{/* Right: Event Details */}
-											<div className="flex-1 p-8 flex flex-col justify-between">
-												<div className="space-y-4">
+											<div className="flex-1 p-4 lg:p-6 xl:p-8 flex flex-col justify-between">
+												<div className="space-y-3 lg:space-y-4">
 													{/* Title */}
-													<h3 className="text-white text-2xl md:text-3xl font-bold leading-tight">
+													<h3 className="text-white text-lg lg:text-2xl xl:text-3xl font-bold leading-tight">
 														{currentEvent.title}
 													</h3>
 													
 													{/* Description */}
-													<p className="text-gray-300 text-lg leading-relaxed">
+													<p className="text-gray-300 text-sm lg:text-base xl:text-lg leading-relaxed line-clamp-3 lg:line-clamp-none">
 														{currentEvent.description}
 													</p>
 													
 													{/* Venue */}
-													<p className="text-gray-400 text-base flex items-center">
-														<svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<p className="text-gray-400 text-sm lg:text-base flex items-center">
+														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
 															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 														</svg>
@@ -355,19 +355,19 @@ export default function EventsPage() {
 												</div>
 												
 												{/* Bottom Section: Tags and Date */}
-												<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mt-6">
+												<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 lg:gap-4 mt-4 lg:mt-6">
 													{/* Category Tags */}
-													<div className="flex gap-3 flex-wrap">
+													<div className="flex gap-2 lg:gap-3 flex-wrap">
 														{currentEvent.tags.map((tag, index) => (
-															<span key={index} className={`inline-block px-4 py-2 ${tag.color} text-white text-sm font-medium rounded-full`}>
+															<span key={index} className={`inline-block px-2 lg:px-3 xl:px-4 py-1 lg:py-2 ${tag.color} text-white text-xs lg:text-sm font-medium rounded-full`}>
 																{tag.name}
 															</span>
 														))}
 													</div>
 													
 													{/* Date/Time */}
-													<div className="text-[#9AE634] text-base font-semibold flex items-center">
-														<svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<div className="text-[#9AE634] text-sm lg:text-base font-semibold flex items-center">
+														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 														</svg>
 														{currentEvent.date}
@@ -381,22 +381,121 @@ export default function EventsPage() {
 								{/* Next Button */}
 								<button
 									onClick={nextEvent}
-									className="flex-shrink-0 w-12 h-12 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
+									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
 									aria-label="Next event"
 								>
-									<svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 									</svg>
 								</button>
 							</div>
 
-							{/* Event Indicators */}
-							<div className="flex justify-center mt-6 gap-2">
+							{/* Mobile Layout */}
+							<div className="md:hidden">
+								{/* Mobile Event Card */}
+								<div className="group cursor-pointer transform transition-all duration-500 active:scale-[0.98]">
+									<div className="relative w-full rounded-[16px] overflow-hidden">
+										{/* Background SVG from council page */}
+										<div className="absolute inset-0">
+											<Image
+												src="/council-card-bg.svg"
+												alt="Card background"
+												width={400}
+												height={500}
+												className="w-full h-full object-cover"
+											/>
+										</div>
+
+										{/* Card Content - Vertical Layout for Mobile */}
+										<div className="relative z-10 p-4">
+											{/* Event Image */}
+											<div className="w-full h-[200px] rounded-[12px] overflow-hidden shadow-xl mb-4">
+												<Image
+													src={currentEvent.image}
+													alt={`${currentEvent.title} Poster`}
+													width={350}
+													height={200}
+													className="w-full h-full object-cover transition-transform duration-500 group-active:scale-105"
+												/>
+											</div>
+
+											{/* Event Details */}
+											<div className="space-y-3">
+												{/* Title */}
+												<h3 className="text-white text-xl font-bold leading-tight">
+													{currentEvent.title}
+												</h3>
+												
+												{/* Description */}
+												<p className="text-gray-300 text-sm leading-relaxed line-clamp-3">
+													{currentEvent.description}
+												</p>
+												
+												{/* Venue */}
+												<p className="text-gray-400 text-sm flex items-center">
+													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+													</svg>
+													{currentEvent.venue}
+												</p>
+												
+												{/* Category Tags */}
+												<div className="flex gap-2 flex-wrap">
+													{currentEvent.tags.map((tag, index) => (
+														<span key={index} className={`inline-block px-3 py-1 ${tag.color} text-white text-xs font-medium rounded-full`}>
+															{tag.name}
+														</span>
+													))}
+												</div>
+												
+												{/* Date/Time */}
+												<div className="text-[#9AE634] text-sm font-semibold flex items-center pt-2">
+													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+													</svg>
+													{currentEvent.date}
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								{/* Mobile Navigation Buttons */}
+								<div className="flex justify-center items-center gap-4 mt-4">
+									<button
+										onClick={prevEvent}
+										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
+										aria-label="Previous event"
+									>
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+										</svg>
+									</button>
+
+									<div className="text-white text-sm font-medium">
+										{currentEventIndex + 1} of {upcomingEvents.length}
+									</div>
+
+									<button
+										onClick={nextEvent}
+										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
+										aria-label="Next event"
+									>
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+										</svg>
+									</button>
+								</div>
+							</div>
+
+							{/* Event Indicators - Hidden on Mobile, Visible on Desktop */}
+							<div className="hidden md:flex justify-center mt-6 gap-2">
 								{upcomingEvents.map((_, index) => (
 									<button
 										key={index}
 										onClick={() => setCurrentEventIndex(index)}
-										className={`w-3 h-3 rounded-full transition-all duration-300 ${
+										className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-300 ${
 											index === currentEventIndex 
 												? 'bg-[#9AE634] scale-125' 
 												: 'bg-gray-600 hover:bg-gray-500'
