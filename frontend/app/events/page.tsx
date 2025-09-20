@@ -319,8 +319,8 @@ export default function EventsPage() {
 										{/* Card Content - Horizontal Layout */}
 										<div className="relative z-10 h-full flex">
 											{/* Left: Event Image */}
-											<div className="w-[240px] lg:w-[320px] xl:w-[380px] flex-shrink-0 pl-0 pr-4 py-4 lg:pr-6 lg:py-6">
-												<div className="w-full h-full rounded-[12px] lg:rounded-[16px] overflow-hidden shadow-xl">
+											<div className="w-[240px] lg:w-[320px] xl:w-[380px] flex-shrink-0 pl-0 pr-4 py-0 lg:pr-6">
+												<div className="w-full h-full overflow-hidden shadow-xl">
 													<Image
 														src={currentEvent.image}
 														alt={`${currentEvent.title} Poster`}
@@ -394,7 +394,7 @@ export default function EventsPage() {
 							<div className="md:hidden">
 								{/* Mobile Event Card */}
 								<div className="group cursor-pointer transform transition-all duration-500 active:scale-[0.98]">
-									<div className="relative w-full rounded-[16px] overflow-hidden">
+									<div className="relative w-full h-[500px] rounded-[16px] overflow-hidden">
 										{/* Background SVG from council page */}
 										<div className="absolute inset-0">
 											<Image
@@ -407,20 +407,20 @@ export default function EventsPage() {
 										</div>
 
 										{/* Card Content - Vertical Layout for Mobile */}
-										<div className="relative z-10 p-4">
+										<div className="relative z-10 h-full flex flex-col">
 											{/* Event Image */}
-											<div className="w-full h-[200px] rounded-[12px] overflow-hidden shadow-xl mb-4">
+											<div className="w-full h-[280px] overflow-hidden shadow-xl">
 												<Image
 													src={currentEvent.image}
 													alt={`${currentEvent.title} Poster`}
 													width={350}
-													height={200}
+													height={280}
 													className="w-full h-full object-cover transition-transform duration-500 group-active:scale-105"
 												/>
 											</div>
 
 											{/* Event Details */}
-											<div className="space-y-3">
+											<div className="flex-1 p-4 space-y-3">
 												{/* Title */}
 												<h3 className="text-white text-xl font-bold leading-tight">
 													{currentEvent.title}
