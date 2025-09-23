@@ -113,7 +113,68 @@ export default function EventsPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("All Posts");
 	const [currentPage, setCurrentPage] = useState(1);
+	const [currentEventIndex, setCurrentEventIndex] = useState(0);
 	const itemsPerPage = 6;
+
+	// Upcoming events data
+	const upcomingEvents = [
+		{
+			id: 1,
+			title: "DevEx 101: Developer Experience Workshop",
+			description: "Learn the fundamentals of developer experience and how to improve it in your organization. This comprehensive workshop covers best practices, tools, and methodologies.",
+			image: "/devansh.jpeg",
+			date: "Feb 15, 2025 • 2:00 PM",
+			venue: "Conference Hall A, Main Building",
+			tags: [
+				{ name: "Productivity", color: "bg-blue-600" },
+				{ name: "Workshop", color: "bg-orange-600" }
+			]
+		},
+		{
+			id: 2,
+			title: "Flutter Testing Masterclass",
+			description: "Master testing in Flutter applications with comprehensive examples, best practices, and hands-on exercises covering unit, widget, and integration tests.",
+			image: "/devansh.jpeg",
+			date: "Feb 22, 2025 • 3:00 PM",
+			venue: "Lab 201, Computer Science Building",
+			tags: [
+				{ name: "Flutter", color: "bg-blue-500" },
+				{ name: "Testing", color: "bg-purple-600" }
+			]
+		},
+		{
+			id: 3,
+			title: "Firebase Extensions Workshop",
+			description: "Build powerful backends with Firebase Extensions. Learn to integrate authentication, cloud functions, and real-time databases in your applications.",
+			image: "/devansh.jpeg",
+			date: "Mar 1, 2025 • 4:00 PM",
+			venue: "Innovation Hub, Block C",
+			tags: [
+				{ name: "Firebase", color: "bg-orange-500" },
+				{ name: "Backend", color: "bg-red-600" }
+			]
+		}
+	];
+
+	// Auto-advance functionality
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
+		}, 5000); // Auto-advance every 5 seconds
+
+		return () => clearInterval(timer);
+	}, [upcomingEvents.length]);
+
+	// Navigation functions
+	const nextEvent = () => {
+		setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
+	};
+
+	const prevEvent = () => {
+		setCurrentEventIndex((prev) => (prev - 1 + upcomingEvents.length) % upcomingEvents.length);
+	};
+
+	const currentEvent = upcomingEvents[currentEventIndex];
 
 	// Remove global footer on mount for this page
 	useEffect(() => {
@@ -226,198 +287,222 @@ export default function EventsPage() {
 							</p>
 						</div>
 
-						{/* Upcoming Events Grid - vertical cards with council-style backgrounds */}
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-							{/* First Event Card - DevEx Workshop */}
-							<div className="group cursor-pointer">
-								<div className="relative w-full max-w-[320px] mx-auto h-[450px] rounded-[20px] overflow-hidden transition-transform group-hover:scale-105">
-									{/* Background SVG from council page */}
-									<div className="absolute inset-0">
-										<Image
-											src="/council-card-bg.svg"
-											alt="Card background"
-											width={340}
-											height={450}
-											className="w-full h-full object-cover"
-										/>
-									</div>
+						{/* Upcoming Events - responsive single card with navigation */}
+						<div className="relative mb-16">
+							{/* Desktop & Tablet Layout */}
+							<div className="hidden md:flex items-center gap-4">
+								{/* Previous Button */}
+								<button
+									onClick={prevEvent}
+									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
+									aria-label="Previous event"
+								>
+									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+									</svg>
+								</button>
 
-									{/* Card Content with better layout */}
-									<div className="relative z-10 h-full flex flex-col">
-										{/* Event Poster/Image - better positioning */}
-										<div className="p-6 pb-4">
-											<div className="w-full h-64 rounded-[12px] overflow-hidden shadow-lg">
-												<Image
-													src="/devansh.jpeg"
-													alt="DevEx Workshop Poster"
-													width={320}
-													height={256}
-													className="w-full h-full object-cover"
-												/>
-											</div>
+								{/* Event Card - Desktop/Tablet */}
+								<div className="flex-1 group cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
+									<div className="relative w-full h-[280px] lg:h-[320px] xl:h-[360px] rounded-[20px] lg:rounded-[24px] overflow-hidden">
+										{/* Background SVG from council page */}
+										<div className="absolute inset-0">
+											<Image
+												src="/council-card-bg.svg"
+												alt="Card background"
+												width={1000}
+												height={360}
+												className="w-full h-full object-cover"
+											/>
 										</div>
 
-										{/* Event Details - improved spacing and alignment */}
-										<div className="px-6 pb-6 flex-1 flex flex-col justify-between">
-											<div className="text-center space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-lg font-bold leading-tight px-2">
-													DevEx 101: Developer Experience Workshop
-												</h3>
+										{/* Card Content - Horizontal Layout */}
+										<div className="relative z-10 h-full flex">
+											{/* Left: Event Image */}
+											<div className="w-[240px] lg:w-[320px] xl:w-[380px] flex-shrink-0 pl-0 pr-4 py-0 lg:pr-6">
+												<div className="w-full h-full overflow-hidden shadow-xl">
+													<Image
+														src={currentEvent.image}
+														alt={`${currentEvent.title} Poster`}
+														width={380}
+														height={300}
+														className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+													/>
+												</div>
+											</div>
+
+											{/* Right: Event Details */}
+											<div className="flex-1 p-4 lg:p-6 xl:p-8 flex flex-col justify-between">
+												<div className="space-y-3 lg:space-y-4">
+													{/* Title */}
+													<h3 className="text-white text-lg lg:text-2xl xl:text-3xl font-bold leading-tight">
+														{currentEvent.title}
+													</h3>
+													
+													{/* Description */}
+													<p className="text-gray-300 text-sm lg:text-base xl:text-lg leading-relaxed line-clamp-3 lg:line-clamp-none">
+														{currentEvent.description}
+													</p>
+													
+													{/* Venue */}
+													<p className="text-gray-400 text-sm lg:text-base flex items-center">
+														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+														</svg>
+														{currentEvent.venue}
+													</p>
+												</div>
 												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed px-2">
-													Learn the fundamentals of developer experience
-												</p>
-											</div>
-											
-											{/* Category Tags - moved to sit just above the Date/Time */}
-											<div className="flex justify-center gap-2 flex-wrap mt-3">
-												<span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
-													Productivity
-												</span>
-												<span className="inline-block px-3 py-1 bg-orange-600 text-white text-xs font-medium rounded-full">
-													Workshop
-												</span>
-											</div>
-											
-											{/* Date/Time - positioned at bottom */}
-											<div className="text-center mt-4">
-												<div className="text-[#9AE634] text-sm font-medium">
-													Feb 15, 2025 • 2:00 PM
+												{/* Bottom Section: Tags and Date */}
+												<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 lg:gap-4 mt-4 lg:mt-6">
+													{/* Category Tags */}
+													<div className="flex gap-2 lg:gap-3 flex-wrap">
+														{currentEvent.tags.map((tag, index) => (
+															<span key={index} className={`inline-block px-2 lg:px-3 xl:px-4 py-1 lg:py-2 ${tag.color} text-white text-xs lg:text-sm font-medium rounded-full`}>
+																{tag.name}
+															</span>
+														))}
+													</div>
+													
+													{/* Date/Time */}
+													<div className="text-[#9AE634] text-sm lg:text-base font-semibold flex items-center">
+														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+														</svg>
+														{currentEvent.date}
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
+								</div>
+
+								{/* Next Button */}
+								<button
+									onClick={nextEvent}
+									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
+									aria-label="Next event"
+								>
+									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+									</svg>
+								</button>
+							</div>
+
+							{/* Mobile Layout */}
+							<div className="md:hidden">
+								{/* Mobile Event Card */}
+								<div className="group cursor-pointer transform transition-all duration-500 active:scale-[0.98]">
+									<div className="relative w-full h-[500px] rounded-[16px] overflow-hidden">
+										{/* Background SVG from council page */}
+										<div className="absolute inset-0">
+											<Image
+												src="/council-card-bg.svg"
+												alt="Card background"
+												width={400}
+												height={500}
+												className="w-full h-full object-cover"
+											/>
+										</div>
+
+										{/* Card Content - Vertical Layout for Mobile */}
+										<div className="relative z-10 h-full flex flex-col">
+											{/* Event Image */}
+											<div className="w-full h-[280px] overflow-hidden shadow-xl">
+												<Image
+													src={currentEvent.image}
+													alt={`${currentEvent.title} Poster`}
+													width={350}
+													height={280}
+													className="w-full h-full object-cover transition-transform duration-500 group-active:scale-105"
+												/>
+											</div>
+
+											{/* Event Details */}
+											<div className="flex-1 p-4 space-y-3">
+												{/* Title */}
+												<h3 className="text-white text-xl font-bold leading-tight">
+													{currentEvent.title}
+												</h3>
+												
+												{/* Description */}
+												<p className="text-gray-300 text-sm leading-relaxed line-clamp-3">
+													{currentEvent.description}
+												</p>
+												
+												{/* Venue */}
+												<p className="text-gray-400 text-sm flex items-center">
+													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+													</svg>
+													{currentEvent.venue}
+												</p>
+												
+												{/* Category Tags */}
+												<div className="flex gap-2 flex-wrap">
+													{currentEvent.tags.map((tag, index) => (
+														<span key={index} className={`inline-block px-3 py-1 ${tag.color} text-white text-xs font-medium rounded-full`}>
+															{tag.name}
+														</span>
+													))}
+												</div>
+												
+												{/* Date/Time */}
+												<div className="text-[#9AE634] text-sm font-semibold flex items-center pt-2">
+													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+													</svg>
+													{currentEvent.date}
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								{/* Mobile Navigation Buttons */}
+								<div className="flex justify-center items-center gap-4 mt-4">
+									<button
+										onClick={prevEvent}
+										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
+										aria-label="Previous event"
+									>
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+										</svg>
+									</button>
+
+									<div className="text-white text-sm font-medium">
+										{currentEventIndex + 1} of {upcomingEvents.length}
+									</div>
+
+									<button
+										onClick={nextEvent}
+										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
+										aria-label="Next event"
+									>
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+										</svg>
+									</button>
 								</div>
 							</div>
 
-							{/* Second Event Card - Flutter Testing */}
-							<div className="group cursor-pointer">
-								<div className="relative w-full max-w-[320px] mx-auto h-[450px] rounded-[20px] overflow-hidden transition-transform group-hover:scale-105">
-									{/* Background SVG from council page */}
-									<div className="absolute inset-0">
-										<Image
-											src="/council-card-bg.svg"
-											alt="Card background"
-											width={340}
-											height={450}
-											className="w-full h-full object-cover"
-										/>
-									</div>
-
-									{/* Card Content with better layout */}
-									<div className="relative z-10 h-full flex flex-col">
-										{/* Event Poster/Image - better positioning */}
-										<div className="p-6 pb-4">
-											<div className="w-full h-64 rounded-[12px] overflow-hidden shadow-lg">
-												<Image
-													src="/devansh.jpeg"
-													alt="Flutter Testing Workshop Poster"
-													width={320}
-													height={256}
-													className="w-full h-full object-cover"
-												/>
-											</div>
-										</div>
-
-										{/* Event Details - improved spacing and alignment */}
-										<div className="px-6 pb-6 flex-1 flex flex-col justify-between">
-											<div className="text-center space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-lg font-bold leading-tight px-2">
-													Flutter Testing Masterclass
-												</h3>
-												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed px-2">
-													Master testing in Flutter applications
-												</p>
-											</div>
-											
-											{/* Category Tags - moved to sit just above the Date/Time */}
-											<div className="flex justify-center gap-2 flex-wrap mt-3">
-												<span className="inline-block px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
-													Flutter
-												</span>
-												<span className="inline-block px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-full">
-													Testing
-												</span>
-											</div>
-											
-											{/* Date/Time - positioned at bottom */}
-											<div className="text-center mt-4">
-												<div className="text-[#9AE634] text-sm font-medium">
-													Feb 22, 2025 • 3:00 PM
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-
-							{/* Third Event Card - Firebase Workshop */}
-							<div className="group cursor-pointer">
-								<div className="relative w-full max-w-[320px] mx-auto h-[450px] rounded-[20px] overflow-hidden transition-transform group-hover:scale-105">
-									{/* Background SVG from council page */}
-									<div className="absolute inset-0">
-										<Image
-											src="/council-card-bg.svg"
-											alt="Card background"
-											width={340}
-											height={450}
-											className="w-full h-full object-cover"
-										/>
-									</div>
-
-									{/* Card Content with better layout */}
-									<div className="relative z-10 h-full flex flex-col">
-										{/* Event Poster/Image - better positioning */}
-										<div className="p-6 pb-4">
-											<div className="w-full h-64 rounded-[12px] overflow-hidden shadow-lg">
-												<Image
-													src="/devansh.jpeg"
-													alt="Firebase Workshop Poster"
-													width={320}
-													height={256}
-													className="w-full h-full object-cover"
-												/>
-											</div>
-										</div>
-
-										{/* Event Details - improved spacing and alignment */}
-										<div className="px-6 pb-6 flex-1 flex flex-col justify-between">
-											<div className="text-center space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-lg font-bold leading-tight px-2">
-													Firebase Extensions Workshop
-												</h3>
-												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed px-2">
-													Build powerful backends with Firebase
-												</p>
-											</div>
-											
-											{/* Category Tags - moved to sit just above the Date/Time */}
-											<div className="flex justify-center gap-2 flex-wrap mt-3">
-												<span className="inline-block px-3 py-1 bg-orange-500 text-white text-xs font-medium rounded-full">
-													Firebase
-												</span>
-												<span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-full">
-													Backend
-												</span>
-											</div>
-											
-											{/* Date/Time - positioned at bottom */}
-											<div className="text-center mt-4">
-												<div className="text-[#9AE634] text-sm font-medium">
-													Mar 1, 2025 • 4:00 PM
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
+							{/* Event Indicators - Hidden on Mobile, Visible on Desktop */}
+							<div className="hidden md:flex justify-center mt-6 gap-2">
+								{upcomingEvents.map((_, index) => (
+									<button
+										key={index}
+										onClick={() => setCurrentEventIndex(index)}
+										className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-300 ${
+											index === currentEventIndex 
+												? 'bg-[#9AE634] scale-125' 
+												: 'bg-gray-600 hover:bg-gray-500'
+										}`}
+										aria-label={`Go to event ${index + 1}`}
+									/>
+								))}
 							</div>
 						</div>
 						{/* Insights Section - rebranded from blog posts */}
