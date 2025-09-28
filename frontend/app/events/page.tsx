@@ -97,16 +97,26 @@ const eventsData = [
 			"How Canonical collaborated with Invertase to modernise core Ubuntu apps with Flutter.",
 		tags: ["Flutter", "Ubuntu", "Canonical"],
 	},
-];
-
-const categories = [
-	"All Posts",
-	"Community",
-	"Dart",
-	"Firebase",
-	"Flutter",
-	"Globe",
-	"More",
+	{
+		id: 10,
+		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
+		category: "Flutter",
+		date: "Apr 8, 2025",
+		image: "/devansh.jpeg",
+		description:
+			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
+		tags: ["Flutter", "Pigeon", "Migration"],
+	},
+	{
+		id: 11,
+		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
+		category: "Flutter",
+		date: "Apr 8, 2025",
+		image: "/devansh.jpeg",
+		description:
+			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
+		tags: ["Flutter", "Pigeon", "Migration"],
+	},
 ];
 
 export default function EventsPage() {
@@ -114,6 +124,19 @@ export default function EventsPage() {
 	const [selectedCategory, setSelectedCategory] = useState("All Posts");
 	const [currentPage, setCurrentPage] = useState(1);
 	const itemsPerPage = 6;
+	const [visiblePastEvents, setVisiblePastEvents] = useState(2)
+	const [categories, setCategories] = useState<[string] | null>(null)
+
+	useEffect(() => {
+		const categories: any = []
+		eventsData.map((event) => {
+			// console.log(categories.filter((cat) => cat==event.category).length)
+			if (categories.filter((cat: any) => cat == event.category).length == 0) {
+				categories.push(event.category)
+			}
+		})
+		setCategories(categories)
+	}, [])
 
 	// Remove global footer on mount for this page
 	useEffect(() => {
@@ -429,170 +452,63 @@ export default function EventsPage() {
 								Get the latest news and updates from the Invertase team.
 							</p>
 						</div>
-						<div className="flex flex-col lg:flex-row gap-4 mb-10 items-start lg:items-center">
-							{/* Category Filters - smaller button styling */}
-							<div className="flex flex-wrap gap-2">
-								{categories.map((category) => (
-									<button
-										key={category}
-										onClick={() => {
-											setSelectedCategory(category);
-											setCurrentPage(1);
-										}}
-										className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-											selectedCategory === category
-												? "bg-orange-500 text-white border-orange-500"
-												: "bg-transparent text-gray-300 border-gray-600 hover:border-gray-500 hover:text-white"
-										}`}
-									>
-										{category}
-									</button>
-								))}
-							</div>
-
-							{/* Search Box - smaller size to match reference */}
-							<div className="relative lg:ml-auto">
-								<input
-									type="text"
-									placeholder="Search"
-									value={searchQuery}
-									onChange={(e) => {
-										setSearchQuery(e.target.value);
-										setCurrentPage(1);
-									}}
-									className="w-64 px-3 py-2 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors text-sm"
-								/>
-								<div className="absolute right-3 top-1/2 -translate-y-1/2">
-									<kbd className="px-1.5 py-0.5 text-xs bg-gray-700 text-gray-300 rounded border border-gray-600">
-										⌘K
-									</kbd>
-								</div>
-							</div>
-						</div>
 
 						{/* Bottom Grid - additional events from the filtered data */}
-						{paginatedEvents.length > 3 && (
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-								{paginatedEvents.slice(3).map((event) => (
-									<article key={event.id} className="group cursor-pointer">
-										<div className="relative rounded-xl overflow-hidden mb-4 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 p-6 h-[200px]">
-											{/* INVERTASE logo */}
-											<div className="absolute top-4 right-4">
-												<div className="text-gray-200 text-xs font-semibold opacity-80">
-													INVERTASE
-												</div>
-											</div>
+						<div className="flex flex-col">
+							{categories && categories.slice(0, visiblePastEvents).map((category) => {
+								// filter specific category events
+								const catEvents = eventsData.filter((event) => event.category == category)
 
-											{/* Centered title */}
-											<div className="absolute inset-0 flex items-center justify-center">
-												<div className="text-center px-4">
-													<h3 className="text-white text-lg font-bold leading-tight">
-														{event.title}
-													</h3>
-												</div>
+								// checks whether the cards are overflowing and have to show the scroll buttons
+								const el = document.getElementById(category);
+								const isOverflowing = el && el.scrollWidth > el.clientWidth;
+
+								return (catEvents.length > 0 && (
+									<div className="flex flex-col gap-2">
+										<h3 className="text-[1.2rem] font-semibold md:text-xl ml-6 md:ml-14">{category}</h3>
+										<div className="flex items-center">
+											<button onClick={() => document.getElementById(category)?.scrollBy({ left: -200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
+												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+												</svg>
+											</button>
+											<div id={`${category}`} className="flex overflow-x-hidden scroll-smooth md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 sm:mx-2 py-3 px-2">
+												{catEvents.map((event) => {
+													return (
+														// Past Event Card
+														<article key={event.id} className="group cursor-pointer shrink-0 w-48 md:w-52 lg:w-60 relative border flex flex-col items-center py-3 justify-between px-3 border-gray-700 rounded-2xl transition-all duration-500 hover:scale-105">
+															<Image
+																src={"/devansh.jpeg"}
+																alt={`${event.title} Poster`}
+																width={250}
+																height={180}
+																className="w-full h-40 md:h-44 lg:h-52 object-cover rounded-xl"
+															/>
+															<div className="space-y-2 mr-5 my-4 md:mr-2">
+																<div className="flex flex-col items-start gap-2">
+																	<div className="text-gray-500 text-xs">
+																		{event.date}
+																	</div>
+																</div>
+																<h3 className="text-sm md:text-base lg:text-lg text-white transition-colors leading-tight">
+																	{event.title}
+																</h3>
+															</div>
+														</article>
+													)
+												})}
 											</div>
+											<button onClick={() => document.getElementById(category)?.scrollBy({ left: 200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 backdrop-blur-sm border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
+												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+												</svg>
+											</button>
 										</div>
+									</div>
 
-										<div className="space-y-2">
-											<div className="flex flex-col items-start gap-2">
-												{/* Category tag badge above date/time */}
-												<div className="flex gap-2">
-													<span className="inline-block px-2 py-0.5 bg-orange-500 text-white text-xs font-medium rounded-full">
-														{event.category}
-													</span>
-												</div>
-												<div className="text-gray-500 text-sm">
-													{event.date}
-												</div>
-											</div>
-											<h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors leading-tight">
-												{event.title}
-											</h3>
-										</div>
-									</article>
-								))}
-							</div>
-						)}
-
-						{/* Pagination - smaller and more compact */}
-						<div className="flex items-center justify-center gap-3 mb-12">
-							<button
-								onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-								disabled={currentPage === 1}
-								className="flex items-center gap-2 px-3 py-1.5 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-							>
-								<svg
-									className="w-4 h-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M15 19l-7-7 7-7"
-									/>
-								</svg>
-								Previous
-							</button>
-
-							<div className="flex gap-1">
-								{Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-									const pageNum = i + 1;
-									return (
-										<button
-											key={pageNum}
-											onClick={() => setCurrentPage(pageNum)}
-											className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-												currentPage === pageNum
-													? "bg-orange-500 text-white"
-													: "text-gray-400 hover:text-white hover:bg-gray-800/50"
-											}`}
-										>
-											{pageNum}
-										</button>
-									);
-								})}
-								{totalPages > 5 && (
-									<>
-										<span className="text-gray-500 px-1 flex items-center text-sm">
-											...
-										</span>
-										<button
-											onClick={() => setCurrentPage(totalPages)}
-											className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-												currentPage === totalPages
-													? "bg-orange-500 text-white"
-													: "text-gray-400 hover:text-white hover:bg-gray-800/50"
-											}`}
-										>
-											{totalPages}
-										</button>
-									</>
-								)}
-							</div>
-
-							<button
-								onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-								disabled={currentPage === totalPages}
-								className="flex items-center gap-2 px-3 py-1.5 text-orange-500 hover:text-orange-400 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors text-sm"
-							>
-								Next
-								<svg
-									className="w-4 h-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
-							</button>
+								))
+							})}
+							{categories && <button className="border text-sm md:text-base lg:text-lg border-gray-700 rounded-xl w-fit px-3 py-1 mx-auto transition-all duration-300 hover:scale-105 hover:bg-gray-700/70" onClick={() => visiblePastEvents <= categories.length ? setVisiblePastEvents(prev => prev + 2) : setVisiblePastEvents(2)}>{visiblePastEvents <= categories.length ? "Show More" : "Show Less"}</button>}
 						</div>
 					</div>
 				</div>
