@@ -3,15 +3,6 @@ import React from 'react';
 const EventFooter = () => {
   return (
     <div className="relative" data-events-footer>
-      {/* Background SVG at the top */}
-      <div className="w-full">
-        <img 
-          src="/eventsbg-footor.svg" 
-          alt="" 
-          className="w-full h-auto"
-        />
-      </div>
-      
       {/* Footer Content */}
       <footer className="bg-black text-white py-12 border-t border-gray-800" data-events-footer>
         <div className="max-w-7xl mx-auto px-6">
@@ -24,7 +15,7 @@ const EventFooter = () => {
                   <path fill="currentColor" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                 </svg>
               </div>
-              <span className="text-xl font-bold">INVERTASE</span>
+              <span className="text-xl font-bold">Namdapha House</span>
             </div>
 
             {/* Navigation Sections - Responsive Layout */}
@@ -112,7 +103,7 @@ const EventFooter = () => {
 
             {/* Copyright and Legal Links */}
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-sm text-gray-400 order-1 lg:order-2">
-              <span className="text-center md:text-left">Copyright © 2025 Invertase Limited. All rights reserved.</span>
+              <span className="text-center md:text-left">Copyright © 2025 Namdapha House All rights reserved.</span>
               <div className="flex flex-wrap justify-center md:justify-start gap-4">
                 <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                 <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>

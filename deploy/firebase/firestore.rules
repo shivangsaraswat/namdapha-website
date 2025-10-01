@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public read access for events, council, teams, resources
+    match /{collection}/{document} {
+      allow read: if collection in ['events', 'council', 'teams', 'resources'];
+      allow write: if request.auth != null;
+    }
+    
+    // Admin only write access
+    match /admin/{document} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.admin == true;
+    }
+  }
+}

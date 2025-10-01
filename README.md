@@ -1,53 +1,76 @@
-# Project S
+# Namdapha Website
 
 A full-stack web application with separate frontend, admin dashboard, and API server.
 
 ## 🏗️ Architecture
 
+### Firebase (Recommended)
 ```
-Frontend (Next.js)     →  API Server (Express.js)
-Admin Dashboard (Next.js) →  API Server (Express.js)
+Frontend (Next.js) + API (Functions) → Firebase
+Admin Dashboard (Next.js) → Vercel
+```
+
+### Multi-Platform (Alternative)
+```
+Frontend (Next.js) → Vercel
+Admin Dashboard (Next.js) → Vercel
+API Server (Express.js) → Railway
 ```
 
 ## 📁 Project Structure
 
 ```
-project-s/
+namdapha-website/
 ├── frontend/              # Next.js client application
 ├── backend/
-│   ├── api/              # Express.js API server
+│   ├── api/              # Express.js API server (legacy)
 │   ├── admin-dashboard/  # Next.js admin dashboard
 │   └── shared/           # Shared utilities
 └── deploy/               # Deployment configurations
+    ├── firebase/         # Firebase config & functions
+    ├── vercel/          # Vercel configurations
+    ├── railway/         # Railway configurations
+    └── scripts/         # Deployment scripts
 ```
 
 ## 🚀 Quick Start
 
-### Frontend
+### Firebase (Recommended)
 ```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Start local development
+cd deploy/firebase
+firebase emulators:start
+
+# In another terminal
 cd frontend
-npm install
-npm run dev
+npm install && npm run dev
 ```
 
-### API Server
+### Legacy Development
 ```bash
-cd backend/api
-npm install
-npm run dev
-```
+# Frontend
+cd frontend && npm install && npm run dev
 
-### Admin Dashboard
-```bash
-cd backend/admin-dashboard
-yarn install
-yarn dev
+# API Server
+cd backend/api && npm install && npm run dev
+
+# Admin Dashboard
+cd backend/admin-dashboard && yarn install && yarn dev
 ```
 
 ## 🌐 Deployment
 
 See [DEPLOYMENT.md](deploy/DEPLOYMENT.md) for complete deployment guide.
 
+### Firebase (Recommended)
+```bash
+./deploy/scripts/deploy-firebase.sh
+```
+
+### Multi-Platform
 - **Frontend**: Vercel
 - **Admin Dashboard**: Vercel
 - **API Server**: Railway
@@ -55,6 +78,14 @@ See [DEPLOYMENT.md](deploy/DEPLOYMENT.md) for complete deployment guide.
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS
-- **Backend**: Express.js, Node.js
+- **Backend**: Firebase Functions, Firestore Database
 - **Admin**: Next.js 15, TypeScript, Tailwind CSS
-- **Deployment**: Vercel, Railway, Docker
+- **Deployment**: Firebase, Vercel (alternative: Railway, Docker)
+
+## 📋 Key Features
+
+- ✅ **$0/month** hosting with Firebase
+- ✅ **Real-time database** with Firestore
+- ✅ **Auto-scaling** serverless functions
+- ✅ **Global CDN** for fast loading
+- ✅ **Branched development** workflow
