@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 
@@ -107,6 +110,18 @@ const categories = [
 ];
 
 export default function ResourcesPage(){
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Projects");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Filter projects based on selected category and search
+  const filteredProjects = projectsData.filter((project) => {
+    const matchesSearch = searchQuery === "" || 
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesSearch;
+  });
+
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
       {/* Background Pattern - same as council page */}
@@ -156,26 +171,31 @@ export default function ResourcesPage(){
             </h1>
           </div>
           
-          {/* Category Pills and Filter Row */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
-            {/* Category Pills */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-2">
-              {categories.map((category, index) => (
-                <button
-                  key={category}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    index === 0 
-                      ? "bg-orange-100 text-orange-600 border border-orange-200" 
-                      : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                  }`}
+          {/* Search Bar and Filter Row */}
+          <div className="flex items-center justify-between mb-6 gap-3">
+            {/* Search Bar */}
+            <div className="flex-1 lg:flex-initial lg:max-w-md">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 pl-10 bg-white border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+                <svg 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  {category}
-                </button>
-              ))}
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
             </div>
 
-            {/* Filter Dropdown - Desktop */}
-            <div className="flex justify-center lg:justify-end">
+            {/* Filter Dropdown */}
+            <div className="flex-shrink-0">
               <select className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[120px]">
                 <option>Filter</option>
                 <option>Firebase</option>
@@ -185,9 +205,26 @@ export default function ResourcesPage(){
             </div>
           </div>
 
+          {/* Category Pills */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-8">
+            {categories.map((category, index) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  selectedCategory === category
+                    ? "bg-orange-100 text-orange-600 border border-orange-200" 
+                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           {/* Projects Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {projectsData.map((project) => (
+            {filteredProjects.map((project) => (
               <div key={project.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
                 {/* Header with name and star */}
                 <div className="flex items-start justify-between mb-4">
