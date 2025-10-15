@@ -7,39 +7,39 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="relative z-50 w-full px-6 py-5 md:px-8 lg:px-12">
+    <header className="relative z-50 w-full px-6 py-5 md:px-8 lg:px-12 text-white">
       <nav className="flex items-center justify-between max-w-[1200px] mx-auto">
         <div className="flex items-center space-x-3">
-          <Link href="/home" className="font-bold text-lg lg:text-xl tracking-tight">Namdapha House</Link>
+          <Link href="/home" className="font-bold text-lg lg:text-xl tracking-tight text-white">Namdapha House</Link>
         </div>
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center space-x-7">
-          <Link href="/about" className="flex items-center space-x-1 text-current hover:opacity-90 transition-colors text-base">
+          <Link href="/about" className="flex items-center space-x-1 text-white hover:opacity-90 transition-colors text-base">
             <span>About us</span>
-            <svg className="w-3 h-3 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </Link>
 
-          <Link href="/council" className="text-current hover:opacity-90 transition-colors text-base">
+          <Link href="/council" className="text-white hover:opacity-90 transition-colors text-base">
             Council
           </Link>
 
-          <Link href="/teams" className="flex items-center space-x-1 text-current hover:opacity-90 transition-colors text-base">
+          <Link href="/teams" className="flex items-center space-x-1 text-white hover:opacity-90 transition-colors text-base">
             <span>Teams</span>
-            <svg className="w-3 h-3 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </Link>
 
-          <Link href="/events" className="text-current hover:opacity-90 transition-colors text-base">
+          <Link href="/events" className="text-white hover:opacity-90 transition-colors text-base">
             Events
           </Link>
 
-          <Link href="/resources" className="flex items-center space-x-1 text-current hover:opacity-90 transition-colors text-base">
+          <Link href="/resources" className="flex items-center space-x-1 text-white hover:opacity-90 transition-colors text-base">
             <span>Resource Hub</span>
-            <svg className="w-3 h-3 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </Link>
@@ -57,9 +57,9 @@ export default function Navbar() {
             className="lg:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5"
             aria-label="Toggle menu"
           >
-            <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
           </button>
         </div>
       </nav>
@@ -67,7 +67,7 @@ export default function Navbar() {
       
 
       {/* Mobile Menu Overlay */}
-      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-95 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-95 transition-opacity duration-300 z-[9999] ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
         <div className="flex flex-col h-full text-white">
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-6 py-5">

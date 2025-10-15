@@ -251,7 +251,7 @@ export default function EventsPage() {
 	);
 
 	return (
-		<div className="min-h-screen bg-black text-white relative overflow-hidden">
+		<div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
 			{/* Hero Background SVG - positioned like council page */}
 			<div className="absolute left-1/2 top-0 w-[2842px] h-[480px] max-w-none -translate-x-1/2 overflow-hidden">
 				<Image
@@ -265,7 +265,7 @@ export default function EventsPage() {
 			</div>
 
 			{/* Navbar */}
-			<div className="relative z-20">
+			<div className="relative z-20 text-white">
 				<Navbar />
 			</div>
 
@@ -288,16 +288,8 @@ export default function EventsPage() {
 			</section>
 
 			{/* Main Content */}
-			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-[480px]">
+			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-[480px] pb-32">
 				<div className="max-w-[1200px] mx-auto pt-16 relative">
-					{/* Decorative left/right background gradients for Upcoming & Past events */}
-					<div className="absolute inset-0 z-0 pointer-events-none">
-						{/* Left gradient */}
-						<span className="absolute left-[-120px] top-20 h-[600px] w-[550px] rotate-[-35deg] rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(47,50,62,0.70)_2%,rgba(36,39,48,0.40)_41.5%,rgba(36,39,48,0.00)_90%)] blur-[100px]"></span>
-						{/* Right gradient */}
-						<span className="absolute right-[-150px] top-0 h-[450px] w-[900px] rotate-[-21deg] rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(27,46,48,0.80)_0%,rgba(20,32,41,0.40)_44%,rgba(20,32,41,0.00)_96.5%)] blur-[40px]"></span>
-					</div>
-
 					{/* ensure content stacks above gradients */}
 					<div className="relative z-10">
 						{/* Header - rebranded as Upcoming Events */}
@@ -496,7 +488,8 @@ export default function EventsPage() {
 										</svg>
 									</button>
 
-									<div className="text-white text-sm font-medium">
+									{/* Make counter text dark on light background */}
+									<div className="text-black text-sm font-medium">
 										{currentEventIndex + 1} of {upcomingEvents.length}
 									</div>
 
@@ -549,7 +542,7 @@ export default function EventsPage() {
 								const isOverflowing = el && el.scrollWidth > el.clientWidth;
 
 								return (catEvents.length > 0 && (
-									<div className="flex flex-col gap-2">
+									<div key={category} className="flex flex-col gap-2">
 										<h3 className="text-[1.2rem] font-semibold md:text-xl ml-6 md:ml-14">{category}</h3>
 										<div className="flex items-center">
 											<button onClick={() => document.getElementById(category)?.scrollBy({ left: -200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
@@ -575,13 +568,13 @@ export default function EventsPage() {
 																		{event.date}
 																	</div>
 																</div>
-																<h3 className="text-sm md:text-base lg:text-lg text-white transition-colors leading-tight">
+																<h3 className="text-sm md:text-base lg:text-lg text-black transition-colors leading-tight">
 																	{event.title}
 																</h3>
 															</div>
-														</article>
-													)
-												})}
+															</article>
+														)
+													})}
 											</div>
 											<button onClick={() => document.getElementById(category)?.scrollBy({ left: 200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 backdrop-blur-sm border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
 												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

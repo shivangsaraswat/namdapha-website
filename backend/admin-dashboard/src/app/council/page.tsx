@@ -16,9 +16,9 @@ import { saveCouncilMember, getCouncilMembers, updateCouncilMember, deleteCounci
 import { toast } from "sonner";
 
 const leadershipPositions = [
-  { value: "president", label: "President", icon: Crown },
-  { value: "vice-president", label: "Vice President", icon: Star },
-  { value: "secretary", label: "Secretary", icon: Shield },
+  { value: "secretary", label: "Secretary" },
+  { value: "deputy-secretary", label: "Deputy Secretary" },
+  { value: "web-admin", label: "Web - Admin" },
 ];
 
 const regions = [
@@ -212,7 +212,6 @@ export default function Council() {
   };
 
   const MemberCard = ({ member, type }: { member: any, type: 'leadership' | 'coordinator' }) => {
-    const Icon = member.icon;
     
     return (
       <Card className={`rounded-2xl shadow-sm border-0 ${
@@ -221,7 +220,6 @@ export default function Council() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              {Icon && <Icon className="w-5 h-5 text-yellow-500" />}
               <h3 className={`font-semibold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>{member.position}</h3>
@@ -233,27 +231,46 @@ export default function Council() {
             </Badge>
           </div>
 
-          <div className={`w-full h-80 rounded-lg mb-4 flex items-center justify-center ${
+          <div className={`w-full h-[420px] rounded-lg mb-4 flex items-center justify-center relative overflow-hidden ${
             isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
           }`}>
-            {member.imageUrl ? (
-              <Image
-                src={member.imageUrl}
-                alt={member.position}
-                width={360}
-                height={480}
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <div className="text-center">
-                <Upload className={`w-12 h-12 mx-auto mb-2 ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`} />
-                <p className={`text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}>No poster uploaded</p>
-              </div>
-            )}
+            {
+              (() => {
+                // Normalize image source (accept string or object shapes)
+                let imageSrc: string | null = null;
+                if (!member.imageUrl) return (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <Upload className={`w-12 h-12 mx-auto mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No poster uploaded</p>
+                  </div>
+                );
+
+                if (typeof member.imageUrl === 'string') {
+                  imageSrc = member.imageUrl.trim() || null;
+                } else if (typeof member.imageUrl === 'object' && member.imageUrl !== null) {
+                  imageSrc = (member.imageUrl as any).url || (member.imageUrl as any).secure_url || (member.imageUrl as any).downloadURL || (member.imageUrl as any).path || null;
+                }
+
+                if (!imageSrc) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <Upload className={`w-12 h-12 mx-auto mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No poster uploaded</p>
+                    </div>
+                  );
+                }
+
+                const isSvg = imageSrc.includes('data:image/svg+xml') || imageSrc.endsWith('.svg');
+
+                return (
+                  (isSvg ? (
+                    <img src={imageSrc} alt={member.position} className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <Image src={imageSrc} alt={member.position} width={720} height={960} className="w-full h-full object-cover rounded-lg" />
+                  ))
+                );
+              })()
+            }
           </div>
 
           <div className="flex items-center justify-between">
@@ -350,16 +367,9 @@ export default function Council() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {leadership.map((member) => {
-                const positionData = leadershipPositions.find(p => p.label === member.position);
-                return (
-                  <MemberCard 
-                    key={member.id} 
-                    member={{...member, icon: positionData?.icon}} 
-                    type="leadership" 
-                  />
-                );
-              })}
+              {leadership.map((member) => (
+                <MemberCard key={member.id} member={member} type="leadership" />
+              ))}
             </div>
           )}
         </div>
@@ -463,7 +473,7 @@ export default function Council() {
                     }`}>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,image/svg+xml"
                         onChange={(e) => setLeadershipForm({...leadershipForm, poster: e.target.files?.[0] || null})}
                         className="hidden"
                         id="leadership-poster"
@@ -577,7 +587,7 @@ export default function Council() {
                     }`}>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,image/svg+xml"
                         onChange={(e) => setCoordinatorForm({...coordinatorForm, poster: e.target.files?.[0] || null})}
                         className="hidden"
                         id="coordinator-poster"

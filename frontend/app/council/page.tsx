@@ -28,11 +28,25 @@ export default function CouncilPage(){
     const fetchCouncilData = async () => {
       try {
         const snapshot = await getDocs(collection(db, 'council'));
-        const members = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date()
-        })) as CouncilMember[];
+        const members = snapshot.docs.map(doc => {
+          const data: any = doc.data();
+
+          // Normalize image field: accept string or object shapes returned by admin uploads
+          let imageUrl: string | undefined = undefined;
+          if (typeof data.imageUrl === 'string' && data.imageUrl.trim() !== '') {
+            imageUrl = data.imageUrl.trim();
+          } else if (data.imageUrl && typeof data.imageUrl === 'object') {
+            imageUrl = data.imageUrl.url || data.imageUrl.secure_url || data.imageUrl.path || data.imageUrl.downloadURL || undefined;
+            if (typeof imageUrl === 'string') imageUrl = imageUrl.trim();
+          }
+
+          return {
+            id: doc.id,
+            ...data,
+            imageUrl,
+            createdAt: data.createdAt?.toDate() || new Date()
+          } as CouncilMember;
+        }) as CouncilMember[];
         
         console.log('Fetched council members:', members);
         
@@ -155,12 +169,6 @@ export default function CouncilPage(){
                                <span className="text-gray-500">No Image</span>
                              </div>
                            )}
-
-                            {/* Bottom name bar - transparent background (no black shadow behind text) */}
-                           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[86%] max-w-[320px] bg-transparent py-2 px-3 rounded-md flex flex-col items-center justify-center">
-                             <p className="text-center text-[14px] font-semibold text-white leading-tight">{member.name}</p>
-                             <p className="text-center text-[12px] text-[#9AE634]">{member.position}</p>
-                           </div>
                          </div>
                        </div>
                      ))}
@@ -203,30 +211,31 @@ export default function CouncilPage(){
                           <div className="relative z-10 p-5 h-full flex flex-col justify-between">
                              {/* Profile Image (expanded to fill more vertical space in RC card) */}
                              <div className="w-full h-[84%] mx-auto mb-1 rounded-[12px] overflow-hidden mt-1">
-                               {member.imageUrl ? (
-                                 <Image
-                                   src={member.imageUrl}
-                                   alt={member.name}
-                                   width={360}
-                                   height={420}
-                                   className="w-full h-full object-cover"
-                                 />
-                               ) : (
-                                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                                   <span className="text-gray-500 text-xs">No Image</span>
-                                 </div>
-                               )}
+                               {(() => {
+                                 const imageSrc = typeof member.imageUrl === 'string' && member.imageUrl.trim() !== '' ? member.imageUrl.trim() : null;
+                                 if (imageSrc) {
+                                   return (
+                                     <Image
+                                       src={imageSrc}
+                                       alt={member.name}
+                                       width={360}
+                                       height={420}
+                                       className="w-full h-full object-cover"
+                                     />
+                                   );
+                                 }
+                                 return (
+                                   <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                     <span className="text-gray-500 text-xs">No Image</span>
+                                   </div>
+                                 );
+                               })()}
                              </div>
 
                              {/* Name and Position */}
                              <div className="text-center">
-                               <h3 className="text-[14px] font-semibold text-white mb-1">
-                                 {member.name}
-                               </h3>
-                               <p className="text-[12px] font-medium text-[#9AE634]">
-                                 {member.position}
-                               </p>
-                             </div>
+                               {/* name/position intentionally hidden on frontend */}
+                  </div>
                            </div>
                          </div>
                         </div>
