@@ -97,23 +97,107 @@ const eventsData = [
 			"How Canonical collaborated with Invertase to modernise core Ubuntu apps with Flutter.",
 		tags: ["Flutter", "Ubuntu", "Canonical"],
 	},
-];
-
-const categories = [
-	"All Posts",
-	"Community",
-	"Dart",
-	"Firebase",
-	"Flutter",
-	"Globe",
-	"More",
+	{
+		id: 10,
+		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
+		category: "Flutter",
+		date: "Apr 8, 2025",
+		image: "/devansh.jpeg",
+		description:
+			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
+		tags: ["Flutter", "Pigeon", "Migration"],
+	},
+	{
+		id: 11,
+		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
+		category: "Flutter",
+		date: "Apr 8, 2025",
+		image: "/devansh.jpeg",
+		description:
+			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
+		tags: ["Flutter", "Pigeon", "Migration"],
+	},
 ];
 
 export default function EventsPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("All Posts");
 	const [currentPage, setCurrentPage] = useState(1);
+	const [currentEventIndex, setCurrentEventIndex] = useState(0);
 	const itemsPerPage = 6;
+	const [visiblePastEvents, setVisiblePastEvents] = useState(2)
+	const [categories, setCategories] = useState<[string] | null>(null)
+
+	useEffect(() => {
+		const categories: any = []
+		eventsData.map((event) => {
+			// console.log(categories.filter((cat) => cat==event.category).length)
+			if (categories.filter((cat: any) => cat == event.category).length == 0) {
+				categories.push(event.category)
+			}
+		})
+		setCategories(categories)
+	}, [])
+
+	// Upcoming events data
+	const upcomingEvents = [
+		{
+			id: 1,
+			title: "DevEx 101: Developer Experience Workshop",
+			description: "Learn the fundamentals of developer experience and how to improve it in your organization. This comprehensive workshop covers best practices, tools, and methodologies.",
+			image: "/devansh.jpeg",
+			date: "Feb 15, 2025 • 2:00 PM",
+			venue: "Conference Hall A, Main Building",
+			tags: [
+				{ name: "Productivity", color: "bg-blue-600" },
+				{ name: "Workshop", color: "bg-orange-600" }
+			]
+		},
+		{
+			id: 2,
+			title: "Flutter Testing Masterclass",
+			description: "Master testing in Flutter applications with comprehensive examples, best practices, and hands-on exercises covering unit, widget, and integration tests.",
+			image: "/devansh.jpeg",
+			date: "Feb 22, 2025 • 3:00 PM",
+			venue: "Lab 201, Computer Science Building",
+			tags: [
+				{ name: "Flutter", color: "bg-blue-500" },
+				{ name: "Testing", color: "bg-purple-600" }
+			]
+		},
+		{
+			id: 3,
+			title: "Firebase Extensions Workshop",
+			description: "Build powerful backends with Firebase Extensions. Learn to integrate authentication, cloud functions, and real-time databases in your applications.",
+			image: "/devansh.jpeg",
+			date: "Mar 1, 2025 • 4:00 PM",
+			venue: "Innovation Hub, Block C",
+			tags: [
+				{ name: "Firebase", color: "bg-orange-500" },
+				{ name: "Backend", color: "bg-red-600" }
+			]
+		}
+	];
+
+	// Auto-advance functionality
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
+		}, 5000); // Auto-advance every 5 seconds
+
+		return () => clearInterval(timer);
+	}, [upcomingEvents.length]);
+
+	// Navigation functions
+	const nextEvent = () => {
+		setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
+	};
+
+	const prevEvent = () => {
+		setCurrentEventIndex((prev) => (prev - 1 + upcomingEvents.length) % upcomingEvents.length);
+	};
+
+	const currentEvent = upcomingEvents[currentEventIndex];
 
 	// Remove global footer on mount for this page
 	useEffect(() => {
@@ -167,7 +251,7 @@ export default function EventsPage() {
 	);
 
 	return (
-		<div className="min-h-screen bg-black text-white relative overflow-hidden">
+		<div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
 			{/* Hero Background SVG - positioned like council page */}
 			<div className="absolute left-1/2 top-0 w-[2842px] h-[480px] max-w-none -translate-x-1/2 overflow-hidden">
 				<Image
@@ -181,7 +265,7 @@ export default function EventsPage() {
 			</div>
 
 			{/* Navbar */}
-			<div className="relative z-20">
+			<div className="relative z-20 text-white">
 				<Navbar />
 			</div>
 
@@ -204,16 +288,8 @@ export default function EventsPage() {
 			</section>
 
 			{/* Main Content */}
-			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-[480px]">
+			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-[480px] pb-32">
 				<div className="max-w-[1200px] mx-auto pt-16 relative">
-					{/* Decorative left/right background gradients for Upcoming & Past events */}
-					<div className="absolute inset-0 z-0 pointer-events-none">
-						{/* Left gradient */}
-						<span className="absolute left-[-120px] top-20 h-[600px] w-[550px] rotate-[-35deg] rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(47,50,62,0.70)_2%,rgba(36,39,48,0.40)_41.5%,rgba(36,39,48,0.00)_90%)] blur-[100px]"></span>
-						{/* Right gradient */}
-						<span className="absolute right-[-150px] top-0 h-[450px] w-[900px] rotate-[-21deg] rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(27,46,48,0.80)_0%,rgba(20,32,41,0.40)_44%,rgba(20,32,41,0.00)_96.5%)] blur-[40px]"></span>
-					</div>
-
 					{/* ensure content stacks above gradients */}
 					<div className="relative z-10">
 						{/* Header - rebranded as Upcoming Events */}
@@ -226,198 +302,223 @@ export default function EventsPage() {
 							</p>
 						</div>
 
-						{/* Upcoming Events Grid - vertical cards with council-style backgrounds */}
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-							{/* First Event Card - DevEx Workshop */}
-							<div className="group cursor-pointer">
-								<div className="relative w-full max-w-[320px] mx-auto h-[450px] rounded-[20px] overflow-hidden transition-transform group-hover:scale-105">
-									{/* Background SVG from council page */}
-									<div className="absolute inset-0">
-										<Image
-											src="/council-card-bg.svg"
-											alt="Card background"
-											width={340}
-											height={450}
-											className="w-full h-full object-cover"
-										/>
-									</div>
+						{/* Upcoming Events - responsive single card with navigation */}
+						<div className="relative mb-16">
+							{/* Desktop & Tablet Layout */}
+							<div className="hidden md:flex items-center gap-4">
+								{/* Previous Button */}
+								<button
+									onClick={prevEvent}
+									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
+									aria-label="Previous event"
+								>
+									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+									</svg>
+								</button>
 
-									{/* Card Content with better layout */}
-									<div className="relative z-10 h-full flex flex-col">
-										{/* Event Poster/Image - better positioning */}
-										<div className="p-6 pb-4">
-											<div className="w-full h-64 rounded-[12px] overflow-hidden shadow-lg">
-												<Image
-													src="/devansh.jpeg"
-													alt="DevEx Workshop Poster"
-													width={320}
-													height={256}
-													className="w-full h-full object-cover"
-												/>
-											</div>
+								{/* Event Card - Desktop/Tablet */}
+								<div className="flex-1 group cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
+									<div className="relative w-full h-[280px] lg:h-[320px] xl:h-[360px] rounded-[20px] lg:rounded-[24px] overflow-hidden">
+										{/* Background SVG from council page */}
+										<div className="absolute inset-0">
+											<Image
+												src="/council-card-bg.svg"
+												alt="Card background"
+												width={1000}
+												height={360}
+												className="w-full h-full object-cover"
+											/>
 										</div>
 
-										{/* Event Details - improved spacing and alignment */}
-										<div className="px-6 pb-6 flex-1 flex flex-col justify-between">
-											<div className="text-center space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-lg font-bold leading-tight px-2">
-													DevEx 101: Developer Experience Workshop
-												</h3>
+										{/* Card Content - Horizontal Layout */}
+										<div className="relative z-10 h-full flex">
+											{/* Left: Event Image */}
+											<div className="w-[240px] lg:w-[320px] xl:w-[380px] flex-shrink-0 pl-0 pr-4 py-0 lg:pr-6">
+												<div className="w-full h-full overflow-hidden shadow-xl">
+													<Image
+														src={currentEvent.image}
+														alt={`${currentEvent.title} Poster`}
+														width={380}
+														height={300}
+														className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+													/>
+												</div>
+											</div>
+
+											{/* Right: Event Details */}
+											<div className="flex-1 p-4 lg:p-6 xl:p-8 flex flex-col justify-between">
+												<div className="space-y-3 lg:space-y-4">
+													{/* Title */}
+													<h3 className="text-white text-lg lg:text-2xl xl:text-3xl font-bold leading-tight">
+														{currentEvent.title}
+													</h3>
+													
+													{/* Description */}
+													<p className="text-gray-300 text-sm lg:text-base xl:text-lg leading-relaxed line-clamp-3 lg:line-clamp-none">
+														{currentEvent.description}
+													</p>
+													
+													{/* Venue */}
+													<p className="text-gray-400 text-sm lg:text-base flex items-center">
+														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+														</svg>
+														{currentEvent.venue}
+													</p>
+												</div>
 												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed px-2">
-													Learn the fundamentals of developer experience
-												</p>
-											</div>
-											
-											{/* Category Tags - moved to sit just above the Date/Time */}
-											<div className="flex justify-center gap-2 flex-wrap mt-3">
-												<span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
-													Productivity
-												</span>
-												<span className="inline-block px-3 py-1 bg-orange-600 text-white text-xs font-medium rounded-full">
-													Workshop
-												</span>
-											</div>
-											
-											{/* Date/Time - positioned at bottom */}
-											<div className="text-center mt-4">
-												<div className="text-[#9AE634] text-sm font-medium">
-													Feb 15, 2025 • 2:00 PM
+												{/* Bottom Section: Tags and Date */}
+												<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 lg:gap-4 mt-4 lg:mt-6">
+													{/* Category Tags */}
+													<div className="flex gap-2 lg:gap-3 flex-wrap">
+														{currentEvent.tags.map((tag, index) => (
+															<span key={index} className={`inline-block px-2 lg:px-3 xl:px-4 py-1 lg:py-2 ${tag.color} text-white text-xs lg:text-sm font-medium rounded-full`}>
+																{tag.name}
+															</span>
+														))}
+													</div>
+													
+													{/* Date/Time */}
+													<div className="text-[#9AE634] text-sm lg:text-base font-semibold flex items-center">
+														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+														</svg>
+														{currentEvent.date}
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
+								</div>
+
+								{/* Next Button */}
+								<button
+									onClick={nextEvent}
+									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
+									aria-label="Next event"
+								>
+									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+									</svg>
+								</button>
+							</div>
+
+							{/* Mobile Layout */}
+							<div className="md:hidden">
+								{/* Mobile Event Card */}
+								<div className="group cursor-pointer transform transition-all duration-500 active:scale-[0.98]">
+									<div className="relative w-full h-[500px] rounded-[16px] overflow-hidden">
+										{/* Background SVG from council page */}
+										<div className="absolute inset-0">
+											<Image
+												src="/council-card-bg.svg"
+												alt="Card background"
+												width={400}
+												height={500}
+												className="w-full h-full object-cover"
+											/>
+										</div>
+
+										{/* Card Content - Vertical Layout for Mobile */}
+										<div className="relative z-10 h-full flex flex-col">
+											{/* Event Image */}
+											<div className="w-full h-[280px] overflow-hidden shadow-xl">
+												<Image
+													src={currentEvent.image}
+													alt={`${currentEvent.title} Poster`}
+													width={350}
+													height={280}
+													className="w-full h-full object-cover transition-transform duration-500 group-active:scale-105"
+												/>
+											</div>
+
+											{/* Event Details */}
+											<div className="flex-1 p-4 space-y-3">
+												{/* Title */}
+												<h3 className="text-white text-xl font-bold leading-tight">
+													{currentEvent.title}
+												</h3>
+												
+												{/* Description */}
+												<p className="text-gray-300 text-sm leading-relaxed line-clamp-3">
+													{currentEvent.description}
+												</p>
+												
+												{/* Venue */}
+												<p className="text-gray-400 text-sm flex items-center">
+													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+													</svg>
+													{currentEvent.venue}
+												</p>
+												
+												{/* Category Tags */}
+												<div className="flex gap-2 flex-wrap">
+													{currentEvent.tags.map((tag, index) => (
+														<span key={index} className={`inline-block px-3 py-1 ${tag.color} text-white text-xs font-medium rounded-full`}>
+															{tag.name}
+														</span>
+													))}
+												</div>
+												
+												{/* Date/Time */}
+												<div className="text-[#9AE634] text-sm font-semibold flex items-center pt-2">
+													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+													</svg>
+													{currentEvent.date}
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								{/* Mobile Navigation Buttons */}
+								<div className="flex justify-center items-center gap-4 mt-4">
+									<button
+										onClick={prevEvent}
+										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
+										aria-label="Previous event"
+									>
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+										</svg>
+									</button>
+
+									{/* Make counter text dark on light background */}
+									<div className="text-black text-sm font-medium">
+										{currentEventIndex + 1} of {upcomingEvents.length}
+									</div>
+
+									<button
+										onClick={nextEvent}
+										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
+										aria-label="Next event"
+									>
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+										</svg>
+									</button>
 								</div>
 							</div>
 
-							{/* Second Event Card - Flutter Testing */}
-							<div className="group cursor-pointer">
-								<div className="relative w-full max-w-[320px] mx-auto h-[450px] rounded-[20px] overflow-hidden transition-transform group-hover:scale-105">
-									{/* Background SVG from council page */}
-									<div className="absolute inset-0">
-										<Image
-											src="/council-card-bg.svg"
-											alt="Card background"
-											width={340}
-											height={450}
-											className="w-full h-full object-cover"
-										/>
-									</div>
-
-									{/* Card Content with better layout */}
-									<div className="relative z-10 h-full flex flex-col">
-										{/* Event Poster/Image - better positioning */}
-										<div className="p-6 pb-4">
-											<div className="w-full h-64 rounded-[12px] overflow-hidden shadow-lg">
-												<Image
-													src="/devansh.jpeg"
-													alt="Flutter Testing Workshop Poster"
-													width={320}
-													height={256}
-													className="w-full h-full object-cover"
-												/>
-											</div>
-										</div>
-
-										{/* Event Details - improved spacing and alignment */}
-										<div className="px-6 pb-6 flex-1 flex flex-col justify-between">
-											<div className="text-center space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-lg font-bold leading-tight px-2">
-													Flutter Testing Masterclass
-												</h3>
-												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed px-2">
-													Master testing in Flutter applications
-												</p>
-											</div>
-											
-											{/* Category Tags - moved to sit just above the Date/Time */}
-											<div className="flex justify-center gap-2 flex-wrap mt-3">
-												<span className="inline-block px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
-													Flutter
-												</span>
-												<span className="inline-block px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-full">
-													Testing
-												</span>
-											</div>
-											
-											{/* Date/Time - positioned at bottom */}
-											<div className="text-center mt-4">
-												<div className="text-[#9AE634] text-sm font-medium">
-													Feb 22, 2025 • 3:00 PM
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-
-							{/* Third Event Card - Firebase Workshop */}
-							<div className="group cursor-pointer">
-								<div className="relative w-full max-w-[320px] mx-auto h-[450px] rounded-[20px] overflow-hidden transition-transform group-hover:scale-105">
-									{/* Background SVG from council page */}
-									<div className="absolute inset-0">
-										<Image
-											src="/council-card-bg.svg"
-											alt="Card background"
-											width={340}
-											height={450}
-											className="w-full h-full object-cover"
-										/>
-									</div>
-
-									{/* Card Content with better layout */}
-									<div className="relative z-10 h-full flex flex-col">
-										{/* Event Poster/Image - better positioning */}
-										<div className="p-6 pb-4">
-											<div className="w-full h-64 rounded-[12px] overflow-hidden shadow-lg">
-												<Image
-													src="/devansh.jpeg"
-													alt="Firebase Workshop Poster"
-													width={320}
-													height={256}
-													className="w-full h-full object-cover"
-												/>
-											</div>
-										</div>
-
-										{/* Event Details - improved spacing and alignment */}
-										<div className="px-6 pb-6 flex-1 flex flex-col justify-between">
-											<div className="text-center space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-lg font-bold leading-tight px-2">
-													Firebase Extensions Workshop
-												</h3>
-												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed px-2">
-													Build powerful backends with Firebase
-												</p>
-											</div>
-											
-											{/* Category Tags - moved to sit just above the Date/Time */}
-											<div className="flex justify-center gap-2 flex-wrap mt-3">
-												<span className="inline-block px-3 py-1 bg-orange-500 text-white text-xs font-medium rounded-full">
-													Firebase
-												</span>
-												<span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-full">
-													Backend
-												</span>
-											</div>
-											
-											{/* Date/Time - positioned at bottom */}
-											<div className="text-center mt-4">
-												<div className="text-[#9AE634] text-sm font-medium">
-													Mar 1, 2025 • 4:00 PM
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
+							{/* Event Indicators - Hidden on Mobile, Visible on Desktop */}
+							<div className="hidden md:flex justify-center mt-6 gap-2">
+								{upcomingEvents.map((_, index) => (
+									<button
+										key={index}
+										onClick={() => setCurrentEventIndex(index)}
+										className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-300 ${
+											index === currentEventIndex 
+												? 'bg-[#9AE634] scale-125' 
+												: 'bg-gray-600 hover:bg-gray-500'
+										}`}
+										aria-label={`Go to event ${index + 1}`}
+									/>
+								))}
 							</div>
 						</div>
 						{/* Insights Section - rebranded from blog posts */}
@@ -429,170 +530,63 @@ export default function EventsPage() {
 								Get the latest news and updates from the Invertase team.
 							</p>
 						</div>
-						<div className="flex flex-col lg:flex-row gap-4 mb-10 items-start lg:items-center">
-							{/* Category Filters - smaller button styling */}
-							<div className="flex flex-wrap gap-2">
-								{categories.map((category) => (
-									<button
-										key={category}
-										onClick={() => {
-											setSelectedCategory(category);
-											setCurrentPage(1);
-										}}
-										className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-											selectedCategory === category
-												? "bg-orange-500 text-white border-orange-500"
-												: "bg-transparent text-gray-300 border-gray-600 hover:border-gray-500 hover:text-white"
-										}`}
-									>
-										{category}
-									</button>
-								))}
-							</div>
-
-							{/* Search Box - smaller size to match reference */}
-							<div className="relative lg:ml-auto">
-								<input
-									type="text"
-									placeholder="Search"
-									value={searchQuery}
-									onChange={(e) => {
-										setSearchQuery(e.target.value);
-										setCurrentPage(1);
-									}}
-									className="w-64 px-3 py-2 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors text-sm"
-								/>
-								<div className="absolute right-3 top-1/2 -translate-y-1/2">
-									<kbd className="px-1.5 py-0.5 text-xs bg-gray-700 text-gray-300 rounded border border-gray-600">
-										⌘K
-									</kbd>
-								</div>
-							</div>
-						</div>
 
 						{/* Bottom Grid - additional events from the filtered data */}
-						{paginatedEvents.length > 3 && (
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-								{paginatedEvents.slice(3).map((event) => (
-									<article key={event.id} className="group cursor-pointer">
-										<div className="relative rounded-xl overflow-hidden mb-4 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 p-6 h-[200px]">
-											{/* INVERTASE logo */}
-											<div className="absolute top-4 right-4">
-												<div className="text-gray-200 text-xs font-semibold opacity-80">
-													INVERTASE
-												</div>
-											</div>
+						<div className="flex flex-col">
+							{categories && categories.slice(0, visiblePastEvents).map((category) => {
+								// filter specific category events
+								const catEvents = eventsData.filter((event) => event.category == category)
 
-											{/* Centered title */}
-											<div className="absolute inset-0 flex items-center justify-center">
-												<div className="text-center px-4">
-													<h3 className="text-white text-lg font-bold leading-tight">
-														{event.title}
-													</h3>
-												</div>
+								// checks whether the cards are overflowing and have to show the scroll buttons
+								const el = document.getElementById(category);
+								const isOverflowing = el && el.scrollWidth > el.clientWidth;
+
+								return (catEvents.length > 0 && (
+									<div key={category} className="flex flex-col gap-2">
+										<h3 className="text-[1.2rem] font-semibold md:text-xl ml-6 md:ml-14">{category}</h3>
+										<div className="flex items-center">
+											<button onClick={() => document.getElementById(category)?.scrollBy({ left: -200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
+												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+												</svg>
+											</button>
+											<div id={`${category}`} className="flex overflow-x-hidden scroll-smooth md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 sm:mx-2 py-3 px-2">
+												{catEvents.map((event) => {
+													return (
+														// Past Event Card
+														<article key={event.id} className="group cursor-pointer shrink-0 w-48 md:w-52 lg:w-60 relative border flex flex-col items-center py-3 justify-between px-3 border-gray-700 rounded-2xl transition-all duration-500 hover:scale-105">
+															<Image
+																src={"/devansh.jpeg"}
+																alt={`${event.title} Poster`}
+																width={250}
+																height={180}
+																className="w-full h-40 md:h-44 lg:h-52 object-cover rounded-xl"
+															/>
+															<div className="space-y-2 mr-5 my-4 md:mr-2">
+																<div className="flex flex-col items-start gap-2">
+																	<div className="text-gray-500 text-xs">
+																		{event.date}
+																	</div>
+																</div>
+																<h3 className="text-sm md:text-base lg:text-lg text-black transition-colors leading-tight">
+																	{event.title}
+																</h3>
+															</div>
+															</article>
+														)
+													})}
 											</div>
+											<button onClick={() => document.getElementById(category)?.scrollBy({ left: 200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 backdrop-blur-sm border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
+												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+												</svg>
+											</button>
 										</div>
+									</div>
 
-										<div className="space-y-2">
-											<div className="flex flex-col items-start gap-2">
-												{/* Category tag badge above date/time */}
-												<div className="flex gap-2">
-													<span className="inline-block px-2 py-0.5 bg-orange-500 text-white text-xs font-medium rounded-full">
-														{event.category}
-													</span>
-												</div>
-												<div className="text-gray-500 text-sm">
-													{event.date}
-												</div>
-											</div>
-											<h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors leading-tight">
-												{event.title}
-											</h3>
-										</div>
-									</article>
-								))}
-							</div>
-						)}
-
-						{/* Pagination - smaller and more compact */}
-						<div className="flex items-center justify-center gap-3 mb-12">
-							<button
-								onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-								disabled={currentPage === 1}
-								className="flex items-center gap-2 px-3 py-1.5 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-							>
-								<svg
-									className="w-4 h-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M15 19l-7-7 7-7"
-									/>
-								</svg>
-								Previous
-							</button>
-
-							<div className="flex gap-1">
-								{Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-									const pageNum = i + 1;
-									return (
-										<button
-											key={pageNum}
-											onClick={() => setCurrentPage(pageNum)}
-											className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-												currentPage === pageNum
-													? "bg-orange-500 text-white"
-													: "text-gray-400 hover:text-white hover:bg-gray-800/50"
-											}`}
-										>
-											{pageNum}
-										</button>
-									);
-								})}
-								{totalPages > 5 && (
-									<>
-										<span className="text-gray-500 px-1 flex items-center text-sm">
-											...
-										</span>
-										<button
-											onClick={() => setCurrentPage(totalPages)}
-											className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-												currentPage === totalPages
-													? "bg-orange-500 text-white"
-													: "text-gray-400 hover:text-white hover:bg-gray-800/50"
-											}`}
-										>
-											{totalPages}
-										</button>
-									</>
-								)}
-							</div>
-
-							<button
-								onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-								disabled={currentPage === totalPages}
-								className="flex items-center gap-2 px-3 py-1.5 text-orange-500 hover:text-orange-400 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors text-sm"
-							>
-								Next
-								<svg
-									className="w-4 h-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
-							</button>
+								))
+							})}
+							{categories && <button className="border text-sm md:text-base lg:text-lg border-gray-700 rounded-xl w-fit px-3 py-1 mx-auto transition-all duration-300 hover:scale-105 hover:bg-gray-700/70" onClick={() => visiblePastEvents <= categories.length ? setVisiblePastEvents(prev => prev + 2) : setVisiblePastEvents(2)}>{visiblePastEvents <= categories.length ? "Show More" : "Show Less"}</button>}
 						</div>
 					</div>
 				</div>

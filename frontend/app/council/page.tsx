@@ -1,119 +1,75 @@
+"use client";
+
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import { useEffect, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-// JSON data structure for council members
-const councilData = {
-  houseLeadership: [
-    {
-      id: 1,
-      name: "Devansh Malhotra",
-      position: "Secretary",
-      image: "/devansh.jpeg",
-      department: "Computer Science",
-      year: "Final Year"
-    },
-    {
-      id: 2,
-      name: "Devansh Malhotra",
-      position: "Secretary",
-      image: "/devansh.jpeg",
-      department: "Computer Science", 
-      year: "Final Year"
-    },
-    {
-      id: 3,
-      name: "Devansh Malhotra",
-      position: "Secretary",
-      image: "/devansh.jpeg",
-      department: "Computer Science",
-      year: "Final Year"
-    }
-  ],
-  regionalCoordinators: [
-    {
-      id: 4,
-      name: "John Doe",
-      position: "North Region",
-      image: "/devansh.jpeg",
-      department: "Electronics",
-      year: "Third Year"
-    },
-    {
-      id: 5,
-      name: "Jane Smith", 
-      position: "South Region",
-      image: "/devansh.jpeg",
-      department: "Mechanical",
-      year: "Third Year"
-    },
-    {
-      id: 6,
-      name: "Mike Johnson",
-      position: "East Region", 
-      image: "/devansh.jpeg",
-      department: "Civil",
-      year: "Third Year"
-    },
-    {
-      id: 7,
-      name: "Sarah Williams",
-      position: "West Region",
-      image: "/devansh.jpeg", 
-      department: "Chemical",
-      year: "Third Year"
-    },
-    {
-      id: 8,
-      name: "Alex Taylor",
-      position: "Central Region",
-      image: "/devansh.jpeg",
-      department: "Information Technology",
-      year: "Second Year"
-    },
-    {
-      id: 9,
-      name: "Priya Kumar",
-      position: "Northeast Region",
-      image: "/devansh.jpeg",
-      department: "Computer Engineering",
-      year: "Third Year"
-    },
-    {
-      id: 10,
-      name: "Liu Wei",
-      position: "Southeast Region",
-      image: "/devansh.jpeg",
-      department: "Electrical",
-      year: "Third Year"
-    },
-    {
-      id: 11,
-      name: "Carlos Mendez",
-      position: "Southwest Region",
-      image: "/devansh.jpeg",
-      department: "Mechanical",
-      year: "Second Year"
-    },
-    {
-      id: 12,
-      name: "Sara Lopez",
-      position: "Upper North Region",
-      image: "/devansh.jpeg",
-      department: "Information Systems",
-      year: "Third Year"
-    },
-    {
-      id: 13,
-      name: "Arjun Patel",
-      position: "Lower South Region",
-      image: "/devansh.jpeg",
-      department: "Computer Science",
-      year: "Second Year"
-    }
-  ]
-};
+interface CouncilMember {
+  id: string;
+  name: string;
+  position: string;
+  type: 'leadership' | 'coordinator';
+  imageUrl?: string;
+  isVisible: boolean;
+  createdAt?: Date;
+}
+
+
 
 export default function CouncilPage(){
+  const [councilData, setCouncilData] = useState<{
+    houseLeadership: CouncilMember[];
+    regionalCoordinators: CouncilMember[];
+  }>({ houseLeadership: [], regionalCoordinators: [] });
+
+  useEffect(() => {
+    const fetchCouncilData = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'council'));
+        const members = snapshot.docs.map(doc => {
+          const data: any = doc.data();
+
+          // Normalize image field: accept string or object shapes returned by admin uploads
+          let imageUrl: string | undefined = undefined;
+          if (typeof data.imageUrl === 'string' && data.imageUrl.trim() !== '') {
+            imageUrl = data.imageUrl.trim();
+          } else if (data.imageUrl && typeof data.imageUrl === 'object') {
+            imageUrl = data.imageUrl.url || data.imageUrl.secure_url || data.imageUrl.path || data.imageUrl.downloadURL || undefined;
+            if (typeof imageUrl === 'string') imageUrl = imageUrl.trim();
+          }
+
+          return {
+            id: doc.id,
+            ...data,
+            imageUrl,
+            createdAt: data.createdAt?.toDate() || new Date()
+          } as CouncilMember;
+        }) as CouncilMember[];
+        
+        console.log('Fetched council members:', members);
+        
+        const visibleMembers = members.filter(m => m.isVisible);
+        console.log('Visible members:', visibleMembers);
+        
+        const leadership = visibleMembers.filter(m => m.type === 'leadership');
+        const coordinators = visibleMembers.filter(m => m.type === 'coordinator');
+        
+        console.log('Leadership members:', leadership);
+        console.log('Coordinator members:', coordinators);
+        
+        setCouncilData({
+          houseLeadership: leadership,
+          regionalCoordinators: coordinators
+        });
+      } catch (error) {
+        console.error('Error fetching council data:', error);
+      }
+    };
+    
+    fetchCouncilData();
+  }, []);
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
       {/* Background SVG*/}
@@ -189,51 +145,30 @@ export default function CouncilPage(){
                   />
                 </div>
  
-                 {/* Centered content wrapper */}
-                 <div className="max-w-4xl mx-auto text-center px-4">
+                 {/* Centered content wrapper - widened so 3 poster cards fit with spacing */}
+                 <div className="max-w-7xl mx-auto text-center px-6">
                      <h2 className="fs-48 text-center font-title font-medium text-gray-8">House Leadership</h2>
 
                    <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We understand the challenges developers face. That’s why we build products that streamline workflows, eliminate friction, and empower developers to focus on what they do best: making great products.</p>
 
-                   {/* Cards Grid */}
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center mt-8">
+                   {/* Cards Row (flex) - center the fixed-width posters so side gaps are even */}
+                   <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
                      {councilData.houseLeadership.map((member) => (
                        <div key={member.id} className="relative group">
-                         <div className="relative w-[280px] h-[400px] rounded-[20px] overflow-hidden">
-                           {/* Background SVG */}
-                           <div className="absolute inset-0">
+                         <div className="w-[360px] h-[480px] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
+                           {member.imageUrl ? (
                              <Image
-                               src="/council-card-bg.svg"
-                               alt="Card background"
-                               width={340}
-                               height={328}
+                               src={member.imageUrl}
+                               alt={member.name}
+                               width={720}
+                               height={960}
                                className="w-full h-full object-cover"
                              />
-                           </div>
-                           
-                           {/* Card Content */}
-                           <div className="relative z-10 p-6 h-full flex flex-col justify-between">
-                             {/* Profile Image (expanded — fills most of the card width & height) */}
-                             <div className="w-full h-[84%] mx-auto mb-2 rounded-[12px] overflow-hidden mt-0">
-                               <Image
-                                 src={member.image}
-                                 alt={member.name}
-                                 width={320}
-                                 height={336}
-                                 className="w-full h-full object-cover"
-                               />
+                           ) : (
+                             <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                               <span className="text-gray-500">No Image</span>
                              </div>
-                             
-                             {/* Name and Position */}
-                             <div className="text-center">
-                               <h3 className="text-[16px] font-semibold text-white mb-1">
-                                 {member.name}
-                               </h3>
-                               <p className="text-[14px] font-medium text-[#9AE634]">
-                                 {member.position}
-                               </p>
-                             </div>
-                           </div>
+                           )}
                          </div>
                        </div>
                      ))}
@@ -276,24 +211,31 @@ export default function CouncilPage(){
                           <div className="relative z-10 p-5 h-full flex flex-col justify-between">
                              {/* Profile Image (expanded to fill more vertical space in RC card) */}
                              <div className="w-full h-[84%] mx-auto mb-1 rounded-[12px] overflow-hidden mt-1">
-                               <Image
-                                 src={member.image}
-                                 alt={member.name}
-                                 width={360}
-                                 height={420}
-                                 className="w-full h-full object-cover"
-                               />
+                               {(() => {
+                                 const imageSrc = typeof member.imageUrl === 'string' && member.imageUrl.trim() !== '' ? member.imageUrl.trim() : null;
+                                 if (imageSrc) {
+                                   return (
+                                     <Image
+                                       src={imageSrc}
+                                       alt={member.name}
+                                       width={360}
+                                       height={420}
+                                       className="w-full h-full object-cover"
+                                     />
+                                   );
+                                 }
+                                 return (
+                                   <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                     <span className="text-gray-500 text-xs">No Image</span>
+                                   </div>
+                                 );
+                               })()}
                              </div>
 
                              {/* Name and Position */}
                              <div className="text-center">
-                               <h3 className="text-[14px] font-semibold text-white mb-1">
-                                 {member.name}
-                               </h3>
-                               <p className="text-[12px] font-medium text-[#9AE634]">
-                                 {member.position}
-                               </p>
-                             </div>
+                               {/* name/position intentionally hidden on frontend */}
+                  </div>
                            </div>
                          </div>
                         </div>
