@@ -67,7 +67,7 @@ export default function Navbar() {
       
 
       {/* Mobile Menu Overlay */}
-      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-95 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-95 transition-opacity duration-300 z-[9999] ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
         <div className="flex flex-col h-full text-white">
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-6 py-5">

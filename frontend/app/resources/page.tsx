@@ -1,135 +1,117 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { FaBook, FaChartLine, FaFileAlt, FaLink, FaAddressBook, FaWhatsapp, FaChartBar, FaCalculator, FaGraduationCap, FaUsers, FaNewspaper, FaVideo, FaImage, FaMusic, FaCode, FaLaptop, FaFlask, FaMedal, FaTrophy, FaCertificate, FaClipboardList } from "react-icons/fa";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { resourceService, ResourceCategory } from "@/lib/resourceService";
 
-// Projects data
-const projectsData = [
-  {
-    id: 1,
-    name: "react-native-firebase",
-    description: "Integrate Firebase into your React Native app (iOS & Android)",
-    stars: "12.1k",
-    forks: "2.3k",
-    contributors: 563,
-    badge: "author",
-    badgeColor: "bg-teal-100 text-teal-700"
-  },
-  {
-    id: 2,
-    name: "flutterfire",
-    description: "Integrate Firebase into your Flutter app (iOS, Android & Web)",
-    stars: "9k",
-    forks: "4.1k", 
-    contributors: 597,
-    badge: "contributor",
-    badgeColor: "bg-blue-100 text-blue-700"
-  },
-  {
-    id: 3,
-    name: "firebase-ios-sdk",
-    description: "The source code for the official iOS Firebase SDK.",
-    stars: "6.4k",
-    forks: "1.7k",
-    contributors: 266,
-    badge: "contributor", 
-    badgeColor: "bg-blue-100 text-blue-700"
-  },
-  {
-    id: 4,
-    name: "firebase-tools",
-    description: "The source code for official Firebase tooling.",
-    stars: "4.2k",
-    forks: "1.1k",
-    contributors: 341,
-    badge: "contributor",
-    badgeColor: "bg-blue-100 text-blue-700"
-  },
-  {
-    id: 5,
-    name: "genkit",
-    description: "Build AI applications using the JavaScript or Go SDK.",
-    stars: "3.2k",
-    forks: "392",
-    contributors: 108,
-    badge: "contributor",
-    badgeColor: "bg-blue-100 text-blue-700"
-  },
-  {
-    id: 6,
-    name: "firebase-android-sdk",
-    description: "The source code for the official Android Firebase SDK.",
-    stars: "2.4k",
-    forks: "642",
-    contributors: 155,
-    badge: "contributor",
-    badgeColor: "bg-blue-100 text-blue-700"
-  },
-  {
-    id: 7,
-    name: "notifee",
-    description: "Add rich notifications to your React Native app",
-    stars: "2.1k",
-    forks: "258",
-    contributors: 83,
-    badge: "author",
-    badgeColor: "bg-teal-100 text-teal-700"
-  },
-  {
-    id: 8,
-    name: "react-native-apple-authentication",
-    description: "Implement Apple Authentication in your React Native app",
-    stars: "1.5k",
-    forks: "226",
-    contributors: 50,
-    badge: "author",
-    badgeColor: "bg-teal-100 text-teal-700"
-  },
-  {
-    id: 9,
-    name: "melos",
-    description: "Manage your Dart projects with multiple packages",
-    stars: "1.4k",
-    forks: "232",
-    contributors: 137,
-    badge: "author",
-    badgeColor: "bg-teal-100 text-teal-700"
-  }
-];
-
-const categories = [
-  "All Projects",
-  "Firebase", 
-  "Dart",
-  "iOS",
-  "Flutter",
-  "JavaScript",
-  "React native",
-  "More"
-];
+// Icon mapping
+const iconMap: {[key: string]: any} = {
+  'FaBook': FaBook,
+  'FaChartLine': FaChartLine,
+  'FaFileAlt': FaFileAlt,
+  'FaLink': FaLink,
+  'FaAddressBook': FaAddressBook,
+  'FaWhatsapp': FaWhatsapp,
+  'FaChartBar': FaChartBar,
+  'FaCalculator': FaCalculator,
+  'FaGraduationCap': FaGraduationCap,
+  'FaUsers': FaUsers,
+  'FaNewspaper': FaNewspaper,
+  'FaVideo': FaVideo,
+  'FaImage': FaImage,
+  'FaMusic': FaMusic,
+  'FaCode': FaCode,
+  'FaLaptop': FaLaptop,
+  'FaFlask': FaFlask,
+  'FaMedal': FaMedal,
+  'FaTrophy': FaTrophy,
+  'FaCertificate': FaCertificate,
+  'FaClipboardList': FaClipboardList
+};
 
 export default function ResourcesPage(){
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Projects");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Resources");
+  const [selectedFilter, setSelectedFilter] = useState<string>("Filter");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [resourceCounts, setResourceCounts] = useState<{[key: string]: number}>({});
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<ResourceCategory[]>([]);
+  const [handbookDialogOpen, setHandbookDialogOpen] = useState(false);
+  const [gradedDocDialogOpen, setGradedDocDialogOpen] = useState(false);
+  const [handbookResources, setHandbookResources] = useState<any[]>([]);
+  const [gradedDocResources, setGradedDocResources] = useState<any[]>([]);
+  const [emptyDialogOpen, setEmptyDialogOpen] = useState(false);
+  const [emptyDialogCategory, setEmptyDialogCategory] = useState('');
 
-  // Filter projects based on selected category and search
-  const filteredProjects = projectsData.filter((project) => {
-    const matchesSearch = searchQuery === "" || 
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesSearch;
-  });
+  // Fetch categories and resource counts from Firebase
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [fetchedCategories, resources] = await Promise.all([
+          resourceService.getActiveCategories(),
+          resourceService.getPublishedResources()
+        ]);
+        
+        setCategories(fetchedCategories);
+        
+        const counts: {[key: string]: number} = {};
+        fetchedCategories.forEach(category => {
+          counts[category.name] = resources.filter(r => r.category === category.name).length;
+        });
+        
+        setResourceCounts(counts);
+        
+        // Filter resources for Student Handbook and Graded Document
+        setHandbookResources(resources.filter(r => r.category === 'Student Handbook'));
+        setGradedDocResources(resources.filter(r => r.category === 'Graded Document'));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleCategoryClick = (categoryName: string) => {
+    if (categoryName === "Student Handbook") {
+      if (handbookResources.length === 0) {
+        setEmptyDialogCategory(categoryName);
+        setEmptyDialogOpen(true);
+        return;
+      }
+      setHandbookDialogOpen(true);
+    } else if (categoryName === "Grading Document") {
+      if (gradedDocResources.length === 0) {
+        setEmptyDialogCategory(categoryName);
+        setEmptyDialogOpen(true);
+        return;
+      }
+      setGradedDocDialogOpen(true);
+    } else {
+      setEmptyDialogCategory(categoryName);
+      setEmptyDialogOpen(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
-      {/* Background Pattern - same as council page */}
+      {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="container relative mx-auto h-full max-w-[1200px]">
-          {/* Mobile background images */}
           <Image
-            src="/bg2.svg"
+            src="/bg.svg"
             alt="Background pattern left"
             width={358}
             height={1702}
@@ -137,16 +119,15 @@ export default function ResourcesPage(){
             priority
           />
           <Image
-            src="/bg2.svg"
+            src="/bg.svg"
             alt="Background pattern right"
             width={358}
             height={1702}
             className="absolute bottom-0 right-[-320px] opacity-10 lg:hidden"
             priority
           />
-          {/* Desktop background image */}
           <Image
-            src="/bg2.svg"
+            src="/bg.svg"
             alt="Background pattern desktop"
             width={672}
             height={326}
@@ -156,35 +137,70 @@ export default function ResourcesPage(){
         </div>
       </div>
 
-      {/* Navbar */}
-      <div className="relative z-20">
-        <Navbar />
-      </div>
+      {/* Hero Section with Navbar */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/bg.svg"
+            alt="Hero background"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+        
+        <div className="relative z-[60]">
+          <Navbar />
+        </div>
 
-      {/* Main Content */}
-      <main className="relative z-10 pt-16 pb-16 px-6 md:px-8 lg:px-12">
-        <div className="max-w-[1400px] mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-[40px] md:text-[48px] lg:text-[56px] font-bold text-gray-900 mb-6">
+        <div className="relative z-10 py-20 px-6 md:px-8 lg:px-12">
+          <div className="max-w-[1400px] mx-auto text-center">
+            <h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
               Explore Resource Hub
             </h1>
+            <p className="mt-6 text-[13px] md:text-[15px] lg:text-[18px] text-gray-300 max-w-3xl mx-auto">
+              Access study materials, tools, and resources to support your academic journey
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <main className="relative pt-16 pb-16 px-6 md:px-8 lg:px-12">
+        <div className="max-w-[1400px] mx-auto relative z-10">
+          {/* Decorative Background Pattern */}
+          <div className="absolute left-0 top-[120%] -translate-y-1/2 opacity-90 transform -translate-x-[330px] scale-105 pointer-events-none hidden lg:block">
+            <Image
+              src="/bg2.svg"
+              alt="Pattern"
+              width={358}
+              height={1702}
+              className="w-[358px] h-auto object-contain"
+            />
+          </div>
+          <div className="absolute right-0 top-[135%] -translate-y-1/2 opacity-90 transform translate-x-[330px] scale-105 pointer-events-none hidden lg:block">
+            <Image
+              src="/bg2.svg"
+              alt="Pattern"
+              width={358}
+              height={1702}
+              className="w-[358px] h-auto object-contain transform scale-x-[-1]"
+            />
           </div>
           
           {/* Search Bar and Filter Row */}
-          <div className="flex items-center justify-between mb-6 gap-3">
-            {/* Search Bar */}
+          <div className="flex items-center justify-between mb-8 gap-4">
             <div className="flex-1 lg:flex-initial lg:max-w-md">
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search projects..."
+                  placeholder="Search resources..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 bg-white border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-5 py-3 pl-12 bg-white backdrop-blur-sm border-2 border-black rounded-xl text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all"
                 />
                 <svg 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -194,87 +210,161 @@ export default function ResourcesPage(){
               </div>
             </div>
 
-            {/* Filter Dropdown */}
             <div className="flex-shrink-0">
-              <select className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[120px]">
-                <option>Filter</option>
-                <option>Firebase</option>
-                <option>Flutter</option>
-                <option>React Native</option>
-              </select>
+              <Select value={selectedFilter} onValueChange={setSelectedFilter}>
+                <SelectTrigger className="w-[180px] px-5 py-3 bg-white backdrop-blur-sm border-2 border-black rounded-xl text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all">
+                  <SelectValue placeholder="Filter" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-2 border-black rounded-xl">
+                  <SelectItem value="Filter">Filter</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Category Pills */}
-          <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-8">
-            {categories.map((category, index) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === category
-                    ? "bg-orange-100 text-orange-600 border border-orange-200" 
-                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Projects Grid */}
+          {/* Resources Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {filteredProjects.map((project) => (
-              <div key={project.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
-                {/* Header with name and star */}
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-[18px] font-semibold text-gray-900 leading-tight pr-2">
-                    {project.name}
-                  </h3>
-                  <div className="flex items-center text-orange-500 flex-shrink-0">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-[14px] font-medium">{project.stars}</span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="text-gray-600 text-[14px] mb-6 leading-relaxed">
-                  {project.description}
-                </p>
-
-                {/* Footer with badge and stats */}
-                <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded text-[12px] font-medium ${project.badgeColor}`}>
-                    {project.badge}
-                  </span>
-                  <div className="flex items-center gap-4 text-gray-500 text-[13px]">
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                      </svg>
-                      {project.forks}
-                    </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                      </svg>
-                      {project.contributors}
-                    </div>
-                  </div>
-                </div>
+            {loading ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-600">Loading resources...</p>
               </div>
-            ))}
+            ) : categories.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-600">No resource categories available</p>
+              </div>
+            ) : (
+              categories.map((category) => {
+                const IconComponent = iconMap[category.icon] || FaBook;
+                return (
+                  <div 
+                    key={category.id} 
+                    onClick={() => handleCategoryClick(category.name)}
+                    className="relative rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer group overflow-hidden border-2 border-black"
+                  >
+                      <div className="absolute inset-0 z-0">
+                        <Image
+                          src="/councilbg.svg"
+                          alt="Card background"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      
+                      <div className="relative z-10">
+                        <div className="w-14 h-14 bg-white rounded-xl shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <IconComponent className={`w-7 h-7 ${category.iconColor}`} />
+                        </div>
+
+                        <h3 className="text-[20px] font-medium text-white leading-tight tracking-tight mb-3">
+                          {category.name}
+                        </h3>
+
+                        <p className="text-white/90 text-[14px] leading-relaxed">
+                          {category.description}
+                        </p>
+                      </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
-          {/* Load More Button */}
-          <div className="flex justify-center">
-            <button className="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors text-[14px]">
-              Load more
-            </button>
-          </div>
         </div>
+
+        {/* Student Handbook Dialog */}
+        {handbookDialogOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative">
+              <button onClick={() => setHandbookDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors">
+                ×
+              </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" onClick={(e) => e.stopPropagation()}>
+                {handbookResources.length > 0 ? (
+                  handbookResources.map((resource) => (
+                    <a key={resource.id} href={resource.fileUrl} target="_blank" rel="noopener noreferrer" className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30">
+                      <div className="absolute inset-0 z-0">
+                        <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
+                      </div>
+                      <div className="absolute top-4 right-4 z-20 bg-white/90 rounded-lg p-2 shadow-md">
+                        <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </div>
+                      <div className="relative z-10">
+                        <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mb-6">
+                          <FaBook className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-3">{resource.title}</h3>
+                        <p className="text-white/90 text-[16px]">{resource.description}</p>
+                      </div>
+                    </a>
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-12">
+                    <p className="text-white text-lg">No handbooks available yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Graded Document Dialog */}
+        {/* Empty Category Dialog */}
+        {emptyDialogOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-md w-full relative">
+              <button onClick={() => setEmptyDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors">
+                ×
+              </button>
+              <div className="text-center py-8">
+                <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-4">{emptyDialogCategory}</h3>
+                <p className="text-white/90 text-[16px]">No resources available yet. Coming soon!</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {gradedDocDialogOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative">
+              <button onClick={() => setGradedDocDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors">
+                ×
+              </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" onClick={(e) => e.stopPropagation()}>
+                {gradedDocResources.length > 0 ? (
+                  gradedDocResources.map((resource) => (
+                    <a key={resource.id} href={resource.fileUrl} target="_blank" rel="noopener noreferrer" className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30">
+                      <div className="absolute inset-0 z-0">
+                        <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
+                      </div>
+                      <div className="absolute top-4 right-4 z-20 bg-white/90 rounded-lg p-2 shadow-md">
+                        <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </div>
+                      <div className="relative z-10">
+                        <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mb-6">
+                          <FaChartLine className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-3">{resource.title}</h3>
+                        <p className="text-white/90 text-[16px]">{resource.description}</p>
+                      </div>
+                    </a>
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-12">
+                    <p className="text-white text-lg">No graded documents available yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
