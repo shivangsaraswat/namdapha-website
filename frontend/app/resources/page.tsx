@@ -66,14 +66,14 @@ export default function ResourcesPage(){
         
         const counts: {[key: string]: number} = {};
         fetchedCategories.forEach(category => {
-          counts[category.name] = resources.filter(r => r.category === category.name).length;
+          counts[category.name] = resources.filter(r => r.category === category.name && r.status === 'published').length;
         });
         
         setResourceCounts(counts);
         
-        // Filter resources for Student Handbook and Graded Document
-        setHandbookResources(resources.filter(r => r.category === 'Student Handbook'));
-        setGradedDocResources(resources.filter(r => r.category === 'Graded Document'));
+        // Filter resources for Student Handbook and Grading Document (only published)
+        setHandbookResources(resources.filter(r => r.category === 'Student Handbook' && r.status === 'published'));
+        setGradedDocResources(resources.filter(r => r.category === 'Grading Document' && r.status === 'published'));
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -99,9 +99,20 @@ export default function ResourcesPage(){
         return;
       }
       setGradedDocDialogOpen(true);
+    } else if (categoryName === "Important Links") {
+      window.location.href = '/link-tree';
+    } else if (categoryName === "Important Contacts") {
+      window.location.href = '/resources/important-contacts';
     } else {
-      setEmptyDialogCategory(categoryName);
-      setEmptyDialogOpen(true);
+      // Check if category has resources
+      const categoryResourceCount = resourceCounts[categoryName] || 0;
+      if (categoryResourceCount === 0) {
+        setEmptyDialogCategory(categoryName);
+        setEmptyDialogOpen(true);
+      } else {
+        setEmptyDialogCategory(categoryName);
+        setEmptyDialogOpen(true);
+      }
     }
   };
 
@@ -262,9 +273,13 @@ export default function ResourcesPage(){
                           {category.name}
                         </h3>
 
-                        <p className="text-white/90 text-[14px] leading-relaxed">
+                        <p className="text-white/90 text-[14px] leading-relaxed mb-3">
                           {category.description}
                         </p>
+
+                        <div className="text-white/80 text-[12px] font-medium">
+                          {resourceCounts[category.name] || 0} resources available
+                        </div>
                       </div>
                   </div>
                 );
@@ -284,7 +299,14 @@ export default function ResourcesPage(){
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" onClick={(e) => e.stopPropagation()}>
                 {handbookResources.length > 0 ? (
                   handbookResources.map((resource) => (
-                    <a key={resource.id} href={resource.fileUrl} target="_blank" rel="noopener noreferrer" className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30">
+                    <a 
+                      key={resource.id} 
+                      href={resource.fileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      onClick={() => resource.id && resourceService.incrementClicks(resource.id)}
+                      className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30"
+                    >
                       <div className="absolute inset-0 z-0">
                         <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
                       </div>
@@ -337,7 +359,14 @@ export default function ResourcesPage(){
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" onClick={(e) => e.stopPropagation()}>
                 {gradedDocResources.length > 0 ? (
                   gradedDocResources.map((resource) => (
-                    <a key={resource.id} href={resource.fileUrl} target="_blank" rel="noopener noreferrer" className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30">
+                    <a 
+                      key={resource.id} 
+                      href={resource.fileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      onClick={() => resource.id && resourceService.incrementClicks(resource.id)}
+                      className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30"
+                    >
                       <div className="absolute inset-0 z-0">
                         <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
                       </div>

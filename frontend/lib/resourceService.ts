@@ -11,6 +11,7 @@ export interface Resource {
   fileSize?: string;
   fileType?: string;
   downloads?: number;
+  clicks?: number;
   status: 'published' | 'draft';
   createdAt: Date;
   updatedAt: Date;
@@ -68,9 +69,23 @@ export const resourceService = {
       ...resource,
       createdAt: new Date(),
       updatedAt: new Date(),
-      downloads: 0
+      downloads: 0,
+      clicks: 0
     });
     return docRef.id;
+  },
+
+  // Increment click count
+  async incrementClicks(id: string): Promise<void> {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    const resourceSnapshot = await getDocs(query(collection(db, COLLECTION_NAME)));
+    const resourceDoc = resourceSnapshot.docs.find(d => d.id === id);
+    if (resourceDoc) {
+      const currentClicks = resourceDoc.data().clicks || 0;
+      await updateDoc(docRef, {
+        clicks: currentClicks + 1
+      });
+    }
   },
 
   // Update resource
@@ -87,17 +102,7 @@ export const resourceService = {
     await deleteDoc(doc(db, COLLECTION_NAME, id));
   },
 
-  // Increment download count
-  async incrementDownloads(id: string): Promise<void> {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const resourceDoc = await getDocs(query(collection(db, COLLECTION_NAME), where('__name__', '==', id)));
-    if (!resourceDoc.empty) {
-      const currentDownloads = resourceDoc.docs[0].data().downloads || 0;
-      await updateDoc(docRef, {
-        downloads: currentDownloads + 1
-      });
-    }
-  },
+
 
   // Category Management
   async getAllCategories(): Promise<ResourceCategory[]> {

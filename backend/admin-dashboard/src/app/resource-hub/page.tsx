@@ -14,6 +14,7 @@ import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import { resourceService, Resource, ResourceCategory } from "@/lib/resourceService";
 import { initializeCategories } from "@/lib/initializeCategories";
+import { toast } from "sonner";
 
 // Icon mapping
 const iconMap: {[key: string]: any} = {
@@ -210,6 +211,11 @@ export default function ResourceHub() {
     description: '',
     externalLink: ''
   });
+  const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [isDeleteResourceDialogOpen, setIsDeleteResourceDialogOpen] = useState(false);
+  const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(null);
+  const [isVisibilityDialogOpen, setIsVisibilityDialogOpen] = useState(false);
+  const [categoryToToggle, setCategoryToToggle] = useState<ResourceCategory | null>(null);
 
   // Fetch resources and categories from Firebase
   useEffect(() => {
@@ -245,22 +251,57 @@ export default function ResourceHub() {
   const handleCategoryClick = (categoryName: string) => {
     if (categoryName === 'Student Handbook' || categoryName === 'Grading Document') {
       setSelectedCategory(categoryName);
+    } else if (categoryName === 'Important Links') {
+      // Redirect to Link Tree page
+      window.location.href = '/link-tree';
     } else {
       // Redirect to category-specific page
       window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
     }
   };
 
-  const handleDeleteResource = async (id: string) => {
-    if (confirm('Are you sure you want to delete this resource?')) {
-      try {
-        await resourceService.deleteResource(id);
-        await fetchData();
-      } catch (error) {
-        console.error('Error deleting resource:', error);
-        alert('Failed to delete resource');
-      }
+  const handleDeleteResourceClick = (resource: Resource) => {
+    setResourceToDelete(resource);
+    setIsDeleteResourceDialogOpen(true);
+  };
+
+  const handleDeleteResourceConfirm = async () => {
+    if (!resourceToDelete?.id) return;
+    
+    try {
+      const resourceTitle = resourceToDelete.title;
+      await resourceService.deleteResource(resourceToDelete.id);
+      setIsDeleteResourceDialogOpen(false);
+      setResourceToDelete(null);
+      await fetchData();
+      toast.success(`${resourceTitle} deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting resource:', error);
+      toast.error('Failed to delete resource');
     }
+  };
+
+  const handleToggleResourceStatus = async (resource: Resource) => {
+    try {
+      const newStatus = resource.status === 'published' ? 'draft' : 'published';
+      await resourceService.updateResource(resource.id!, { status: newStatus });
+      await fetchData();
+      toast.success(newStatus === 'published' ? `${resource.title} is now visible` : `${resource.title} is now hidden`);
+    } catch (error) {
+      console.error('Error toggling resource status:', error);
+      toast.error('Failed to update resource status');
+    }
+  };
+
+  const handleEditResource = (resource: Resource) => {
+    setEditingResource(resource);
+    setSelectedCategoryForResource(resource.category);
+    setResourceFormData({
+      subcategory: resource.title,
+      description: resource.description,
+      externalLink: resource.fileUrl || ''
+    });
+    setIsResourceDialogOpen(true);
   };
 
   const handleEditCategory = (category: ResourceCategory) => {
@@ -272,28 +313,53 @@ export default function ResourceHub() {
     setIsCategoryDialogOpen(true);
   };
 
-  const handleDeleteClick = (category: ResourceCategory) => {
+  const handleVisibilityClick = (category: ResourceCategory) => {
+    setCategoryToToggle(category);
+    setIsVisibilityDialogOpen(true);
+  };
+
+  const handleVisibilityConfirm = async () => {
+    if (!categoryToToggle?.id) return;
+    
+    try {
+      const newStatus = !categoryToToggle.isActive;
+      await resourceService.updateCategory(categoryToToggle.id, {
+        isActive: newStatus
+      });
+      setIsVisibilityDialogOpen(false);
+      setCategoryToToggle(null);
+      await fetchData();
+      toast.success(newStatus ? `${categoryToToggle.name} is now visible on frontend` : `${categoryToToggle.name} is now hidden from frontend`);
+    } catch (error) {
+      console.error('Error toggling category visibility:', error);
+      toast.error('Failed to update category visibility');
+    }
+  };
+
+  const handleDeleteCategoryClick = (category: ResourceCategory) => {
     setCategoryToDelete(category);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteCategoryConfirm = async () => {
     if (!categoryToDelete?.id) return;
     
     try {
+      const categoryName = categoryToDelete.name;
       await resourceService.deleteCategory(categoryToDelete.id);
       setIsDeleteDialogOpen(false);
       setCategoryToDelete(null);
       await fetchData();
+      toast.success(`${categoryName} deleted successfully`);
     } catch (error) {
       console.error('Error deleting category:', error);
-      alert('Failed to delete category');
+      toast.error('Failed to delete category');
     }
   };
 
   const handleSaveCategory = async () => {
     if (!categoryFormData.name || !categoryFormData.description) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -305,6 +371,7 @@ export default function ResourceHub() {
           description: categoryFormData.description,
           updatedAt: new Date()
         });
+        toast.success(`${categoryFormData.name} updated successfully`);
       } else {
         // Add new category
         const maxOrder = categories.length > 0 ? Math.max(...categories.map(c => c.order)) : 0;
@@ -321,6 +388,7 @@ export default function ResourceHub() {
           createdAt: new Date(),
           updatedAt: new Date()
         });
+        toast.success(`${categoryFormData.name} added successfully`);
       }
       
       setCategoryFormData({ name: '', description: '' });
@@ -329,7 +397,7 @@ export default function ResourceHub() {
       await fetchData();
     } catch (error) {
       console.error('Error saving category:', error);
-      alert('Failed to save category');
+      toast.error('Failed to save category');
     }
   };
 
@@ -341,27 +409,39 @@ export default function ResourceHub() {
 
   const handleSaveResource = async () => {
     if (!resourceFormData.subcategory || !resourceFormData.description || !resourceFormData.externalLink) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
     try {
-      await resourceService.addResource({
-        title: resourceFormData.subcategory,
-        description: resourceFormData.description,
-        category: selectedCategoryForResource,
-        fileUrl: resourceFormData.externalLink,
-        status: 'published',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+      if (editingResource?.id) {
+        await resourceService.updateResource(editingResource.id, {
+          title: resourceFormData.subcategory,
+          description: resourceFormData.description,
+          fileUrl: resourceFormData.externalLink,
+          updatedAt: new Date()
+        });
+        toast.success(`${resourceFormData.subcategory} updated successfully`);
+      } else {
+        await resourceService.addResource({
+          title: resourceFormData.subcategory,
+          description: resourceFormData.description,
+          category: selectedCategoryForResource,
+          fileUrl: resourceFormData.externalLink,
+          status: 'published',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        toast.success(`${resourceFormData.subcategory} added successfully`);
+      }
       
       setResourceFormData({ subcategory: '', description: '', externalLink: '' });
+      setEditingResource(null);
       setIsResourceDialogOpen(false);
       await fetchData();
     } catch (error) {
       console.error('Error saving resource:', error);
-      alert('Failed to save resource');
+      toast.error('Failed to save resource');
     }
   };
 
@@ -471,12 +551,18 @@ export default function ResourceHub() {
                         size="sm" 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteClick(category);
+                          handleVisibilityClick(category);
                         }}
-                        className="text-red-600 hover:text-red-700"
-                        title="Delete category"
+                        className={category.isActive ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}
+                        title={category.isActive ? 'Visible on frontend' : 'Hidden from frontend'}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {category.isActive ? (
+                          <Eye className="w-4 h-4" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          </svg>
+                        )}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -489,6 +575,18 @@ export default function ResourceHub() {
                         title="Edit category"
                       >
                         <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCategoryClick(category);
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                        title="Delete category"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
@@ -504,21 +602,19 @@ export default function ResourceHub() {
                     <Badge className="bg-gray-100 text-gray-700">
                       {resourceCounts[category.name] || 0} items
                     </Badge>
-                    <Button 
-                      size="sm" 
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (category.name === 'Student Handbook' || category.name === 'Grading Document') {
+                    {(category.name === 'Student Handbook' || category.name === 'Grading Document') && (
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleAddResourceClick(category.name);
-                        } else {
-                          alert(`Add items to ${category.name} - Feature coming soon!`);
-                        }
-                      }}
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Add
-                    </Button>
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -527,11 +623,17 @@ export default function ResourceHub() {
         </div>
 
         {/* Add Resource Dialog */}
-        <Dialog open={isResourceDialogOpen} onOpenChange={setIsResourceDialogOpen}>
+        <Dialog open={isResourceDialogOpen} onOpenChange={(open) => {
+          setIsResourceDialogOpen(open);
+          if (!open) {
+            setEditingResource(null);
+            setResourceFormData({ subcategory: '', description: '', externalLink: '' });
+          }
+        }}>
           <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
             <DialogHeader>
               <DialogTitle className={isDarkMode ? 'text-white' : 'text-gray-900'}>
-                Add Resource to {selectedCategoryForResource}
+                {editingResource ? 'Edit Resource' : `Add Resource to ${selectedCategoryForResource}`}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -582,13 +684,13 @@ export default function ResourceHub() {
                 Cancel
               </Button>
               <Button onClick={handleSaveResource} className="bg-green-600 hover:bg-green-700 text-white">
-                Add Resource
+                {editingResource ? 'Update Resource' : 'Add Resource'}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
+        {/* Delete Category Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
             <DialogHeader>
@@ -606,7 +708,56 @@ export default function ResourceHub() {
               <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
                 Cancel
               </Button>
-              <Button onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700 text-white">
+              <Button onClick={handleDeleteCategoryConfirm} className="bg-red-600 hover:bg-red-700 text-white">
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Visibility Toggle Confirmation Dialog */}
+        <Dialog open={isVisibilityDialogOpen} onOpenChange={setIsVisibilityDialogOpen}>
+          <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
+            <DialogHeader>
+              <DialogTitle className={isDarkMode ? 'text-white' : 'text-gray-900'}>
+                {categoryToToggle?.isActive ? 'Hide Category' : 'Show Category'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                Are you sure you want to {categoryToToggle?.isActive ? 'hide' : 'show'} <span className="font-semibold">{categoryToToggle?.name}</span> {categoryToToggle?.isActive ? 'from' : 'on'} the frontend?
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsVisibilityDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
+                Cancel
+              </Button>
+              <Button onClick={handleVisibilityConfirm} className={categoryToToggle?.isActive ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}>
+                {categoryToToggle?.isActive ? 'Hide' : 'Show'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Resource Confirmation Dialog */}
+        <Dialog open={isDeleteResourceDialogOpen} onOpenChange={setIsDeleteResourceDialogOpen}>
+          <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
+            <DialogHeader>
+              <DialogTitle className={isDarkMode ? 'text-white' : 'text-gray-900'}>
+                Delete Resource
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                Are you sure you want to delete <span className="font-semibold">{resourceToDelete?.title}</span>? 
+                This action cannot be undone.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteResourceDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
+                Cancel
+              </Button>
+              <Button onClick={handleDeleteResourceConfirm} className="bg-red-600 hover:bg-red-700 text-white">
                 Delete
               </Button>
             </DialogFooter>
@@ -659,7 +810,7 @@ export default function ResourceHub() {
                           }`}>{resource.title}</h4>
                           <div className="flex items-center gap-4 text-sm">
                             <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                              {resource.fileType || 'PDF'} • {resource.fileSize || 'N/A'}
+                              Link • {resource.clicks || 0} clicks
                             </span>
                             <Badge className={`${
                               resource.status === 'published' 
@@ -675,17 +826,28 @@ export default function ResourceHub() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {resource.fileUrl && (
-                          <Button variant="outline" size="sm" title="View" onClick={() => window.open(resource.fileUrl, '_blank')}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={resource.status === 'published' ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'}
+                          title={resource.status === 'published' ? 'Hide' : 'Show'}
+                          onClick={() => handleToggleResourceStatus(resource)}
+                        >
+                          {resource.status === 'published' ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                          ) : (
                             <Eye className="w-4 h-4" />
-                          </Button>
-                        )}
-                        {resource.fileUrl && (
-                          <Button variant="outline" size="sm" title="Download" onClick={() => window.open(resource.fileUrl, '_blank')}>
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700" title="Edit">
+                          )}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-blue-600 hover:text-blue-700" 
+                          title="Edit"
+                          onClick={() => handleEditResource(resource)}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button 
@@ -693,7 +855,7 @@ export default function ResourceHub() {
                           size="sm" 
                           className="text-red-600 hover:text-red-700" 
                           title="Delete"
-                          onClick={() => resource.id && handleDeleteResource(resource.id)}
+                          onClick={() => handleDeleteResourceClick(resource)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
