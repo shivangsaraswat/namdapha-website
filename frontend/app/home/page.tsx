@@ -2,6 +2,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import LightningBackground from "@/components/LightningBackground";
 import DesignGallery from "@/components/DesignGallery";
+import SuccessStories from "@/components/SuccessStories";
 
 export default function Page() {
   return (
@@ -301,68 +302,17 @@ export default function Page() {
         <div className="relative z-10 px-6 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="text-left mb-16">
+            <div className="text-left mb-8">
               <h2 className="fs-48 font-title font-medium text-gray-94">Success stories</h2>
 
               <p className="mt-2.5 max-w-[500px] text-18 leading-snug tracking-tight text-gray-70 sm:mt-1.5 sm:text-16">Explore how we’ve transformed developer experiences.</p>
             </div>
 
             {/* Stories Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
-              {/* Google Card */}
-              <div className="group relative bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-300 hover:transform hover:scale-105">
-                <div className="aspect-[4/3] relative bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                  <div className="text-white text-3xl font-bold">Google</div>
-                </div>
-              </div>
-
-              {/* Canonical Card */}
-              <div className="group relative bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-300 hover:transform hover:scale-105">
-                <div className="aspect-[4/3] relative bg-gradient-to-br from-orange-800 to-orange-900 flex items-center justify-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                      <div className="w-4 h-4 bg-orange-500 rounded-full"></div>
-                    </div>
-                    <span className="text-white text-2xl font-bold">Canonical</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Widgetbook Case Study Card */}
-              <div className="group relative bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-300 hover:transform hover:scale-105 md:col-span-2 lg:col-span-1">
-                <div className="aspect-[4/3] relative">
-                  <Image
-                    src="/home-event-bg.svg"
-                    alt="Widgetbook case study"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40"></div>
-                  
-                  {/* Widgetbook logo */}
-                  <div className="absolute top-4 left-4 bg-white rounded-lg px-3 py-2 flex items-center gap-2">
-                    <div className="w-6 h-6 bg-blue-600 rounded"></div>
-                    <span className="font-semibold text-gray-900">widgetbook</span>
-                  </div>
-
-                  {/* Content */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white text-xl font-bold mb-2 leading-tight">
-                      Making Documentation Easy for Widgetbook with docs.page
-                    </h3>
-                    <button className="text-white/80 hover:text-white text-sm font-medium flex items-center gap-2 transition-colors">
-                      Read case study
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SuccessStories/>
 
             {/* Join Team Section */}
-           <div className="container-md relative z-10 mt-44 flex flex-col items-center text-center lg:mt-36 md:mt-32 sm:mt-24">
+           <div className="container-md relative z-10 mt-44 flex flex-col items-center text-center lg:mt-24 md:mt-32 sm:mt-24">
             <h2 className="fs-48 font-title font-medium text-gray-94">Join our growing team</h2>
             <p className="mt-2.5 max-w-[410px] text-18 leading-snug tracking-tight text-gray-70 md:max-w-[400px] md:text-16 sm:mt-1.5">Obsessed with developer experience? So are we. Come shape the future with us.</p>
             <a className="transition-colors duration-200 transition-colors duration-300 group inline-flex items-center outline-none relative justify-center tracking-tight leading-none focus:outline-white focus:outline-1 focus:outline-offset-4 h-10 text-15 px-6 rounded-full md:h-9 relative shadow-[0px_2px_2px_0px_rgba(0,0,0,0.74)] group mt-9 font-semibold lg:mt-5 md:mt-5" href="/careers">
