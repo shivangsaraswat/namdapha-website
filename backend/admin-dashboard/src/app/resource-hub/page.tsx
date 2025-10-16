@@ -252,10 +252,10 @@ export default function ResourceHub() {
     if (categoryName === 'Student Handbook' || categoryName === 'Grading Document') {
       setSelectedCategory(categoryName);
     } else if (categoryName === 'Important Links') {
-      // Redirect to Link Tree page
       window.location.href = '/link-tree';
+    } else if (categoryName === 'Verify Certificate') {
+      window.location.href = '/certificates';
     } else {
-      // Redirect to category-specific page
       window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
     }
   };
@@ -459,17 +459,9 @@ export default function ResourceHub() {
     : resources;
 
   return (
-    <PageLayout title="Resource Hub" activeItem="Resource Hub">
+    <PageLayout title="Resource Hub Management" subtitle="Manage documents, files, and resources" activeItem="Resource Hub">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Resource Management</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>Manage documents, files, and resources</p>
-          </div>
+        <div className="flex items-center justify-end">
           <Dialog open={isCategoryDialogOpen} onOpenChange={(open) => {
             setIsCategoryDialogOpen(open);
             if (!open) {

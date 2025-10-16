@@ -103,6 +103,10 @@ export default function ResourcesPage(){
       window.location.href = '/link-tree';
     } else if (categoryName === "Important Contacts") {
       window.location.href = '/resources/important-contacts';
+    } else if (categoryName === "PYQs") {
+      window.location.href = '/resources/pyqs';
+    } else if (categoryName === "Verify Certificate") {
+      window.location.href = '/verify-certificate';
     } else {
       // Check if category has resources
       const categoryResourceCount = resourceCounts[categoryName] || 0;

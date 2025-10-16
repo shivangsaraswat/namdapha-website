@@ -57,17 +57,9 @@ export default function Certificates() {
   const { isDarkMode } = useTheme();
 
   return (
-    <PageLayout title="Certificates" activeItem="Certificates">
+    <PageLayout title="Certificates Management" subtitle="Create, customize, and manage digital certificates" activeItem="Certificates">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Certificate Management</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>Create, customize, and manage digital certificates</p>
-          </div>
+        <div className="flex items-center justify-end">
           <div className="flex gap-3">
             <Button variant="outline">
               <Palette className="w-4 h-4 mr-2" />

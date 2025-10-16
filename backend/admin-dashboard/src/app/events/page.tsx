@@ -44,17 +44,9 @@ export default function Events() {
   const { isDarkMode } = useTheme();
 
   return (
-    <PageLayout title="Events" activeItem="Events">
+    <PageLayout title="Events Management" subtitle="Create and manage your events" activeItem="Events">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Event Management</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>Create and manage your events</p>
-          </div>
+        <div className="flex items-center justify-end">
           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="w-4 h-4 mr-2" />
             New Event

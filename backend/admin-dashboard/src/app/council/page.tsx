@@ -214,26 +214,33 @@ export default function Council() {
   const MemberCard = ({ member, type }: { member: any, type: 'leadership' | 'coordinator' }) => {
     
     return (
-      <Card className={`rounded-2xl shadow-sm border-0 ${
+      <Card className={`rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
         isDarkMode ? 'bg-gray-700' : 'bg-white'
-      } ${!member.isVisible ? 'opacity-50' : ''}`}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h3 className={`font-semibold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>{member.position}</h3>
-            </div>
+      }`}>
+        <div className="relative -mb-2">
+          <div className="absolute top-2 right-2 z-10">
             <Badge className={`${
               member.isVisible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
             }`}>
               {member.isVisible ? 'Visible' : 'Hidden'}
             </Badge>
           </div>
-
-          <div className={`w-full h-[420px] rounded-lg mb-4 flex items-center justify-center relative overflow-hidden ${
+          <div className={`w-full aspect-[3/4] flex items-center justify-center relative overflow-hidden ${
             isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
           }`}>
+            {!member.isVisible && (
+              <>
+                <div className="absolute inset-0 bg-black/50 z-10" />
+                <div className="absolute inset-0 z-20 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gray-900/80 transform rotate-45 w-1 h-full left-1/2 -translate-x-1/2" style={{height: '150%', top: '-25%'}} />
+                    <svg className="w-12 h-12 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  </div>
+                </div>
+              </>
+            )}
             {
               (() => {
                 // Normalize image source (accept string or object shapes)
@@ -272,48 +279,51 @@ export default function Council() {
               })()
             }
           </div>
-
-          <div className="flex items-center justify-between">
-            <div className={`font-semibold text-lg ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              {member.name}
+        </div>
+        <CardContent className="p-3 pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className={`font-semibold text-sm ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>{member.position}</h3>
+              <p className={`text-xs ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>{member.name}</p>
             </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleVisibility(member.id, type)}
-                className={`${isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
-              >
-                {member.isVisible ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => editMember(member, type)}
-                className="text-blue-600 hover:text-blue-700"
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
-              
-              {isSuperAdmin && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openDeleteDialog(member.id, type)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toggleVisibility(member.id, type)}
+              className={`flex-1 h-8 ${isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
+            >
+              {member.isVisible ? (
+                <EyeOff className="w-3.5 h-3.5" />
+              ) : (
+                <Eye className="w-3.5 h-3.5" />
               )}
-            </div>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => editMember(member, type)}
+              className="flex-1 h-8 text-blue-600 hover:text-blue-700"
+            >
+              <Edit className="w-3.5 h-3.5" />
+            </Button>
+            
+            {isSuperAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openDeleteDialog(member.id, type)}
+                className="flex-1 h-8 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -321,18 +331,8 @@ export default function Council() {
   };
 
   return (
-    <PageLayout title="Council" activeItem="Council">
+    <PageLayout title="Council Management" subtitle="Manage council member posters and visibility" activeItem="Council">
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Council Management</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>Manage council member posters and visibility</p>
-          </div>
-        </div>
 
         {/* House Leadership Section */}
         <div>
@@ -366,7 +366,7 @@ export default function Council() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
               {leadership.map((member) => (
                 <MemberCard key={member.id} member={member} type="leadership" />
               ))}
@@ -406,7 +406,7 @@ export default function Council() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 md:gap-6">
               {coordinators.map((member) => (
                 <MemberCard key={member.id} member={member} type="coordinator" />
               ))}

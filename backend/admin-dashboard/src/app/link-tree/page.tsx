@@ -196,17 +196,9 @@ export default function LinkTree() {
   };
 
   return (
-    <PageLayout title="Link Tree" activeItem="Link Tree">
+    <PageLayout title="Link Tree Management" subtitle="Manage your link tree and track performance" activeItem="Link Tree">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Link Management</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>Manage your link tree and track performance</p>
-          </div>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-3">
             <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddSocialClick}>
               <Plus className="w-4 h-4 mr-2" />

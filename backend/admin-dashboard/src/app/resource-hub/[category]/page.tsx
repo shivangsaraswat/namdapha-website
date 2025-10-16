@@ -15,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { resourceService, Resource } from "@/lib/resourceService";
 import { toast } from "sonner";
 import ContactManagement from "./ContactManagement";
+import PYQManagement from "./PYQManagement";
 
 export default function CategoryResourcePage() {
   const params = useParams();
@@ -23,6 +24,7 @@ export default function CategoryResourcePage() {
   const categorySlug = params.category as string;
   const categoryName = categorySlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   const isContactsPage = categoryName === 'Important Contacts';
+  const isPYQsPage = categoryName === 'Pyqs';
   
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,10 +39,10 @@ export default function CategoryResourcePage() {
   const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(null);
 
   useEffect(() => {
-    if (!isContactsPage) {
+    if (!isContactsPage && !isPYQsPage) {
       fetchResources();
     }
-  }, [categoryName, isContactsPage]);
+  }, [categoryName, isContactsPage, isPYQsPage]);
 
   const fetchResources = async () => {
     try {
@@ -144,40 +146,24 @@ export default function CategoryResourcePage() {
 
   if (isContactsPage) {
     return (
-      <PageLayout title={categoryName} activeItem="Resource Hub">
-        <div className="space-y-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/resource-hub')}
-              className={isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Resource Hub
-            </Button>
-          </div>
-          <ContactManagement />
-        </div>
+      <PageLayout title="Important Contacts Management" subtitle="Manage house leadership and other contacts" activeItem="Resource Hub">
+        <ContactManagement />
+      </PageLayout>
+    );
+  }
+
+  if (isPYQsPage) {
+    return (
+      <PageLayout title="PYQs Management" subtitle="Manage previous year question papers" activeItem="Resource Hub">
+        <PYQManagement />
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout title={categoryName} activeItem="Resource Hub">
+    <PageLayout title={`${categoryName} Management`} subtitle={`Manage ${categoryName.toLowerCase()} resources`} activeItem="Resource Hub">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/resource-hub')}
-              className={isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Resource Hub
-            </Button>
-          </div>
+        <div className="flex items-center justify-end">
           <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleAddResourceClick}>
             <Plus className="w-4 h-4 mr-2" />
             Add Resource

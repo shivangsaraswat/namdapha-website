@@ -62,17 +62,9 @@ export default function Teams() {
   const { isDarkMode } = useTheme();
 
   return (
-    <PageLayout title="Teams" activeItem="Teams">
+    <PageLayout title="Teams Management" subtitle="Manage teams, members, and projects" activeItem="Teams">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Team Management</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>Manage teams, members, and projects</p>
-          </div>
+        <div className="flex items-center justify-end">
           <Button className="bg-teal-600 hover:bg-teal-700 text-white">
             <Plus className="w-4 h-4 mr-2" />
             Create Team

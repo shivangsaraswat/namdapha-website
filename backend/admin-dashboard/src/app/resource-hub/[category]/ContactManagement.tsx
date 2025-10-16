@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Eye, EyeOff, User } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff, User, ArrowLeft } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { contactService, Contact } from "@/lib/contactService";
 import { toast } from "sonner";
@@ -203,23 +203,30 @@ export default function ContactManagement() {
 
   return (
     <>
-      <div className="flex items-center gap-3 mb-6">
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddLeadershipClick}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add House Leadership
-        </Button>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleAddOtherClick}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Other Contact
+      <div className="flex items-center justify-between mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => window.location.href = '/resource-hub'}
+          className={isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Resource Hub
         </Button>
       </div>
 
       {/* House Leadership Section */}
       <Card className={`rounded-2xl shadow-sm border-0 mb-6 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
         <CardHeader>
-          <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            House Leadership ({contacts.filter(c => c.type === 'leadership').length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              House Leadership ({contacts.filter(c => c.type === 'leadership').length})
+            </CardTitle>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddLeadershipClick}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add House Leadership
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -278,9 +285,15 @@ export default function ContactManagement() {
       {/* Other Contacts Section */}
       <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
         <CardHeader>
-          <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Other Contacts ({contacts.filter(c => c.type === 'other').length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Other Contacts ({contacts.filter(c => c.type === 'other').length})
+            </CardTitle>
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleAddOtherClick}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Other Contact
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
