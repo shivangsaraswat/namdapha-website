@@ -30,13 +30,13 @@ jobs:
         run: |
           rm -rf deploy/firebase/public/frontend
           cp -r frontend/out deploy/firebase/public/frontend
-        
+      
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      
       - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          channelId: live
-          projectId: namdapha-website
-          entryPoint: ./deploy/firebase
-          target: frontend
+        working-directory: ./deploy/firebase
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=service-account.json
+          firebase deploy --only hosting:frontend --project namdapha-website
