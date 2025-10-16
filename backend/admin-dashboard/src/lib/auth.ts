@@ -31,10 +31,10 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // After sign in, redirect to root page instead of /dashboard
-      if (url.startsWith(baseUrl)) return baseUrl;
+      // After sign in, redirect to dashboard
+      if (url.startsWith(baseUrl)) return `${baseUrl}/dashboard`;
       else if (url.startsWith("/")) return `${baseUrl}${url}`;
-      return baseUrl;
+      return `${baseUrl}/dashboard`;
     },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
