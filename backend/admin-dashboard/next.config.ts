@@ -10,14 +10,6 @@ const nextConfig: NextConfig = {
       'res.cloudinary.com'
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/Dashboard',
-        destination: '/dashboard',
-      },
-    ];
-  },
 };
 
 export default nextConfig;
