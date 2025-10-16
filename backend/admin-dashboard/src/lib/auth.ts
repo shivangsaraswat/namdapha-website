@@ -30,6 +30,12 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // Default 24 hours, will be overridden per user
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // After sign in, redirect to root page instead of /dashboard
+      if (url.startsWith(baseUrl)) return baseUrl;
+      else if (url.startsWith("/")) return `${baseUrl}${url}`;
+      return baseUrl;
+    },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         let userData = await getUserData(user.email!);
