@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { motion } from 'framer-motion'
 
 const SSList = [{
     id: 0,
@@ -42,7 +42,7 @@ const SSList = [{
 
 export default function SuccessStories() {
     const [hoverCard, setHover] = useState(2)
-    const timerRef = useRef<any>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const find_card_state = (id: number, currentHover: number) => {
         if (id == currentHover) {
@@ -56,7 +56,7 @@ export default function SuccessStories() {
         }
     }
 
-    const debounce = (list: any) => {
+    const debounce = (list: typeof SSList) => {
         if (timerRef.current) clearInterval(timerRef.current);
 
         // Start new interval
@@ -66,7 +66,9 @@ export default function SuccessStories() {
             });
         }, 3000);
 
-        return () => clearInterval(timerRef.current);
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
     }
 
     useEffect(() => {
