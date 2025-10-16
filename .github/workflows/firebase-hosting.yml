@@ -26,6 +26,11 @@ jobs:
         working-directory: ./frontend
         run: npm run build
         
+      - name: Copy build to Firebase public folder
+        run: |
+          rm -rf deploy/firebase/public/frontend
+          cp -r frontend/out deploy/firebase/public/frontend
+        
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -33,5 +38,5 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           channelId: live
           projectId: namdapha-website
-          entryPoint: ./frontend
+          entryPoint: ./deploy/firebase
           target: frontend
