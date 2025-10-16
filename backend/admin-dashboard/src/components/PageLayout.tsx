@@ -15,7 +15,7 @@ interface PageLayoutProps {
 }
 
 const navigationItems = [
-  { name: 'Dashboard', path: '/dashboard', keywords: ['home', 'overview', 'stats'] },
+  { name: 'Dashboard', path: '/Dashboard', keywords: ['home', 'overview', 'stats'] },
   { name: 'Events', path: '/events', keywords: ['event', 'calendar', 'schedule'] },
   { name: 'Resource Hub', path: '/resource-hub', keywords: ['resources', 'documents', 'files'] },
   { name: 'Link Tree', path: '/link-tree', keywords: ['links', 'urls'] },
