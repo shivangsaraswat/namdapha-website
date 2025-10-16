@@ -22,7 +22,7 @@ export default function AuthGuard({ children, requiredPermission }: AuthGuardPro
     }
 
     if (requiredPermission) {
-      const userRole = (session.user as any)?.role;
+      const userRole = (session.user as { role?: string })?.role;
       const permissions = {
         'super-admin': ['*'],
         'secretary': ['dashboard', 'events', 'resource-hub', 'council', 'teams', 'certificates'],

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Book, TrendingUp, FileText, Link, Users, MessageCircle, Calculator, BarChart3, GraduationCap, Newspaper, Video, Image as ImageIcon, Music, Code, Laptop, FlaskConical, Medal, Trophy, Award, ClipboardList, Plus, Edit, Trash2, Eye, Download } from "lucide-react";
+import { Book, TrendingUp, FileText, Link, Users, MessageCircle, Calculator, BarChart3, GraduationCap, Newspaper, Video, Image as ImageIcon, Music, Code, Laptop, FlaskConical, Medal, Trophy, Award, ClipboardList, Plus, Edit, Trash2, Eye } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import { resourceService, Resource, ResourceCategory } from "@/lib/resourceService";
@@ -17,7 +17,7 @@ import { initializeCategories } from "@/lib/initializeCategories";
 import { toast } from "sonner";
 
 // Icon mapping
-const iconMap: {[key: string]: any} = {
+const iconMap: {[key: string]: React.ComponentType<{className?: string}>} = {
   'FaBook': Book,
   'FaChartLine': TrendingUp,
   'FaFileAlt': FileText,
@@ -103,8 +103,10 @@ const getIconForCategory = (name: string): { icon: string; iconColor: string; bg
   return { icon: 'FaBook', iconColor: 'text-gray-600', bgColor: 'bg-gray-50' };
 };
 
-// Default categories for initialization
-const defaultCategories = [
+// Default categories (not used in this component, managed via Firebase)
+// Commented out to avoid unused variable warning
+/*
+const _defaultCategories = [
   {
     id: 1,
     name: "Student Handbook",
@@ -186,8 +188,7 @@ const defaultCategories = [
     category: "Community"
   }
 ];
-
-
+*/
 
 export default function ResourceHub() {
   const { isDarkMode } = useTheme();

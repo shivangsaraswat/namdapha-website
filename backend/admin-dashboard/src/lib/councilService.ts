@@ -17,7 +17,8 @@ export async function saveCouncilMember(member: Omit<CouncilMember, 'id' | 'crea
   
   let imageUrl = member.imageUrl;
   if (imageFile) {
-    imageUrl = await uploadImage(imageFile, 'council');
+    const result = await uploadImage(imageFile, 'council');
+    imageUrl = result.url;
   }
   
   await setDoc(docRef, {
@@ -57,7 +58,8 @@ export async function updateCouncilMember(id: string, updates: Partial<CouncilMe
       }
       
       // Upload new image
-      imageUrl = await uploadImage(imageFile, 'council');
+      const result = await uploadImage(imageFile, 'council');
+      imageUrl = result.url;
     }
     
     await updateDoc(doc(db, 'council', id), {

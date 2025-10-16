@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { User, UserRole } from "@/types/auth";
+import { UserRole } from "@/types/auth";
 import { logActivity } from "@/lib/activityLogger";
 import { getUserData, updateLastLogin, createUser, getAllUsers, addUser, removeUser, updateUser, toggleUser } from "@/lib/userService";
 
@@ -68,7 +68,7 @@ export const authOptions: NextAuthOptions = {
       if (token.email) {
         const userData = await getUserData(token.email as string);
         if (!userData || !userData.isActive) {
-          return null; // Force logout
+          token.isActive = false; // Mark as inactive instead of returning null
         }
       }
       
@@ -76,13 +76,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user && token) {
-        (session.user as any).role = token.role;
-        (session.user as any).isActive = token.isActive;
-        
-        // Force logout if user is deactivated
-        if (!token.isActive) {
-          return null;
-        }
+        (session.user as { role?: string; isActive?: boolean }).role = token.role as string;
+        (session.user as { role?: string; isActive?: boolean }).isActive = token.isActive as boolean;
       }
       return session;
     },

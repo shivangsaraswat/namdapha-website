@@ -1,0 +1,10 @@
+# Build outputs
+public/frontend/
+public/admin/
+
+# Firebase cache
+.firebase/
+
+# Logs
+*.log
+npm-debug.log*

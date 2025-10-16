@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Award, Plus, Edit, Trash2, Download, Eye, Copy, Palette, Type, Image } from "lucide-react";
+import { Award, Plus, Edit, Trash2, Eye, Copy, Palette, Type, Image as ImageIcon } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -226,7 +226,7 @@ export default function Certificates() {
                     Customize Text
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
-                    <Image className="w-4 h-4 mr-2" />
+                    <ImageIcon className="w-4 h-4 mr-2" />
                     Add Logo
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
@@ -259,7 +259,7 @@ export default function Certificates() {
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   <span className={`text-sm ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>New template "Golden Elite" created</span>
+                  }`}>New template &quot;Golden Elite&quot; created</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-purple-500 rounded-full"></div>

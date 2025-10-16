@@ -83,7 +83,11 @@ export async function initializeCategories() {
       console.log('Initializing default categories...');
       
       for (const category of defaultCategories) {
-        await resourceService.addCategory(category);
+        await resourceService.addCategory({
+          ...category,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
       }
       
       console.log('Default categories initialized successfully!');

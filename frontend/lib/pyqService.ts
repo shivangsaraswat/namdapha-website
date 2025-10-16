@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, getDocs, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 
 export interface PYQ {
   id?: string;

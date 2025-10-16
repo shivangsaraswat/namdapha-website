@@ -14,8 +14,8 @@ export async function uploadImage(file: File, folder: string = 'council'): Promi
           const ctx = canvas.getContext('2d');
           if (!ctx) return reject(new Error('Canvas not supported'));
 
-          let width = img.naturalWidth;
-          let height = img.naturalHeight;
+          const width = img.naturalWidth;
+          const height = img.naturalHeight;
 
           // Start parameters
           let quality = 0.92;
@@ -31,7 +31,6 @@ export async function uploadImage(file: File, folder: string = 'council'): Promi
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             // get blob
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const blob: Blob | null = await new Promise((res) => canvas.toBlob(res as BlobCallback, inputFile.type || 'image/jpeg', quality));
             if (!blob) return reject(new Error('Failed to create compressed image'));
 

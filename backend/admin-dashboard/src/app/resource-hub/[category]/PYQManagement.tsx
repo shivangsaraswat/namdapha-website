@@ -14,12 +14,14 @@ import { pyqService, PYQ } from "@/lib/pyqService";
 import { toast } from "sonner";
 import { uploadImage } from "@/lib/cloudinary";
 
-const subjectsByLevel: Record<string, string[]> = {
-  "Foundation": ["Mathematics", "Physics", "Chemistry", "Biology", "English"],
-  "Diploma": ["Engineering Mathematics", "Computer Science", "Electronics", "Mechanical", "Civil Engineering"],
-  "BSc": ["Advanced Mathematics", "Quantum Physics", "Organic Chemistry", "Molecular Biology", "Statistics"],
-  "BS": ["Research Methodology", "Advanced Physics", "Computational Mathematics", "Biochemistry", "Data Science"]
-};
+// Subject data (not used in admin, only in frontend)
+// Commented out to avoid unused variable warning
+// const _subjectsByLevel: Record<string, string[]> = {
+//   "Foundation": ["Mathematics", "Physics", "Chemistry", "Biology", "English"],
+//   "Diploma": ["Engineering Mathematics", "Computer Science", "Electronics", "Mechanical", "Civil Engineering"],
+//   "BSc": ["Advanced Mathematics", "Quantum Physics", "Organic Chemistry", "Molecular Biology", "Statistics"],
+//   "BS": ["Research Methodology", "Advanced Physics", "Computational Mathematics", "Biochemistry", "Data Science"]
+// };
 
 const years = ["2024", "2023", "2022", "2021", "2020"];
 const semesters = ["January", "May", "September"];

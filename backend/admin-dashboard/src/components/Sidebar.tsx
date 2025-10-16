@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Grid3X3, Calendar, BookOpen, GitBranch, Shield, Users2, Award, FileText, MessageCircle, Moon, Sun, LogOut, Settings } from "lucide-react";
+import { Grid3X3, Calendar, BookOpen, GitBranch, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "next-auth/react";

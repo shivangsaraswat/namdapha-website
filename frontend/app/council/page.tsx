@@ -29,7 +29,7 @@ export default function CouncilPage(){
       try {
         const snapshot = await getDocs(collection(db, 'council'));
         const members = snapshot.docs.map(doc => {
-          const data: any = doc.data();
+          const data = doc.data();
 
           // Normalize image field: accept string or object shapes returned by admin uploads
           let imageUrl: string | undefined = undefined;

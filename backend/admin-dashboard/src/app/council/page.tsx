@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, Eye, EyeOff, Trash2, Plus, Crown, Star, Shield, Edit, Loader2, AlertTriangle } from "lucide-react";
+import { Upload, Eye, EyeOff, Trash2, Plus, Crown, Shield, Edit, Loader2, AlertTriangle } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,7 +35,7 @@ export default function Council() {
   const [coordinators, setCoordinators] = useState<CouncilMember[]>([]);
   const [showLeadershipForm, setShowLeadershipForm] = useState(false);
   const [showCoordinatorForm, setShowCoordinatorForm] = useState(false);
-  const [editingMember, setEditingMember] = useState<any>(null);
+  const [editingMember, setEditingMember] = useState<CouncilMember | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{open: boolean, member: CouncilMember | null, type: 'leadership' | 'coordinator' | null}>({open: false, member: null, type: null});
@@ -147,7 +147,7 @@ export default function Council() {
     }
   };
 
-  const toggleVisibility = async (id: string, type: 'leadership' | 'coordinator') => {
+  const toggleVisibility = async (id: string) => {
     try {
       const member = [...leadership, ...coordinators].find(m => m.id === id);
       if (member) {
@@ -192,7 +192,7 @@ export default function Council() {
     }
   };
 
-  const editMember = (member: any, type: 'leadership' | 'coordinator') => {
+  const editMember = (member: CouncilMember, type: 'leadership' | 'coordinator') => {
     setEditingMember({ ...member, type });
     if (type === 'leadership') {
       setLeadershipForm({
@@ -211,7 +211,7 @@ export default function Council() {
     }
   };
 
-  const MemberCard = ({ member, type }: { member: any, type: 'leadership' | 'coordinator' }) => {
+  const MemberCard = ({ member, memberType }: { member: CouncilMember; memberType: 'leadership' | 'coordinator' }) => {
     
     return (
       <Card className={`rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
@@ -255,7 +255,8 @@ export default function Council() {
                 if (typeof member.imageUrl === 'string') {
                   imageSrc = member.imageUrl.trim() || null;
                 } else if (typeof member.imageUrl === 'object' && member.imageUrl !== null) {
-                  imageSrc = (member.imageUrl as any).url || (member.imageUrl as any).secure_url || (member.imageUrl as any).downloadURL || (member.imageUrl as any).path || null;
+                  const imgObj = member.imageUrl as { url?: string; secure_url?: string; downloadURL?: string; path?: string };
+                  imageSrc = imgObj.url || imgObj.secure_url || imgObj.downloadURL || imgObj.path || null;
                 }
 
                 if (!imageSrc) {
@@ -271,7 +272,10 @@ export default function Council() {
 
                 return (
                   (isSvg ? (
-                    <img src={imageSrc} alt={member.position} className="w-full h-full object-cover rounded-lg" />
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageSrc} alt={member.position} className="w-full h-full object-cover rounded-lg" />
+                    </>
                   ) : (
                     <Image src={imageSrc} alt={member.position} width={720} height={960} className="w-full h-full object-cover rounded-lg" />
                   ))
@@ -295,7 +299,7 @@ export default function Council() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toggleVisibility(member.id, type)}
+              onClick={() => toggleVisibility(member.id)}
               className={`flex-1 h-8 ${isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
             >
               {member.isVisible ? (
@@ -308,7 +312,7 @@ export default function Council() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => editMember(member, type)}
+              onClick={() => editMember(member, memberType)}
               className="flex-1 h-8 text-blue-600 hover:text-blue-700"
             >
               <Edit className="w-3.5 h-3.5" />
@@ -318,7 +322,7 @@ export default function Council() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => openDeleteDialog(member.id, type)}
+                onClick={() => openDeleteDialog(member.id, memberType)}
                 className="flex-1 h-8 text-red-600 hover:text-red-700"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -362,13 +366,13 @@ export default function Council() {
                 }`}>No leadership members added yet</p>
                 <p className={`text-sm mt-2 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}>Click "Add Leadership" to get started</p>
+                }`}>Click &quot;Add Leadership&quot; to get started</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
               {leadership.map((member) => (
-                <MemberCard key={member.id} member={member} type="leadership" />
+                <MemberCard key={member.id} member={member} memberType="leadership" />
               ))}
             </div>
           )}
@@ -402,13 +406,13 @@ export default function Council() {
                 }`}>No regional coordinators added yet</p>
                 <p className={`text-sm mt-2 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}>Click "Add Coordinator" to get started</p>
+                }`}>Click &quot;Add Coordinator&quot; to get started</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 md:gap-6">
               {coordinators.map((member) => (
-                <MemberCard key={member.id} member={member} type="coordinator" />
+                <MemberCard key={member.id} member={member} memberType="coordinator" />
               ))}
             </div>
           )}

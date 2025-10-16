@@ -77,7 +77,7 @@ export default function LightningBackground() {
       }
     }
 
-    let rays: Ray[] = [];
+    const rays: Ray[] = [];
 
     function animate() {
       ctx!.clearRect(0, 0, width, height);

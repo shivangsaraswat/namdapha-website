@@ -60,7 +60,7 @@ export const pyqService = {
   // Update PYQ
   async updatePYQ(id: string, updates: Partial<PYQ>): Promise<void> {
     const pyqRef = doc(db, COLLECTION_NAME, id);
-    const updateData: any = { ...updates };
+    const updateData: Record<string, unknown> = { ...updates };
     if (updates.updatedAt) {
       updateData.updatedAt = Timestamp.fromDate(updates.updatedAt);
     }

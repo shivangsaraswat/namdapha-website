@@ -120,19 +120,15 @@ const eventsData = [
 ];
 
 export default function EventsPage() {
-	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCategory, setSelectedCategory] = useState("All Posts");
-	const [currentPage, setCurrentPage] = useState(1);
 	const [currentEventIndex, setCurrentEventIndex] = useState(0);
-	const itemsPerPage = 6;
 	const [visiblePastEvents, setVisiblePastEvents] = useState(2)
-	const [categories, setCategories] = useState<[string] | null>(null)
+	const [categories, setCategories] = useState<string[] | null>(null)
 
 	useEffect(() => {
-		const categories: any = []
+		const categories: string[] = []
 		eventsData.map((event) => {
 			// console.log(categories.filter((cat) => cat==event.category).length)
-			if (categories.filter((cat: any) => cat == event.category).length == 0) {
+			if (categories.filter((cat: string) => cat == event.category).length == 0) {
 				categories.push(event.category)
 			}
 		})
@@ -207,7 +203,7 @@ export default function EventsPage() {
 				try {
 					(f as HTMLElement).style.display = 'none';
 					f.setAttribute('data-invisible-for-events', 'true');
-				} catch (e) {
+				} catch {
 					// ignore
 				}
 			}
@@ -219,7 +215,7 @@ export default function EventsPage() {
 				try {
 					(f as HTMLElement).style.display = '';
 					f.removeAttribute('data-invisible-for-events');
-				} catch (e) {
+				} catch {
 					// ignore
 				}
 			});
@@ -227,28 +223,9 @@ export default function EventsPage() {
 	}, []);
 
 	// Filter events based on search and category
-	const filteredEvents = eventsData.filter((event) => {
-		const matchesSearch =
-			event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			event.tags.some((tag) =>
-				tag.toLowerCase().includes(searchQuery.toLowerCase())
-			);
 
-		const matchesCategory =
-			selectedCategory === "All Posts" ||
-			event.category.toLowerCase() === selectedCategory.toLowerCase();
 
-		return matchesSearch && matchesCategory;
-	});
 
-	// Calculate pagination
-	const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const paginatedEvents = filteredEvents.slice(
-		startIndex,
-		startIndex + itemsPerPage
-	);
 
 	return (
 		<div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">

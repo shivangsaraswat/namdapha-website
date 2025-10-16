@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageLayout from "@/components/PageLayout";
 import AuthGuard from "@/components/AuthGuard";
 import { UserRole } from "@/types/auth";
-import { Plus, Edit, Trash2, Shield, Users, Clock } from "lucide-react";
+import { Plus, Shield, Users, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getAllAuthorizedUsers, addAuthorizedUser, removeAuthorizedUser, toggleUserStatus } from "@/lib/auth";
@@ -30,20 +30,26 @@ export default function UserManagement() {
       const authUsers = await getAllAuthorizedUsers();
       // Sort users: super-admin first, then by role
       const sortedUsers = authUsers.sort((a, b) => {
-        if (a.role === 'super-admin' && b.role !== 'super-admin') return -1;
-        if (a.role !== 'super-admin' && b.role === 'super-admin') return 1;
-        return a.role.localeCompare(b.role);
+        const aRole = (a as { role?: string }).role || '';
+        const bRole = (b as { role?: string }).role || '';
+        if (aRole === 'super-admin' && bRole !== 'super-admin') return -1;
+        if (aRole !== 'super-admin' && bRole === 'super-admin') return 1;
+        return aRole.localeCompare(bRole);
       });
       
-      const formattedUsers = sortedUsers.map((authUser, index) => ({
-        id: (index + 1).toString(),
-        email: authUser.email,
-        name: authUser.email === currentUser?.email ? currentUser.name : authUser.email.split('@')[0],
-        role: authUser.role,
-        isActive: authUser.isActive,
-        lastLogin: authUser.lastLogin,
-        createdAt: authUser.createdAt || new Date("2024-01-01"),
-      }));
+      const formattedUsers = sortedUsers.map((authUser, index) => {
+        const user = authUser as { email: string; role?: string; isActive?: boolean; lastLogin?: Date; createdAt?: Date };
+        const userRole = user.role || 'coordinator';
+        return {
+          id: (index + 1).toString(),
+          email: user.email,
+          name: user.email === currentUser?.email ? currentUser.name : user.email.split('@')[0],
+          role: userRole as UserRole,
+          isActive: user.isActive ?? true,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt || new Date("2024-01-01"),
+        };
+      });
       setUsers(formattedUsers);
     };
     loadUsers();

@@ -18,7 +18,7 @@ import { toast } from "sonner";
 export default function LinkTree() {
   const { isDarkMode } = useTheme();
   const [links, setLinks] = useState<Link[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [stats, setStats] = useState([
     { label: "Total Links", value: "0", change: "+0" },
     { label: "Total Clicks", value: "0", change: "+0%" },

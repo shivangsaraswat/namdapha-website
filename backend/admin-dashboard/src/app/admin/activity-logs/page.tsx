@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import PageLayout from "@/components/PageLayout";
 import AuthGuard from "@/components/AuthGuard";
 import { ActivityLog } from "@/types/auth";
-import { getActivityLogs } from "@/lib/activityLogger";
 import { Clock, User, Activity, Filter } from "lucide-react";
 
 export default function ActivityLogs() {
@@ -117,7 +116,7 @@ export default function ActivityLogs() {
               <div className="flex items-center gap-3">
                 <Clock className="w-8 h-8 text-purple-600" />
                 <div>
-                  <p className="text-sm text-gray-600">Today's Activities</p>
+                  <p className="text-sm text-gray-600">Today&apos;s Activities</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {logs.filter(log => 
                       log.timestamp.toDateString() === new Date().toDateString()

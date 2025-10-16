@@ -20,9 +20,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     id: session.user.email!,
     email: session.user.email!,
     name: session.user.name!,
-    image: session.user.image,
-    role: (session.user as any).role as UserRole,
-    isActive: (session.user as any).isActive,
+    image: session.user.image ?? undefined,
+    role: (session.user as { role?: string }).role as UserRole,
+    isActive: (session.user as { isActive?: boolean }).isActive ?? true,
     createdAt: new Date(),
     lastLogin: new Date(),
   } : null;

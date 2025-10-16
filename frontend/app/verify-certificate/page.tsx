@@ -7,11 +7,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Award, Search, CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export default function VerifyCertificatePage() {
   const [certificateId, setCertificateId] = useState("");
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [verificationResult, setVerificationResult] = useState<{valid: boolean; name?: string; course?: string; issueDate?: string; certificateId?: string} | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {

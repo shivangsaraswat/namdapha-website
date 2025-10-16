@@ -5,12 +5,12 @@ import { signOut, useSession } from 'next-auth/react';
 
 export function useActivityTracker() {
   const { data: session } = useSession();
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     if (!session?.user) return;
 
-    const userRole = (session.user as any).role;
+    const userRole = (session.user as { role?: string }).role;
     
     // Skip activity tracking for super-admin
     if (userRole === 'super-admin') return;

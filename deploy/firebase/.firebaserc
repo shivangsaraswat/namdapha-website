@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "namdapha-website"
-  }
+  },
+  "targets": {
+    "namdapha-website": {
+      "hosting": {
+        "frontend": [
+          "namdapha-website"
+        ],
+        "admin": [
+          "admin-namdapha-website"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

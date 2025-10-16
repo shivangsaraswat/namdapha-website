@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
+
 import Navbar from "@/components/Navbar";
 import { FaBook, FaChartLine, FaFileAlt, FaLink, FaAddressBook, FaWhatsapp, FaChartBar, FaCalculator, FaGraduationCap, FaUsers, FaNewspaper, FaVideo, FaImage, FaMusic, FaCode, FaLaptop, FaFlask, FaMedal, FaTrophy, FaCertificate, FaClipboardList } from "react-icons/fa";
 import {
@@ -12,10 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { resourceService, ResourceCategory } from "@/lib/resourceService";
+import { resourceService, ResourceCategory, Resource } from "@/lib/resourceService";
 
 // Icon mapping
-const iconMap: {[key: string]: any} = {
+const iconMap: {[key: string]: React.ComponentType<{className?: string}>} = {
   'FaBook': FaBook,
   'FaChartLine': FaChartLine,
   'FaFileAlt': FaFileAlt,
@@ -40,7 +40,6 @@ const iconMap: {[key: string]: any} = {
 };
 
 export default function ResourcesPage(){
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Resources");
   const [selectedFilter, setSelectedFilter] = useState<string>("Filter");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [resourceCounts, setResourceCounts] = useState<{[key: string]: number}>({});
@@ -48,8 +47,8 @@ export default function ResourcesPage(){
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
   const [handbookDialogOpen, setHandbookDialogOpen] = useState(false);
   const [gradedDocDialogOpen, setGradedDocDialogOpen] = useState(false);
-  const [handbookResources, setHandbookResources] = useState<any[]>([]);
-  const [gradedDocResources, setGradedDocResources] = useState<any[]>([]);
+  const [handbookResources, setHandbookResources] = useState<Resource[]>([]);
+  const [gradedDocResources, setGradedDocResources] = useState<Resource[]>([]);
   const [emptyDialogOpen, setEmptyDialogOpen] = useState(false);
   const [emptyDialogCategory, setEmptyDialogCategory] = useState('');
 

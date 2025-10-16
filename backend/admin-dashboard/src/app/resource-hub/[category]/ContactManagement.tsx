@@ -18,7 +18,7 @@ import { uploadImage } from "@/lib/cloudinary";
 export default function ContactManagement() {
   const { isDarkMode } = useTheme();
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isLeadershipDialogOpen, setIsLeadershipDialogOpen] = useState(false);
   const [isOtherDialogOpen, setIsOtherDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
