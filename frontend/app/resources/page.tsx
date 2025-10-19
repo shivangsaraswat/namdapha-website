@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
 import { FaBook, FaChartLine, FaFileAlt, FaLink, FaAddressBook, FaWhatsapp, FaChartBar, FaCalculator, FaGraduationCap, FaUsers, FaNewspaper, FaVideo, FaImage, FaMusic, FaCode, FaLaptop, FaFlask, FaMedal, FaTrophy, FaCertificate, FaClipboardList } from "react-icons/fa";
@@ -40,6 +41,7 @@ const iconMap: {[key: string]: React.ComponentType<{className?: string}>} = {
 };
 
 export default function ResourcesPage(){
+  const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string>("Filter");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [resourceCounts, setResourceCounts] = useState<{[key: string]: number}>({});
@@ -99,13 +101,13 @@ export default function ResourcesPage(){
       }
       setGradedDocDialogOpen(true);
     } else if (categoryName === "Important Links") {
-      window.location.href = '/link-tree';
+      router.push('/link-tree');
     } else if (categoryName === "Important Contacts") {
-      window.location.href = '/resources/important-contacts';
+      router.push('/resources/important-contacts');
     } else if (categoryName === "PYQs") {
-      window.location.href = '/resources/pyqs';
+      router.push('/resources/pyqs');
     } else if (categoryName === "Verify Certificate") {
-      window.location.href = '/verify-certificate';
+      router.push('/verify-certificate');
     } else {
       // Check if category has resources
       const categoryResourceCount = resourceCounts[categoryName] || 0;

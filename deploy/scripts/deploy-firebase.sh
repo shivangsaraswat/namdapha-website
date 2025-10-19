@@ -28,6 +28,12 @@ echo "📦 Building frontend..."
 cd ../../frontend
 npm run build
 
+# Copy build to Firebase public directory
+echo "📋 Copying build to Firebase hosting..."
+rm -rf ../deploy/firebase/public/frontend
+mkdir -p ../deploy/firebase/public/frontend
+cp -r out/* ../deploy/firebase/public/frontend/
+
 # Return to Firebase directory
 cd ../deploy/firebase
 
