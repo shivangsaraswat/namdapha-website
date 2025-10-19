@@ -30,6 +30,7 @@ npm run build
 
 # Copy build to Firebase public directory
 echo "📋 Copying build to Firebase hosting..."
+mkdir -p ../deploy/firebase/public
 rm -rf ../deploy/firebase/public/frontend
 mkdir -p ../deploy/firebase/public/frontend
 cp -r out/* ../deploy/firebase/public/frontend/
