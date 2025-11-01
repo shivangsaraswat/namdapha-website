@@ -7,6 +7,7 @@ import { linkService } from './linkService';
 export async function preloadCriticalData() {
   try {
     const { councilService } = await import('./councilService');
+    const { teamService } = await import('./teamService');
     // Fetch everything in parallel
     await Promise.allSettled([
       resourceService.getActiveCategories(),
@@ -16,6 +17,7 @@ export async function preloadCriticalData() {
       linkService.getActiveLinksByType('social'),
       linkService.getActiveLinksByType('important'),
       councilService.getVisibleMembers(),
+      teamService.getVisibleMembers(),
     ]);
   } catch (error) {
     console.error('Preload error:', error);

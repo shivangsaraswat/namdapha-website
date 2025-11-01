@@ -40,53 +40,44 @@ export default function CouncilPage(){
   }, []);
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
-      {/* Background SVG*/}
-      <div className="absolute left-1/2 top-0 w-[2842px] h-[566px] max-w-none -translate-x-1/2 overflow-hidden">
-        <Image
-          src="/councilbg.svg"
-          alt="Background pattern"
-          width={2842}
-          height={566}
-          className="w-[2842px] h-[566px] max-w-none object-cover"
-          priority
-        />
-      </div>
-
-      {/* Navbar */}
-      <div className="relative z-20 text-white">
-        <Navbar />
-      </div>
-
-      {/* Hero Section - large centered heading over bg */}
-      <main className="relative z-10">
-        <section className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[566px] flex items-center justify-center px-6">
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* Decorative element positioned above the heading (moved closer to center) */}
-            <div className="absolute -top-6 md:-top-10 lg:-top-14 flex items-center justify-center pointer-events-none">
-              <Image
-                src="/councilelement.avif"
-                alt="Decorative element"
-                width={1600}
-                height={900}
-                className="w-[520px] md:w-[920px] lg:w-[1280px] h-auto object-contain"
-                priority
-              />
-            </div>
-
-            {/* Text content - reduced top padding so it sits closer under the element */}
-            <div className="text-center pt-12 md:pt-20 lg:pt-24 px-4">
-              <h1 className="font-title font-extrabold text-[3rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[6rem] xl:text-[6.5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent leading-[0.99] tracking-tight mb-4">
-                Council 2025-26
-              </h1>
-
-              {/* <p className="mt-6 text-[13px] md:text-[15px] lg:text-[18px] text-gray-300 max-w-3xl mx-auto">Empower your engineers to build cross-platform apps with Flutter and React Native. Reduce development time, get products to market faster.</p> */}
-
-            </div>
+      {/* Hero Section with Navbar */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/councilbg.svg"
+            alt="Hero background"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 flex items-center justify-center opacity-20">
+            <Image
+              src="/logo-namdapha.png"
+              alt="NAMP Logo"
+              width={300}
+              height={300}
+              className="object-contain"
+            />
           </div>
-        </section>
+        </div>
+        
+        <div className="relative z-[60]">
+          <Navbar />
+        </div>
 
+        <div className="relative z-10 py-24 px-6 md:px-8 lg:px-12">
+          <div className="max-w-[1400px] mx-auto text-center">
+            <h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
+              Council 2025-26
+            </h1>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <main className="relative z-10">
          {/* Council Members Section */}
-         <section className="relative z-10 pt-[566px] pb-16 px-6">
+         <section className="pt-16 pb-16 px-6">
            <div className="max-w-7xl mx-auto">
              {/* House Leadership Section */}
              <div className="mb-16">

@@ -229,43 +229,36 @@ export default function EventsPage() {
 
 	return (
 		<div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
-			{/* Hero Background SVG - positioned like council page */}
-			<div className="absolute left-1/2 top-0 w-[2842px] h-[480px] max-w-none -translate-x-1/2 overflow-hidden">
-				<Image
-					src="/events-hero-bg.svg"
-					alt="Events hero background"
-					width={2842}
-					height={480}
-					className="w-[2842px] h-[480px] max-w-none object-cover"
-					priority
-				/>
-			</div>
+			{/* Hero Section with Navbar */}
+			<section className="relative overflow-hidden">
+				<div className="absolute inset-0">
+					<Image
+						src="/events-hero-bg.svg"
+						alt="Hero background"
+						fill
+						className="object-cover"
+						priority
+					/>
+				</div>
+				
+				<div className="relative z-[60]">
+					<Navbar />
+				</div>
 
-			{/* Navbar */}
-			<div className="relative z-20 text-white">
-				<Navbar />
-			</div>
-
-			{/* Hero Section - large centered heading over bg */}
-			<section className="relative z-10">
-				<div className="absolute -top-6 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[480px] flex items-center justify-center px-6">
-					<div className="relative w-full h-full flex items-center justify-center">
-						{/* Text content */}
-						<div className="text-center px-4">
-							<h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
-								Events & Workshops
-							</h1>
-
-							<p className="mt-6 text-[13px] md:text-[15px] lg:text-[18px] text-gray-300 max-w-3xl mx-auto">
-								Join our exciting events, workshops, and learning sessions. Connect, learn, and grow with the community.
-							</p>
-						</div>
+				<div className="relative z-10 py-20 px-6 md:px-8 lg:px-12">
+					<div className="max-w-[1400px] mx-auto text-center">
+						<h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
+							Events & Workshops
+						</h1>
+						<p className="mt-6 text-[13px] md:text-[15px] lg:text-[18px] text-gray-300 max-w-3xl mx-auto">
+							Join our exciting events, workshops, and learning sessions. Connect, learn, and grow.
+						</p>
 					</div>
 				</div>
 			</section>
 
 			{/* Main Content */}
-			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-[480px] pb-32">
+			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-16 pb-32">
 				<div className="max-w-[1200px] mx-auto pt-16 relative">
 					{/* ensure content stacks above gradients */}
 					<div className="relative z-10">

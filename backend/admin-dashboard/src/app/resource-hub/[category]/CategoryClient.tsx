@@ -51,6 +51,7 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
     if (!isContactsPage && !isPYQsPage) {
       fetchResources();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryName, isContactsPage, isPYQsPage]);
 
   const handleDeleteClick = (resource: Resource) => {

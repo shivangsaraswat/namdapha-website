@@ -1,220 +1,557 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users2, Plus, Edit, Trash2, UserPlus, Settings } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Upload, Eye, EyeOff, Trash2, Plus, Edit, Loader2, AlertTriangle, Users } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
+import { saveTeamMember, getTeamMembers, updateTeamMember, deleteTeamMember, TeamMember } from "@/lib/teamService";
+import { toast } from "sonner";
 
-const teams = [
-  {
-    id: 1,
-    name: "Development Team",
-    description: "Frontend and backend development",
-    members: 8,
-    lead: "John Smith",
-    status: "Active",
-    project: "Website Redesign",
-    avatars: ["/api/placeholder/32/32", "/api/placeholder/32/32", "/api/placeholder/32/32"]
-  },
-  {
-    id: 2,
-    name: "Design Team",
-    description: "UI/UX design and branding",
-    members: 5,
-    lead: "Alice Johnson",
-    status: "Active",
-    project: "Mobile App",
-    avatars: ["/api/placeholder/32/32", "/api/placeholder/32/32"]
-  },
-  {
-    id: 3,
-    name: "Marketing Team",
-    description: "Digital marketing and content",
-    members: 6,
-    lead: "Bob Wilson",
-    status: "Active",
-    project: "Campaign 2024",
-    avatars: ["/api/placeholder/32/32", "/api/placeholder/32/32", "/api/placeholder/32/32"]
-  },
-  {
-    id: 4,
-    name: "QA Team",
-    description: "Quality assurance and testing",
-    members: 4,
-    lead: "Carol Davis",
-    status: "Inactive",
-    project: "Testing Suite",
-    avatars: ["/api/placeholder/32/32", "/api/placeholder/32/32"]
-  }
-];
-
-const teamStats = [
-  { label: "Total Teams", value: "12", change: "+2" },
-  { label: "Active Members", value: "48", change: "+5" },
-  { label: "Projects", value: "8", change: "+1" },
-  { label: "Completion Rate", value: "94%", change: "+3%" }
+const categories = [
+  { value: "webops", label: "Web-Ops" },
+  { value: "multimedia", label: "Multimedia" },
+  { value: "outreach", label: "Out Reach" }
 ];
 
 export default function Teams() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super-admin';
+  
+  const [webops, setWebops] = useState<TeamMember[]>([]);
+  const [multimedia, setMultimedia] = useState<TeamMember[]>([]);
+  const [outreach, setOutreach] = useState<TeamMember[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{open: boolean, member: TeamMember | null}>({open: false, member: null});
+  
+  const [form, setForm] = useState({
+    name: "",
+    position: "",
+    category: "" as 'webops' | 'multimedia' | 'outreach' | '',
+    poster: null as File | null
+  });
+
+  useEffect(() => {
+    loadTeamMembers();
+  }, []);
+
+  const loadTeamMembers = async () => {
+    try {
+      const members = await getTeamMembers();
+      setWebops(members.filter(m => m.category === 'webops').sort((a, b) => a.order - b.order));
+      setMultimedia(members.filter(m => m.category === 'multimedia').sort((a, b) => a.order - b.order));
+      setOutreach(members.filter(m => m.category === 'outreach').sort((a, b) => a.order - b.order));
+    } catch (error) {
+      console.error('Error loading team members:', error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (form.name && form.position && form.category) {
+      setIsLoading(true);
+      
+      try {
+        if (form.poster) {
+          setUploadingImage(true);
+          toast.loading('Uploading image...', { id: 'upload' });
+        }
+        
+        const allMembers = [...webops, ...multimedia, ...outreach];
+        const categoryMembers = allMembers.filter(m => m.category === form.category);
+        const maxOrder = categoryMembers.length > 0 ? Math.max(...categoryMembers.map(m => m.order)) : 0;
+        
+        if (editingMember) {
+          await updateTeamMember(editingMember.id, {
+            name: form.name,
+            position: form.position,
+            category: form.category
+          }, form.poster || undefined);
+          toast.success('Team member updated successfully!', { id: 'upload' });
+        } else {
+          await saveTeamMember({
+            name: form.name,
+            position: form.position,
+            category: form.category,
+            isVisible: true,
+            order: maxOrder + 1
+          }, form.poster || undefined);
+          toast.success('Team member added successfully!', { id: 'upload' });
+        }
+        
+        await loadTeamMembers();
+        setForm({ name: "", position: "", category: "", poster: null });
+        setEditingMember(null);
+        setShowForm(false);
+      } catch (error) {
+        console.error('Error saving team member:', error);
+        toast.error('Failed to save team member. Please try again.', { id: 'upload' });
+      } finally {
+        setIsLoading(false);
+        setUploadingImage(false);
+      }
+    }
+  };
+
+  const toggleVisibility = async (id: string) => {
+    try {
+      const member = [...webops, ...multimedia, ...outreach].find(m => m.id === id);
+      if (member) {
+        toast.loading('Updating visibility...', { id: 'visibility' });
+        await updateTeamMember(id, { isVisible: !member.isVisible });
+        await loadTeamMembers();
+        toast.success(`Member ${member.isVisible ? 'hidden' : 'shown'} successfully!`, { id: 'visibility' });
+      }
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
+      toast.error('Failed to update visibility. Please try again.', { id: 'visibility' });
+    }
+  };
+
+  const openDeleteDialog = (id: string) => {
+    if (!isSuperAdmin) {
+      toast.error('Only Super Admin can delete members.');
+      return;
+    }
+    
+    const member = [...webops, ...multimedia, ...outreach].find(m => m.id === id);
+    if (!member) {
+      toast.error('Member not found.');
+      return;
+    }
+    
+    setDeleteDialog({ open: true, member });
+  };
+
+  const deleteMember = async () => {
+    if (!deleteDialog.member) return;
+    
+    try {
+      toast.loading('Deleting member...', { id: 'delete' });
+      await deleteTeamMember(deleteDialog.member.id);
+      await loadTeamMembers();
+      toast.success(`${deleteDialog.member.name} deleted successfully!`, { id: 'delete' });
+      setDeleteDialog({ open: false, member: null });
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      toast.error('Failed to delete member. Please try again.', { id: 'delete' });
+    }
+  };
+
+  const editMember = (member: TeamMember) => {
+    setEditingMember(member);
+    setForm({
+      name: member.name || '',
+      position: member.position || '',
+      category: member.category || '',
+      poster: null
+    });
+    setShowForm(true);
+  };
+
+  const MemberCard = ({ member }: { member: TeamMember }) => {
+    return (
+      <Card className={`rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
+        isDarkMode ? 'bg-gray-700' : 'bg-white'
+      }`}>
+        <div className="relative -mb-2">
+          <div className="absolute top-2 right-2 z-10">
+            <Badge className={`${
+              member.isVisible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}>
+              {member.isVisible ? 'Visible' : 'Hidden'}
+            </Badge>
+          </div>
+          <div className={`w-full aspect-[3/4] flex items-center justify-center relative overflow-hidden ${
+            isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
+          }`}>
+            {!member.isVisible && (
+              <>
+                <div className="absolute inset-0 bg-black/50 z-10" />
+                <div className="absolute inset-0 z-20 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gray-900/80 transform rotate-45 w-1 h-full left-1/2 -translate-x-1/2" style={{height: '150%', top: '-25%'}} />
+                    <svg className="w-12 h-12 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  </div>
+                </div>
+              </>
+            )}
+            {
+              (() => {
+                let imageSrc: string | null = null;
+                if (!member.imageUrl) return (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
+                    <Upload className={`w-12 h-12 mx-auto mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No poster uploaded</p>
+                  </div>
+                );
+
+                if (typeof member.imageUrl === 'string') {
+                  imageSrc = member.imageUrl.trim() || null;
+                } else if (typeof member.imageUrl === 'object' && member.imageUrl !== null) {
+                  const imgObj = member.imageUrl as { url?: string; secure_url?: string; downloadURL?: string; path?: string };
+                  imageSrc = imgObj.url || imgObj.secure_url || imgObj.downloadURL || imgObj.path || null;
+                }
+
+                if (!imageSrc) {
+                  return (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
+                      <Upload className={`w-12 h-12 mx-auto mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No poster uploaded</p>
+                    </div>
+                  );
+                }
+
+                return <Image src={imageSrc} alt={member.position} width={720} height={960} className="w-full h-full object-cover rounded-lg" />;
+              })()
+            }
+          </div>
+        </div>
+        <CardContent className="p-3 pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className={`font-semibold text-sm ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>{member.position}</h3>
+              <p className={`text-xs ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>{member.name}</p>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toggleVisibility(member.id)}
+              className={`flex-1 h-8 ${isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
+            >
+              {member.isVisible ? (
+                <EyeOff className="w-3.5 h-3.5" />
+              ) : (
+                <Eye className="w-3.5 h-3.5" />
+              )}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => editMember(member)}
+              className="flex-1 h-8 text-blue-600 hover:text-blue-700"
+            >
+              <Edit className="w-3.5 h-3.5" />
+            </Button>
+            
+            {isSuperAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openDeleteDialog(member.id)}
+                className="flex-1 h-8 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
-    <PageLayout title="Teams Management" subtitle="Manage teams, members, and projects" activeItem="Teams">
-      <div className="space-y-6">
+    <PageLayout title="Teams Management" subtitle="Manage team member posters and visibility" activeItem="Teams">
+      <div className="space-y-8">
         <div className="flex items-center justify-end">
-          <Button className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button 
+            onClick={() => setShowForm(true)}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
             <Plus className="w-4 h-4 mr-2" />
-            Create Team
+            Add Team Member
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {teamStats.map((stat) => (
-            <Card key={stat.label} className={`rounded-2xl shadow-sm border-0 ${
+        {/* Web-Ops Section */}
+        <div>
+          <h3 className={`text-xl font-bold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>Web-Ops</h3>
+          
+          {webops.length === 0 ? (
+            <Card className={`rounded-2xl shadow-sm border-0 ${
               isDarkMode ? 'bg-gray-700' : 'bg-white'
             }`}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>{stat.label}</p>
-                    <p className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>{stat.value}</p>
-                  </div>
-                  <span className="text-green-500 text-sm font-medium">{stat.change}</span>
-                </div>
+              <CardContent className="p-12 text-center">
+                <Users className={`w-16 h-16 mx-auto mb-4 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                }`} />
+                <p className={`text-lg ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>No Web-Ops members added yet</p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+              {webops.map((member) => (
+                <MemberCard key={member.id} member={member} />
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {teams.map((team) => (
-            <Card key={team.id} className={`rounded-2xl shadow-sm border-0 ${
+        {/* Multimedia Section */}
+        <div>
+          <h3 className={`text-xl font-bold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>Multimedia</h3>
+          
+          {multimedia.length === 0 ? (
+            <Card className={`rounded-2xl shadow-sm border-0 ${
               isDarkMode ? 'bg-gray-700' : 'bg-white'
             }`}>
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
+              <CardContent className="p-12 text-center">
+                <Users className={`w-16 h-16 mx-auto mb-4 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                }`} />
+                <p className={`text-lg ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>No Multimedia members added yet</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+              {multimedia.map((member) => (
+                <MemberCard key={member.id} member={member} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Out Reach Section */}
+        <div>
+          <h3 className={`text-xl font-bold mb-6 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>Out Reach</h3>
+          
+          {outreach.length === 0 ? (
+            <Card className={`rounded-2xl shadow-sm border-0 ${
+              isDarkMode ? 'bg-gray-700' : 'bg-white'
+            }`}>
+              <CardContent className="p-12 text-center">
+                <Users className={`w-16 h-16 mx-auto mb-4 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                }`} />
+                <p className={`text-lg ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>No Out Reach members added yet</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+              {outreach.map((member) => (
+                <MemberCard key={member.id} member={member} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Add/Edit Form Modal */}
+        {showForm && (
+          <div className="fixed top-0 left-0 w-full h-screen bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className={`w-full max-w-md rounded-2xl shadow-2xl border transform transition-all ${
+              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <div className="p-6">
+                <h3 className={`text-xl font-bold mb-6 text-center ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>{editingMember ? 'Edit Team Member' : 'Add Team Member'}</h3>
+                
+                <div className="space-y-5">
                   <div>
-                    <CardTitle className={`text-lg font-semibold ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>{team.name}</CardTitle>
-                    <p className={`text-sm mt-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>{team.description}</p>
-                    <Badge className={`mt-2 ${
-                      team.status === 'Active' 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      {team.status}
-                    </Badge>
+                    <label className={`block text-sm font-semibold mb-2 ${
+                      isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                    }`}>Full Name</label>
+                    <Input 
+                      value={form.name}
+                      onChange={(e) => setForm({...form, name: e.target.value})}
+                      placeholder="Enter full name"
+                      className={`h-12 rounded-xl border-2 transition-colors ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 focus:border-teal-500 text-white' 
+                          : 'bg-gray-50 border-gray-300 focus:border-teal-500'
+                      }`}
+                    />
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                  
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${
+                      isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                    }`}>Position</label>
+                    <Input 
+                      value={form.position}
+                      onChange={(e) => setForm({...form, position: e.target.value})}
+                      placeholder="Enter position"
+                      className={`h-12 rounded-xl border-2 transition-colors ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 focus:border-teal-500 text-white' 
+                          : 'bg-gray-50 border-gray-300 focus:border-teal-500'
+                      }`}
+                    />
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users2 className={`w-4 h-4 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`} />
-                    <span className={`text-sm ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                    }`}>{team.members} members</span>
-                  </div>
-                  <div className="flex -space-x-2">
-                    {team.avatars.map((avatar, i) => (
-                      <Avatar key={i} className="w-8 h-8 border-2 border-white">
-                        <AvatarImage src={avatar} />
-                        <AvatarFallback className="bg-teal-100 text-teal-700 text-xs">
-                          {String.fromCharCode(65 + i)}
-                        </AvatarFallback>
-                      </Avatar>
-                    ))}
-                    {team.members > 3 && (
-                      <div className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium ${
-                        isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600'
+                  
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${
+                      isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                    }`}>Category</label>
+                    <Select value={form.category} onValueChange={(value: 'webops' | 'multimedia' | 'outreach') => setForm({...form, category: value})}>
+                      <SelectTrigger className={`h-12 rounded-xl border-2 ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-gray-50 border-gray-300'
                       }`}>
-                        +{team.members - 3}
-                      </div>
-                    )}
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${
+                      isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                    }`}>Upload Poster</label>
+                    <div className={`border-2 border-dashed rounded-xl p-4 text-center transition-colors ${
+                      isDarkMode 
+                        ? 'border-gray-600 hover:border-teal-500 bg-gray-700' 
+                        : 'border-gray-300 hover:border-teal-500 bg-gray-50'
+                    }`}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setForm({...form, poster: e.target.files?.[0] || null})}
+                        className="hidden"
+                        id="team-poster"
+                      />
+                      <label htmlFor="team-poster" className="cursor-pointer">
+                        <Upload className={`w-8 h-8 mx-auto mb-2 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`} />
+                        <p className={`text-sm font-medium ${
+                          isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                          {form.poster ? form.poster.name : 'Click to upload poster'}
+                        </p>
+                      </label>
+                    </div>
                   </div>
                 </div>
                 
+                <div className="flex gap-3 mt-8">
+                  <Button 
+                    onClick={handleSubmit} 
+                    className="flex-1 h-12 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold"
+                    disabled={!form.name || !form.position || !form.category || isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {uploadingImage ? 'Uploading...' : 'Saving...'}
+                      </>
+                    ) : (
+                      editingMember ? 'Update Member' : 'Add Member'
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowForm(false);
+                      setEditingMember(null);
+                      setForm({ name: "", position: "", category: "", poster: null });
+                    }} 
+                    className={`flex-1 h-12 rounded-xl font-semibold ${
+                      isDarkMode 
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, member: null })}>
+          <DialogContent className={`sm:max-w-md ${
+            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
                 <div>
-                  <p className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Team Lead: {team.lead}</p>
-                  <p className={`text-sm ${
+                  <DialogTitle className={`text-lg font-semibold ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    Delete Member
+                  </DialogTitle>
+                  <DialogDescription className={`text-sm ${
                     isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}>Current Project: {team.project}</p>
+                  }`}>
+                    This action cannot be undone.
+                  </DialogDescription>
                 </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Add Member
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <Card className={`rounded-2xl shadow-sm border-0 ${
-          isDarkMode ? 'bg-gray-700' : 'bg-white'
-        }`}>
-          <CardHeader>
-            <CardTitle className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Team Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className={`text-sm ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>Development Team completed Website Redesign milestone</span>
-              <span className={`text-xs ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>2 hours ago</span>
+              </div>
+            </DialogHeader>
+            
+            <div className={`py-4 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              <p>
+                Are you sure you want to delete <span className="font-semibold">{deleteDialog.member?.name}</span>? 
+                This will permanently remove their information and image from the system.
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className={`text-sm ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>New member Sarah added to Design Team</span>
-              <span className={`text-xs ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>4 hours ago</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span className={`text-sm ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>Marketing Team started Campaign 2024 project</span>
-              <span className={`text-xs ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>1 day ago</span>
-            </div>
-          </CardContent>
-        </Card>
+            
+            <DialogFooter className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteDialog({ open: false, member: null })}
+                className={`flex-1 ${
+                  isDarkMode 
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={deleteMember}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                Delete Member
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+    
       </div>
     </PageLayout>
   );
