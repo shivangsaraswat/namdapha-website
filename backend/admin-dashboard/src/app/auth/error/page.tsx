@@ -14,7 +14,9 @@ function ErrorContent() {
 
   const getErrorMessage = (error: string | null) => {
     switch (error) {
-      case "AccessDenied":
+      case "Unauthorized":
+        return "You are not authorized to access this dashboard. Please contact the Super Admin to request access.";
+      case "AccessRevoked":
         return "Your access has been revoked. Please contact the Super Admin to restore your access.";
       case "Configuration":
         return "There is a problem with the server configuration.";

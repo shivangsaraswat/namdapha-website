@@ -49,11 +49,11 @@ export const authOptions: NextAuthOptions = {
         
         if (!userData) {
           logActivity(user.email!, "LOGIN_FAILED", "Unauthorized access attempt");
-          return false;
+          return "/auth/error?error=Unauthorized";
         }
         if (!userData.isActive) {
           logActivity(user.email!, "LOGIN_FAILED", "Inactive user access attempt");
-          return "/auth/error?error=AccessDenied";
+          return "/auth/error?error=AccessRevoked";
         }
         
         await updateLastLogin(user.email!);
