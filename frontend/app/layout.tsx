@@ -3,6 +3,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import { manrope, montserrat, pacifico, questrial, dancingScript } from './fonts';
 import PreloadData from '@/components/PreloadData';
+import MaintenanceCheck from '@/components/MaintenanceCheck';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://namdapha.iitmbs.org'),
@@ -71,8 +72,10 @@ export default function RootLayout({
         className={`${manrope.variable} ${montserrat.variable} ${pacifico.variable} ${questrial.variable} ${dancingScript.variable} antialiased`}
       >
         <PreloadData />
-        {children}
-        <Footer />
+        <MaintenanceCheck>
+          {children}
+          <Footer />
+        </MaintenanceCheck>
       </body>
     </html>
   );
