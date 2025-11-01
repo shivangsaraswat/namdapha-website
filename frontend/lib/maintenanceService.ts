@@ -5,6 +5,7 @@ export interface MaintenanceMode {
   isEnabled: boolean;
   message: string;
   estimatedEndTime?: string;
+  testInDevelopment?: boolean;
 }
 
 export const getMaintenanceStatus = async (): Promise<MaintenanceMode> => {
