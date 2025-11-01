@@ -28,6 +28,7 @@ jobs:
         
       - name: Copy build to Firebase public folder
         run: |
+          mkdir -p deploy/firebase/public
           rm -rf deploy/firebase/public/frontend
           cp -r frontend/out deploy/firebase/public/frontend
       
