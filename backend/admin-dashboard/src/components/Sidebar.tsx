@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User } from "lucide-react";
+import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User, Power } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "next-auth/react";
@@ -26,7 +26,12 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
     { name: "Forms", icon: FileText, href: "/forms", permission: "forms" },
   ];
 
+  const superAdminItems = [
+    { name: "Maintenance", icon: Power, href: "/admin/maintenance", permission: "*" },
+  ];
+
   const menuItems = isLoading ? allMenuItems : allMenuItems.filter(item => hasPermission(item.permission));
+  const adminItems = user?.role === 'super-admin' ? superAdminItems : [];
 
   const handleSignOut = async () => {
     await signOut({ 
@@ -49,6 +54,29 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
         </div>
         <nav className="space-y-1 flex-1">
           {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.name === activeItem;
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                  isActive ? "bg-gray-100" : "hover:bg-gray-50"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${
+                  isActive ? "text-gray-700" : "text-gray-500"
+                }`} />
+                <span className={`text-sm font-medium ${
+                  isActive ? "text-gray-900" : "text-gray-700"
+                }`}>
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+          {adminItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.name === activeItem;
             
@@ -143,6 +171,35 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
       
       <nav className="space-y-1 flex-1">
         {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = item.name === activeItem;
+          
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                isActive 
+                  ? isDarkMode ? "bg-gray-800" : "bg-gray-100"
+                  : isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-50"
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${
+                isActive 
+                  ? isDarkMode ? "text-gray-300" : "text-gray-700"
+                  : isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`} />
+              <span className={`text-sm font-medium ${
+                isActive 
+                  ? isDarkMode ? "text-white" : "text-gray-900"
+                  : isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}>
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
+        {adminItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.name === activeItem;
           
