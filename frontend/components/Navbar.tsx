@@ -10,7 +10,7 @@ export default function Navbar() {
     <header className="relative z-50 w-full px-6 py-5 md:px-8 lg:px-12 text-white">
       <nav className="flex items-center justify-between max-w-[1200px] mx-auto">
         <div className="flex items-center space-x-3">
-          <Link href="/home" className="font-bold text-lg lg:text-xl tracking-tight text-white">Namdapha House</Link>
+          <Link href="/" className="font-bold text-lg lg:text-xl tracking-tight text-white">Namdapha House</Link>
         </div>
 
         {/* Desktop Navigation */}
@@ -71,7 +71,7 @@ export default function Navbar() {
         <div className="flex flex-col h-full text-white">
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-6 py-5">
-            <Link href="/home" className="font-bold text-lg tracking-tight text-white">
+            <Link href="/" className="font-bold text-lg tracking-tight text-white">
               Namdapha House
             </Link>
             <button 

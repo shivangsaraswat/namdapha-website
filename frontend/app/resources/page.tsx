@@ -63,7 +63,12 @@ export default function ResourcesPage(){
           resourceService.getPublishedResources()
         ]);
         
-        setCategories(fetchedCategories);
+        // Remove duplicates by ID
+        const uniqueCategories = Array.from(
+          new Map(fetchedCategories.map(cat => [cat.id, cat])).values()
+        );
+        
+        setCategories(uniqueCategories);
         
         const counts: {[key: string]: number} = {};
         fetchedCategories.forEach(category => {
