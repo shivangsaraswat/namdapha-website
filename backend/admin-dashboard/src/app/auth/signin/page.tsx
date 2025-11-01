@@ -4,8 +4,9 @@ import { signIn, getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Moon, Sun, Shield, Users, BarChart3 } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import AnimatedGallery from "@/components/AnimatedGallery";
 
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,11 +41,13 @@ export default function SignIn() {
   }
 
   return (
-    <div className={`min-h-screen flex ${isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'}`}>
+    <div className={`min-h-screen flex items-center justify-center p-4 relative ${isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'}`}>
+      {/* Animated Gallery Background */}
+      <AnimatedGallery />
       {/* Theme Toggle */}
       <button
         onClick={toggleDarkMode}
-        className={`fixed top-6 right-6 p-3 rounded-full transition-all duration-200 z-10 ${
+        className={`fixed top-4 right-4 md:top-6 md:right-6 p-3 rounded-full transition-all duration-200 z-50 ${
           isDarkMode 
             ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' 
             : 'bg-white hover:bg-gray-50 text-gray-600 shadow-lg'
@@ -53,115 +56,49 @@ export default function SignIn() {
         {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>
 
-      {/* Left Side - Branding */}
-      <div className={`hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-12 ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
-      }`}>
-        <div className="max-w-md text-center">
-          <div className="mb-8">
-            <Image
-              src="/namd-new-logo.png"
-              alt="Namdapha Logo"
-              width={120}
-              height={120}
-              className="mx-auto rounded-full shadow-lg"
-            />
-          </div>
-          
-          <h1 className={`text-4xl font-bold mb-4 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Namdapha Admin
-          </h1>
-          
-          <p className={`text-lg mb-8 ${
-            isDarkMode ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            Powerful dashboard for managing your organization with advanced analytics and user management.
-          </p>
-          
-          <div className="grid grid-cols-1 gap-4">
-            <div className={`flex items-center gap-3 p-4 rounded-lg ${
-              isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
-            }`}>
-              <Shield className={`w-6 h-6 ${
-                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-              }`} />
-              <div className="text-left">
-                <h3 className={`font-semibold ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>Secure Access</h3>
-                <p className={`text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>Role-based authentication</p>
-              </div>
-            </div>
-            
-            <div className={`flex items-center gap-3 p-4 rounded-lg ${
-              isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
-            }`}>
-              <BarChart3 className={`w-6 h-6 ${
-                isDarkMode ? 'text-green-400' : 'text-green-600'
-              }`} />
-              <div className="text-left">
-                <h3 className={`font-semibold ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>Analytics</h3>
-                <p className={`text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>Real-time insights</p>
-              </div>
-            </div>
-            
-            <div className={`flex items-center gap-3 p-4 rounded-lg ${
-              isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
-            }`}>
-              <Users className={`w-6 h-6 ${
-                isDarkMode ? 'text-purple-400' : 'text-purple-600'
-              }`} />
-              <div className="text-left">
-                <h3 className={`font-semibold ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>User Management</h3>
-                <p className={`text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>Complete control</p>
-              </div>
-            </div>
-          </div>
+      {/* Centered Card with Logo on Top Border */}
+      <div className="relative w-full max-w-md z-20">
+        {/* Logo positioned on top border */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-10">
+          <Image
+            src="/namd-new-logo.png"
+            alt="Namdapha Logo"
+            width={120}
+            height={120}
+            className="rounded-full shadow-2xl"
+          />
         </div>
-      </div>
 
-      {/* Right Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className={`w-full max-w-md space-y-8 p-8 rounded-2xl shadow-xl ${
-          isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+        <div className={`pt-20 pb-8 px-6 md:px-10 rounded-2xl shadow-2xl backdrop-blur-xl ${
+          isDarkMode ? 'bg-gray-800/95 border border-gray-700' : 'bg-white/95'
         }`}>
-          {/* Mobile Logo */}
-          <div className="lg:hidden text-center">
-            <Image
-              src="/namd-new-logo.png"
-              alt="Namdapha Logo"
-              width={80}
-              height={80}
-              className="mx-auto rounded-full shadow-lg"
-            />
-          </div>
-          
-          <div className="text-center">
-            <h2 className={`text-3xl font-bold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
+          {/* Title Section */}
+          <div className="text-center space-y-1 mb-6">
+            <h1 className={`text-2xl md:text-3xl font-bold leading-tight ${
+              isDarkMode ? 'bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent' : 'text-gray-900'
             }`}>
-              Welcome Back
-            </h2>
-            <p className={`mt-2 text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              Namdapha House
+            </h1>
+            <p className={`text-base md:text-lg font-medium ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-700'
             }`}>
-              Sign in to access your admin dashboard
+              Admin Dashboard
             </p>
           </div>
-          
+
+          {/* Divider */}
+          <div className={`border-t mb-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}></div>
+        
+          {/* Sign In Section */}
           <div className="space-y-6">
+            <div className="text-center">
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                Sign in to access your admin dashboard
+              </p>
+            </div>
+          
             <button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
@@ -185,7 +122,7 @@ export default function SignIn() {
                 </>
               )}
             </button>
-            
+          
             <div className={`text-center p-4 rounded-lg ${
               isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
             }`}>
@@ -195,14 +132,6 @@ export default function SignIn() {
                 🔒 Only authorized personnel can access this dashboard
               </p>
             </div>
-          </div>
-          
-          <div className="text-center">
-            <p className={`text-xs ${
-              isDarkMode ? 'text-gray-500' : 'text-gray-400'
-            }`}>
-              Protected by enterprise-grade security
-            </p>
           </div>
         </div>
       </div>

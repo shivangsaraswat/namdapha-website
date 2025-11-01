@@ -5,9 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { FileText, Plus, Edit, Trash2, Eye, Share2, BarChart3, Settings, MousePointer, Type, CheckSquare } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const formSchema = z.object({
+  name: z.string().min(1, "Form name is required"),
+  type: z.string().min(1, "Form type is required"),
+});
 
 const forms = [
   {
@@ -64,6 +73,17 @@ const stats = [
 
 export default function Forms() {
   const { isDarkMode } = useTheme();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      type: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+  }
 
   return (
     <PageLayout title="Forms" activeItem="Forms">
@@ -206,68 +226,90 @@ export default function Forms() {
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>Form Builder</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Form Name</label>
-                  <Input 
-                    placeholder="Enter form name" 
-                    className={`mt-1 ${
-                      isDarkMode 
-                        ? 'bg-gray-600 border-gray-500 text-white' 
-                        : 'bg-white border-gray-200'
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Form Type</label>
-                  <Select>
-                    <SelectTrigger className={`mt-1 ${
-                      isDarkMode 
-                        ? 'bg-gray-600 border-gray-500 text-white' 
-                        : 'bg-white border-gray-200'
-                    }`}>
-                      <SelectValue placeholder="Choose type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="registration">Registration</SelectItem>
-                      <SelectItem value="survey">Survey</SelectItem>
-                      <SelectItem value="contact">Contact</SelectItem>
-                      <SelectItem value="subscription">Subscription</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className={`text-sm font-medium mb-2 block ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Form Elements</label>
-                  <div className="space-y-2">
-                    {formElements.map((element) => {
-                      const Icon = element.icon;
-                      return (
-                        <Button 
-                          key={element.name}
-                          variant="outline" 
-                          className="w-full justify-start h-auto p-3"
-                        >
-                          <Icon className="w-4 h-4 mr-3" />
-                          <div className="text-left">
-                            <div className="font-medium">{element.name}</div>
-                            <div className={`text-xs ${
-                              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                            }`}>{element.description}</div>
-                          </div>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                  Start Building
-                </Button>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                            Form Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter form name" 
+                              className={isDarkMode 
+                                ? 'bg-gray-600 border-gray-500 text-white' 
+                                : 'bg-white border-gray-200'
+                              }
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                            Form Type
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className={isDarkMode 
+                                ? 'bg-gray-600 border-gray-500 text-white' 
+                                : 'bg-white border-gray-200'
+                              }>
+                                <SelectValue placeholder="Choose type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="registration">Registration</SelectItem>
+                              <SelectItem value="survey">Survey</SelectItem>
+                              <SelectItem value="contact">Contact</SelectItem>
+                              <SelectItem value="subscription">Subscription</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div>
+                      <label className={`text-sm font-medium mb-2 block ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>Form Elements</label>
+                      <div className="space-y-2">
+                        {formElements.map((element) => {
+                          const Icon = element.icon;
+                          return (
+                            <Button 
+                              key={element.name}
+                              type="button"
+                              variant="outline" 
+                              className="w-full justify-start h-auto p-3"
+                            >
+                              <Icon className="w-4 h-4 mr-3" />
+                              <div className="text-left">
+                                <div className="font-medium">{element.name}</div>
+                                <div className={`text-xs ${
+                                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                }`}>{element.description}</div>
+                              </div>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                      Start Building
+                    </Button>
+                  </form>
+                </Form>
               </CardContent>
             </Card>
 

@@ -8,6 +8,21 @@ import { Plus, Shield, Users, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getAllAuthorizedUsers, addAuthorizedUser, removeAuthorizedUser, toggleUserStatus } from "@/lib/auth";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import PermissionsDialog from "@/components/PermissionsDialog";
+import { DeletePermissions } from "@/lib/userService";
+import { Key } from "lucide-react";
+
+const userSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  name: z.string().min(1, "Name is required"),
+  role: z.enum(["coordinator", "web-admin", "deputy-secretary", "secretary", "super-admin"]),
+});
 
 interface User {
   id: string;
@@ -15,6 +30,7 @@ interface User {
   name: string;
   role: UserRole;
   isActive: boolean;
+  deletePermissions?: DeletePermissions;
   lastLogin?: Date;
   createdAt: Date;
 }
@@ -46,6 +62,7 @@ export default function UserManagement() {
           name: user.email === currentUser?.email ? currentUser.name : user.email.split('@')[0],
           role: userRole as UserRole,
           isActive: user.isActive ?? true,
+          deletePermissions: (user as { deletePermissions?: DeletePermissions }).deletePermissions,
           lastLogin: user.lastLogin,
           createdAt: user.createdAt || new Date("2024-01-01"),
         };
@@ -56,28 +73,31 @@ export default function UserManagement() {
   }, [currentUser]);
 
   const [showAddUser, setShowAddUser] = useState(false);
-  const [newUser, setNewUser] = useState({
-    email: "",
-    name: "",
-    role: "coordinator" as UserRole,
+  const [permissionsDialog, setPermissionsDialog] = useState<{ open: boolean; user?: User }>({ open: false });
+  
+  const form = useForm<z.infer<typeof userSchema>>({
+    resolver: zodResolver(userSchema),
+    defaultValues: {
+      email: "",
+      name: "",
+      role: "coordinator",
+    },
   });
 
-  const handleAddUser = async () => {
-    if (newUser.email && newUser.name) {
-      await addAuthorizedUser(newUser.email, newUser.role, true);
-      
-      const user: User = {
-        id: Date.now().toString(),
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        isActive: true,
-        createdAt: new Date(),
-      };
-      setUsers([...users, user]);
-      setNewUser({ email: "", name: "", role: "coordinator" });
-      setShowAddUser(false);
-    }
+  const handleAddUser = async (values: z.infer<typeof userSchema>) => {
+    await addAuthorizedUser(values.email, values.role as UserRole, true);
+    
+    const user: User = {
+      id: Date.now().toString(),
+      email: values.email,
+      name: values.name,
+      role: values.role as UserRole,
+      isActive: true,
+      createdAt: new Date(),
+    };
+    setUsers([...users, user]);
+    form.reset();
+    setShowAddUser(false);
   };
 
   const handleToggleUserStatus = async (userId: string) => {
@@ -124,17 +144,9 @@ export default function UserManagement() {
 
   return (
     <AuthGuard requiredPermission="*">
-      <PageLayout title="User Management" activeItem="User Management">
+      <PageLayout title="User Management" subtitle="Manage user access and permissions" activeItem="User Management">
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className={`text-2xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>User Management</h1>
-              <p className={`${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>Manage user access and permissions</p>
-            </div>
+          <div className="flex justify-end">
             <button
               onClick={() => setShowAddUser(true)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -203,94 +215,103 @@ export default function UserManagement() {
 
           {/* Add User Modal */}
           {showAddUser && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className={`p-6 rounded-lg w-full max-w-md ${
-                isDarkMode ? 'bg-gray-800' : 'bg-white'
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 min-h-screen">
+              <div className={`p-8 rounded-2xl w-full max-w-md shadow-2xl ${
+                isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
               }`}>
-                <h3 className={`text-lg font-semibold mb-4 ${
+                <h3 className={`text-xl font-bold mb-6 ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>Add New User</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="user@example.com"
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleAddUser)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="user@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                      placeholder="Full Name"
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                            Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Full Name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Role
-                    </label>
-                    <select
-                      value={newUser.role}
-                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value as UserRole })}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white' 
-                          : 'bg-white border-gray-300 text-gray-900'
-                      }`}
-                    >
-                      <option value="coordinator">Coordinator</option>
-                      <option value="web-admin">Web Admin</option>
-                      <option value="deputy-secretary">Deputy Secretary</option>
-                      <option value="secretary">Secretary</option>
-                      <option value="super-admin">Super Admin</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={handleAddUser}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Add User
-                  </button>
-                  <button
-                    onClick={() => setShowAddUser(false)}
-                    className={`flex-1 px-4 py-2 border rounded-md transition-colors ${
-                      isDarkMode 
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                            Role
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select role" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="coordinator">Coordinator</SelectItem>
+                              <SelectItem value="web-admin">Web Admin</SelectItem>
+                              <SelectItem value="deputy-secretary">Deputy Secretary</SelectItem>
+                              <SelectItem value="secretary">Secretary</SelectItem>
+                              <SelectItem value="super-admin">Super Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-3 mt-6">
+                      <button
+                        type="submit"
+                        className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium"
+                      >
+                        Add User
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddUser(false)}
+                        className={`flex-1 px-4 py-3 border rounded-xl transition-all font-medium ${
+                          isDarkMode 
+                            ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </Form>
               </div>
             </div>
           )}
+
+          <PermissionsDialog
+            open={permissionsDialog.open}
+            onOpenChange={(open) => setPermissionsDialog({ open })}
+            userEmail={permissionsDialog.user?.email || ''}
+            userName={permissionsDialog.user?.name || ''}
+            currentPermissions={permissionsDialog.user?.deletePermissions}
+          />
 
           {/* Users Table */}
           <div className={`rounded-lg border overflow-hidden ${
@@ -365,26 +386,34 @@ export default function UserManagement() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          {user.role !== 'super-admin' && (
-                            <button
-                              onClick={() => handleToggleUserStatus(user.id)}
-                              className={`px-3 py-1 text-xs rounded transition-colors ${
-                                user.isActive 
-                                  ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-                              }`}
-                              title={user.isActive ? 'Prevent user from logging in' : 'Allow user to login'}
-                            >
-                              {user.isActive ? 'Deactivate' : 'Activate'}
-                            </button>
-                          )}
-                          {user.role !== 'super-admin' && (
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                            >
-                              Delete
-                            </button>
+                          {user.role !== 'super-admin' && currentUser?.role === 'super-admin' && (
+                            <>
+                              <button
+                                onClick={() => setPermissionsDialog({ open: true, user })}
+                                className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
+                                title="Manage delete permissions"
+                              >
+                                <Key className="w-3 h-3" />
+                                Permissions
+                              </button>
+                              <button
+                                onClick={() => handleToggleUserStatus(user.id)}
+                                className={`px-3 py-1 text-xs rounded transition-colors ${
+                                  user.isActive 
+                                    ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                }`}
+                                title={user.isActive ? 'Prevent user from logging in' : 'Allow user to login'}
+                              >
+                                {user.isActive ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </>
                           )}
                           {user.role === 'super-admin' && (
                             <span className="px-3 py-1 text-xs text-gray-500 italic">

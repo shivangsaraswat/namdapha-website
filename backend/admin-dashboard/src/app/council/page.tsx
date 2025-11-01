@@ -10,10 +10,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Upload, Eye, EyeOff, Trash2, Plus, Crown, Shield, Edit, Loader2, AlertTriangle } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
 import { saveCouncilMember, getCouncilMembers, updateCouncilMember, deleteCouncilMember, CouncilMember } from "@/lib/councilService";
 import { toast } from "sonner";
+import { useDeletePermission } from "@/hooks/useDeletePermission";
 
 const leadershipPositions = [
   { value: "secretary", label: "Secretary" },
@@ -28,8 +28,8 @@ const regions = [
 
 export default function Council() {
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'super-admin';
+  const { canDelete: canDeleteLeadership } = useDeletePermission('council-leadership');
+  const { canDelete: canDeleteCoordinators } = useDeletePermission('council-coordinators');
   
   const [leadership, setLeadership] = useState<CouncilMember[]>([]);
   const [coordinators, setCoordinators] = useState<CouncilMember[]>([]);
@@ -163,8 +163,13 @@ export default function Council() {
   };
 
   const openDeleteDialog = (id: string, type: 'leadership' | 'coordinator') => {
-    if (!isSuperAdmin) {
-      toast.error('Only Super Admin can delete members.');
+    const hasPermission = type === 'leadership' ? canDeleteLeadership : canDeleteCoordinators;
+    
+    if (!hasPermission) {
+      toast.error(
+        `You don't have permission to delete ${type === 'leadership' ? 'leadership members' : 'regional coordinators'}. Ask Super Admin to grant permission, or you can edit details and change visibility.`,
+        { duration: 7000, style: { maxWidth: '500px' } }
+      );
       return;
     }
     
@@ -318,16 +323,14 @@ export default function Council() {
               <Edit className="w-3.5 h-3.5" />
             </Button>
             
-            {isSuperAdmin && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => openDeleteDialog(member.id, memberType)}
-                className="flex-1 h-8 text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDeleteDialog(member.id, memberType)}
+              className="flex-1 h-8 text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
           </div>
         </CardContent>
       </Card>

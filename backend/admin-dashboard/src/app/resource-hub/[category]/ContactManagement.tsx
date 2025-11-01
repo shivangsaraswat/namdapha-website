@@ -14,9 +14,11 @@ import { contactService, Contact } from "@/lib/contactService";
 import { toast } from "sonner";
 import Image from "next/image";
 import { uploadImage } from "@/lib/cloudinary";
+import { useDeletePermission } from "@/hooks/useDeletePermission";
 
 export default function ContactManagement() {
   const { isDarkMode } = useTheme();
+  const { canDelete: canDeleteContacts } = useDeletePermission('resource-hub-contacts');
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [, setLoading] = useState(true);
   const [isLeadershipDialogOpen, setIsLeadershipDialogOpen] = useState(false);
@@ -177,6 +179,15 @@ export default function ContactManagement() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canDeleteContacts) {
+      toast.error(
+        "You don't have permission to delete contacts. Ask Super Admin to grant permission, or you can edit details and change visibility.",
+        { duration: 7000, style: { maxWidth: '500px' } }
+      );
+      setDeleteConfirm(null);
+      return;
+    }
+    
     try {
       await contactService.deleteContact(id);
       toast.success('Contact deleted successfully');

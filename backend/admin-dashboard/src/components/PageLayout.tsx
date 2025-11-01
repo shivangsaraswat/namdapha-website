@@ -48,7 +48,7 @@ export default function PageLayout({ title, subtitle, activeItem, children }: Pa
     <div className={`min-h-screen font-sans ${
       isDarkMode ? 'bg-gray-800' : 'bg-[#F8F8F8]'
     }`}>
-      <div className="flex">
+      <div className="flex min-h-screen">
         <Sidebar activeItem={activeItem} />
 
         <div className="flex-1 ml-60 p-6">

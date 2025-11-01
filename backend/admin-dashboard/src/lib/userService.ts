@@ -2,14 +2,47 @@ import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from '
 import { db } from './firebase';
 import { UserRole } from '@/types/auth';
 
+export interface DeletePermissions {
+  // Council
+  'council-leadership'?: boolean;
+  'council-coordinators'?: boolean;
+  
+  // Teams
+  teams?: boolean;
+  
+  // Events
+  events?: boolean;
+  
+  // Certificates
+  certificates?: boolean;
+  
+  // Link Tree
+  'link-tree-social'?: boolean;
+  'link-tree-important'?: boolean;
+  
+  // Resource Hub
+  'resource-hub-pyqs'?: boolean;
+  'resource-hub-contacts'?: boolean;
+  
+  // Forms
+  forms?: boolean;
+}
+
 export interface UserData {
   email: string;
   role: UserRole;
   isActive: boolean;
+  deletePermissions?: DeletePermissions;
   lastLogin?: Date;
   createdAt: Date;
 }
 
+/**
+ * Fetches user data from Firestore database
+ * Collection: 'users'
+ * Document ID: user email
+ * Fields: email, role, isActive, deletePermissions, lastLogin, createdAt
+ */
 export async function getUserData(email: string): Promise<UserData | null> {
   try {
     const userDoc = await getDoc(doc(db, 'users', email));
@@ -22,7 +55,8 @@ export async function getUserData(email: string): Promise<UserData | null> {
       } as UserData;
     }
   } catch (error) {
-    console.error('Error getting user:', error);
+    console.error('Error getting user from Firestore:', error);
+    throw new Error('Failed to fetch user data. Please check your internet connection.');
   }
   return null;
 }
@@ -77,11 +111,17 @@ export async function removeUser(email: string) {
   }
 }
 
+/**
+ * Updates user data in Firestore database
+ * This includes deletePermissions which are stored as a nested object
+ */
 export async function updateUser(email: string, updates: Partial<UserData>) {
   try {
     await updateDoc(doc(db, 'users', email), updates);
+    console.log('User updated in Firestore:', email, updates);
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error('Error updating user in Firestore:', error);
+    throw new Error('Failed to update user. Please check your internet connection.');
   }
 }
 

@@ -14,9 +14,12 @@ import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import { linkService, Link } from "@/lib/linkService";
 import { toast } from "sonner";
+import { useDeletePermission } from "@/hooks/useDeletePermission";
 
 export default function LinkTree() {
   const { isDarkMode } = useTheme();
+  const { canDelete: canDeleteSocial } = useDeletePermission('link-tree-social');
+  const { canDelete: canDeleteImportant } = useDeletePermission('link-tree-important');
   const [links, setLinks] = useState<Link[]>([]);
   const [, setLoading] = useState(true);
   const [stats, setStats] = useState([
@@ -86,7 +89,18 @@ export default function LinkTree() {
     }
   };
 
-  const handleDeleteLink = async (linkId: string) => {
+  const handleDeleteLink = async (linkId: string, linkType: 'social' | 'important') => {
+    const hasPermission = linkType === 'social' ? canDeleteSocial : canDeleteImportant;
+    
+    if (!hasPermission) {
+      toast.error(
+        `You don't have permission to delete ${linkType} links. Ask Super Admin to grant permission, or you can edit the link and change visibility.`,
+        { duration: 7000, style: { maxWidth: '500px' } }
+      );
+      setDeleteConfirm(null);
+      return;
+    }
+    
     try {
       await linkService.deleteLink(linkId);
       toast.success('Link deleted successfully');
@@ -243,7 +257,7 @@ export default function LinkTree() {
             }`}>Social Media Links</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {links.filter(link => link.type === 'social').length === 0 ? (
                 <div className="text-center py-8">
                   <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No social media links yet</p>
@@ -274,13 +288,13 @@ export default function LinkTree() {
                     <div key={link.id} className={`flex items-center justify-between p-4 rounded-lg ${
                       isDarkMode ? 'bg-gray-600' : 'bg-gray-50'
                     }`}>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <SocialIcon />
                         <div>
                           <h4 className={`font-medium capitalize ${
                             isDarkMode ? 'text-white' : 'text-gray-900'
                           }`}>{link.platform}</h4>
-                          <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-2 text-sm">
                             <Badge className={`${
                               link.status === 'active' 
                                 ? 'bg-green-100 text-green-700' 
@@ -326,7 +340,7 @@ export default function LinkTree() {
             }`}>Important Links</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {links.filter(link => link.type === 'important').length === 0 ? (
                 <div className="text-center py-8">
                   <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No important links yet</p>
@@ -336,7 +350,7 @@ export default function LinkTree() {
                   <div key={link.id} className={`flex items-center justify-between p-4 rounded-lg ${
                     isDarkMode ? 'bg-gray-600' : 'bg-gray-50'
                   }`}>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <LinkIcon className={`w-8 h-8 ${
                         isDarkMode ? 'text-gray-400' : 'text-gray-500'
                       }`} />
@@ -344,10 +358,7 @@ export default function LinkTree() {
                         <h4 className={`font-medium ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}>{link.title}</h4>
-                        <div className="flex items-center gap-4 text-sm">
-                          <span className={`${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`}>{link.url}</span>
+                        <div className="flex items-center gap-2 text-sm">
                           <Badge className={`${
                             link.status === 'active' 
                               ? 'bg-green-100 text-green-700' 
@@ -534,7 +545,12 @@ export default function LinkTree() {
               <Button variant="outline" onClick={() => setDeleteConfirm(null)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
                 Cancel
               </Button>
-              <Button onClick={() => deleteConfirm && handleDeleteLink(deleteConfirm)} className="bg-red-600 hover:bg-red-700 text-white">
+              <Button onClick={() => {
+                if (deleteConfirm) {
+                  const link = links.find(l => l.id === deleteConfirm);
+                  if (link) handleDeleteLink(deleteConfirm, link.type as 'social' | 'important');
+                }
+              }} className="bg-red-600 hover:bg-red-700 text-white">
                 Delete
               </Button>
             </DialogFooter>

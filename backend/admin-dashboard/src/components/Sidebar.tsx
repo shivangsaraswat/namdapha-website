@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Grid3X3, Calendar, BookOpen, GitBranch, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings } from "lucide-react";
+import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "next-auth/react";
@@ -19,7 +19,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
     { name: "Dashboard", icon: Grid3X3, href: "/dashboard", permission: "dashboard" },
     { name: "Events", icon: Calendar, href: "/events", permission: "events" },
     { name: "Resource Hub", icon: BookOpen, href: "/resource-hub", permission: "resource-hub" },
-    { name: "Link Tree", icon: GitBranch, href: "/link-tree", permission: "link-tree" },
+    { name: "Link Tree", icon: Link2, href: "/link-tree", permission: "link-tree" },
     { name: "Council", icon: Shield, href: "/council", permission: "council" },
     { name: "Teams", icon: Users2, href: "/teams", permission: "teams" },
     { name: "Certificates", icon: Award, href: "/certificates", permission: "certificates" },
@@ -76,13 +76,21 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
         {/* User Profile Section */}
         <div className="border-t pt-4 space-y-2">
           <div className="flex items-center gap-3 px-3 py-2">
-            <Image
-              src={user?.image || "/namd-new-logo.png"}
-              alt="User Avatar"
-              width={32}
-              height={32}
-              className="rounded-full"
-            />
+            {user?.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.image}
+                alt="User Avatar"
+                className="rounded-full w-8 h-8 object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`rounded-full w-8 h-8 flex items-center justify-center bg-gray-200 ${user?.image ? 'hidden' : ''}`}>
+              <User className="w-5 h-5 text-gray-600" />
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
                 {user?.name}
@@ -120,7 +128,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
   }
 
   return (
-    <div className={`w-60 h-screen fixed left-0 top-0 p-6 flex flex-col ${
+    <div className={`w-60 min-h-screen fixed left-0 top-0 p-6 flex flex-col ${
       isDarkMode ? 'bg-gray-900' : 'bg-white'
     }`}>
       <div className="flex items-center gap-2 mb-8">
@@ -170,13 +178,23 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
         isDarkMode ? 'border-gray-700' : 'border-gray-200'
       }`}>
         <div className="flex items-center gap-3 px-3 py-2">
-          <Image
-            src={user?.image || "/namd-new-logo.png"}
-            alt="User Avatar"
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
+          {user?.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.image}
+              alt="User Avatar"
+              className="rounded-full w-8 h-8 object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <div className={`rounded-full w-8 h-8 flex items-center justify-center ${
+            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+          } ${user?.image ? 'hidden' : ''}`}>
+            <User className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+          </div>
           <div className="flex-1 min-w-0">
             <p className={`text-sm font-medium truncate ${
               isDarkMode ? 'text-white' : 'text-gray-900'

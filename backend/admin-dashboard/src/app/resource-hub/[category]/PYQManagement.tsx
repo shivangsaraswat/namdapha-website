@@ -12,7 +12,7 @@ import { Plus, Edit, Trash2, Eye, EyeOff, Download, FileText, Link as LinkIcon, 
 import { useTheme } from "@/contexts/ThemeContext";
 import { pyqService, PYQ } from "@/lib/pyqService";
 import { toast } from "sonner";
-import { uploadImage } from "@/lib/cloudinary";
+import { useDeletePermission } from "@/hooks/useDeletePermission";
 
 // Subject data (not used in admin, only in frontend)
 // Commented out to avoid unused variable warning
@@ -23,13 +23,14 @@ import { uploadImage } from "@/lib/cloudinary";
 //   "BS": ["Research Methodology", "Advanced Physics", "Computational Mathematics", "Biochemistry", "Data Science"]
 // };
 
-const years = ["2024", "2023", "2022", "2021", "2020"];
+const years = ["2025", "2024", "2023", "2022", "2021"];
 const semesters = ["January", "May", "September"];
 const levels = ["Foundation", "Diploma", "BSc", "BS"];
 const terms = ["Quiz 1", "Quiz 2", "End Term"];
 
 export default function PYQManagement() {
   const { isDarkMode } = useTheme();
+  const { canDelete: canDeletePYQs } = useDeletePermission('resource-hub-pyqs');
   const [pyqs, setPyqs] = useState<PYQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false);
@@ -46,7 +47,6 @@ export default function PYQManagement() {
   const [editingPYQ, setEditingPYQ] = useState<PYQ | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [visibilityConfirm, setVisibilityConfirm] = useState<PYQ | null>(null);
-  const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     subject: '',
@@ -54,9 +54,7 @@ export default function PYQManagement() {
     term: '',
     semester: '',
     year: '',
-    fileType: 'link' as 'link' | 'upload',
     fileUrl: '',
-    file: null as File | null,
   });
 
   useEffect(() => {
@@ -84,9 +82,7 @@ export default function PYQManagement() {
       term: '',
       semester: '',
       year: '',
-      fileType: 'link',
       fileUrl: '',
-      file: null,
     });
     setIsDialogOpen(true);
   };
@@ -99,29 +95,12 @@ export default function PYQManagement() {
       term: pyq.term,
       semester: pyq.semester,
       year: pyq.year,
-      fileType: pyq.fileType,
       fileUrl: pyq.fileUrl,
-      file: null,
     });
     setIsDialogOpen(true);
   };
 
-  const handleFileUpload = async (file: File) => {
-    if (!file) return '';
 
-    setUploading(true);
-    try {
-      const result = await uploadImage(file, 'pyqs');
-      toast.success('File uploaded successfully');
-      return result.url;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast.error('Failed to upload file');
-      return '';
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!formData.subject || !formData.level || !formData.term || !formData.semester || !formData.year) {
@@ -129,33 +108,20 @@ export default function PYQManagement() {
       return;
     }
 
-    if (formData.fileType === 'link' && !formData.fileUrl) {
+    if (!formData.fileUrl) {
       toast.error('Please provide a file URL');
       return;
     }
 
-    if (formData.fileType === 'upload' && !formData.file && !editingPYQ) {
-      toast.error('Please select a file to upload');
-      return;
-    }
-
     try {
-      let fileUrl = formData.fileUrl;
-
-      // Upload file if needed
-      if (formData.fileType === 'upload' && formData.file) {
-        fileUrl = await handleFileUpload(formData.file);
-        if (!fileUrl) return;
-      }
-
       const pyqData = {
         subject: formData.subject,
         level: formData.level,
         term: formData.term,
         semester: formData.semester,
         year: formData.year,
-        fileUrl,
-        fileType: formData.fileType,
+        fileUrl: formData.fileUrl,
+        fileType: 'link' as const,
         status: 'published' as const,
         downloads: 0,
       };
@@ -184,6 +150,15 @@ export default function PYQManagement() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canDeletePYQs) {
+      toast.error(
+        "You don't have permission to delete PYQs. Ask Super Admin to grant permission, or you can edit details and change visibility.",
+        { duration: 7000, style: { maxWidth: '500px' } }
+      );
+      setDeleteConfirm(null);
+      return;
+    }
+    
     try {
       await pyqService.deletePYQ(id);
       toast.success('PYQ deleted successfully');
@@ -406,11 +381,11 @@ export default function PYQManagement() {
 
               <div className="space-y-2">
                 <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                  Semester <span className="text-red-500">*</span>
+                  Term <span className="text-red-500">*</span>
                 </Label>
                 <Select value={formData.semester} onValueChange={(val) => setFormData({ ...formData, semester: val })}>
                   <SelectTrigger className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
-                    <SelectValue placeholder="Select semester" />
+                    <SelectValue placeholder="Select term" />
                   </SelectTrigger>
                   <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
                     {semesters.map((semester) => (
@@ -436,56 +411,26 @@ export default function PYQManagement() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                  File Type <span className="text-red-500">*</span>
-                </Label>
-                <Select value={formData.fileType} onValueChange={(val: 'link' | 'upload') => setFormData({ ...formData, fileType: val })}>
-                  <SelectTrigger className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
-                    <SelectItem value="link" className={isDarkMode ? 'text-white hover:bg-gray-600 focus:bg-gray-600' : ''}>External Link</SelectItem>
-                    <SelectItem value="upload" className={isDarkMode ? 'text-white hover:bg-gray-600 focus:bg-gray-600' : ''}>Upload PDF</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
-            {formData.fileType === 'link' ? (
-              <div className="space-y-2">
-                <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                  File URL <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  type="url"
-                  placeholder="https://example.com/file.pdf"
-                  value={formData.fileUrl}
-                  onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                  className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                  Upload PDF <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
-                  disabled={uploading}
-                  className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
-                />
-                {uploading && <p className="text-sm text-blue-500">Uploading...</p>}
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
+                File URL <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="url"
+                placeholder="https://example.com/file.pdf"
+                value={formData.fileUrl}
+                onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
               Cancel
             </Button>
-            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white" disabled={uploading}>
+            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
               {editingPYQ ? 'Update' : 'Add'} PYQ
             </Button>
           </DialogFooter>
