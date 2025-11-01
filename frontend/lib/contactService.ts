@@ -30,7 +30,7 @@ export const contactService = {
     const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
     const data = contacts.sort((a, b) => a.order - b.order);
     
-    DataCache.set('contacts_active', data, 10);
+    DataCache.set('contacts_active', data, 60);
     return data;
   }
 };

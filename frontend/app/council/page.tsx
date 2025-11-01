@@ -3,20 +3,7 @@
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-
-interface CouncilMember {
-  id: string;
-  name: string;
-  position: string;
-  type: 'leadership' | 'coordinator';
-  imageUrl?: string;
-  isVisible: boolean;
-  createdAt?: Date;
-}
-
-
+import { councilService, type CouncilMember } from '@/lib/councilService';
 
 export default function CouncilPage(){
   const [councilData, setCouncilData] = useState<{
@@ -25,50 +12,31 @@ export default function CouncilPage(){
   }>({ houseLeadership: [], regionalCoordinators: [] });
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchCouncilData = async () => {
       try {
-        const snapshot = await getDocs(collection(db, 'council'));
-        const members = snapshot.docs.map(doc => {
-          const data = doc.data();
-
-          // Normalize image field: accept string or object shapes returned by admin uploads
-          let imageUrl: string | undefined = undefined;
-          if (typeof data.imageUrl === 'string' && data.imageUrl.trim() !== '') {
-            imageUrl = data.imageUrl.trim();
-          } else if (data.imageUrl && typeof data.imageUrl === 'object') {
-            imageUrl = data.imageUrl.url || data.imageUrl.secure_url || data.imageUrl.path || data.imageUrl.downloadURL || undefined;
-            if (typeof imageUrl === 'string') imageUrl = imageUrl.trim();
-          }
-
-          return {
-            id: doc.id,
-            ...data,
-            imageUrl,
-            createdAt: data.createdAt?.toDate() || new Date()
-          } as CouncilMember;
-        }) as CouncilMember[];
+        const [leadership, coordinators] = await Promise.all([
+          councilService.getLeadership(),
+          councilService.getCoordinators()
+        ]);
         
-        console.log('Fetched council members:', members);
-        
-        const visibleMembers = members.filter(m => m.isVisible);
-        console.log('Visible members:', visibleMembers);
-        
-        const leadership = visibleMembers.filter(m => m.type === 'leadership');
-        const coordinators = visibleMembers.filter(m => m.type === 'coordinator');
-        
-        console.log('Leadership members:', leadership);
-        console.log('Coordinator members:', coordinators);
-        
-        setCouncilData({
-          houseLeadership: leadership,
-          regionalCoordinators: coordinators
-        });
+        if (mounted) {
+          setCouncilData({
+            houseLeadership: leadership,
+            regionalCoordinators: coordinators
+          });
+        }
       } catch (error) {
         console.error('Error fetching council data:', error);
       }
     };
     
     fetchCouncilData();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">

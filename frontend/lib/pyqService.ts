@@ -36,7 +36,7 @@ export const pyqService = {
     } as PYQ));
     const data = pyqs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     
-    DataCache.set('pyqs_published', data, 5);
+    DataCache.set('pyqs_published', data, 30);
     return data;
   },
 

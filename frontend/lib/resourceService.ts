@@ -46,7 +46,7 @@ export const resourceService = {
       ...doc.data()
     } as Resource));
     
-    DataCache.set('resources_all', data, 5);
+    DataCache.set('resources_all', data, 30);
     return data;
   },
 
@@ -72,7 +72,7 @@ export const resourceService = {
       ...doc.data()
     } as Resource));
     
-    DataCache.set('resources_published', data, 5);
+    DataCache.set('resources_published', data, 30);
     return data;
   },
 
@@ -136,7 +136,7 @@ export const resourceService = {
       } as ResourceCategory))
       .sort((a, b) => a.order - b.order);
     
-    DataCache.set('categories_all', data, 10);
+    DataCache.set('categories_all', data, 60);
     return data;
   },
 
@@ -153,7 +153,7 @@ export const resourceService = {
       } as ResourceCategory))
       .sort((a, b) => a.order - b.order);
     
-    DataCache.set('categories_active', data, 10);
+    DataCache.set('categories_active', data, 60);
     return data;
   },
 

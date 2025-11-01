@@ -1,4 +1,4 @@
-// Simple cache utility with localStorage persistence and TTL
+// Aggressive cache utility with localStorage persistence and long TTL
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -10,7 +10,7 @@ const CACHE_PREFIX = 'namdapha_cache_';
 export class DataCache {
   private static memoryCache = new Map<string, CacheEntry<unknown>>();
 
-  static set<T>(key: string, data: T, ttlMinutes: number = 5): void {
+  static set<T>(key: string, data: T, ttlMinutes: number = 30): void {
     const entry: CacheEntry<T> = {
       data,
       timestamp: Date.now(),

@@ -38,7 +38,7 @@ export const linkService = {
       } as Link))
       .sort((a, b) => a.order - b.order);
     
-    DataCache.set(cacheKey, data, 10);
+    DataCache.set(cacheKey, data, 60);
     return data;
   },
 
