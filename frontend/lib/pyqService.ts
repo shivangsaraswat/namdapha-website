@@ -1,5 +1,6 @@
 import { db } from './firebase';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import { DataCache } from './cache';
 
 export interface PYQ {
   id?: string;
@@ -21,6 +22,9 @@ const COLLECTION_NAME = 'pyqs';
 export const pyqService = {
   // Get published PYQs only
   async getPublishedPYQs(): Promise<PYQ[]> {
+    const cached = DataCache.get<PYQ[]>('pyqs_published');
+    if (cached) return cached;
+
     const pyqsRef = collection(db, COLLECTION_NAME);
     const q = query(pyqsRef, where('status', '==', 'published'));
     const snapshot = await getDocs(q);
@@ -30,7 +34,10 @@ export const pyqService = {
       createdAt: doc.data().createdAt?.toDate(),
       updatedAt: doc.data().updatedAt?.toDate(),
     } as PYQ));
-    return pyqs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const data = pyqs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    
+    DataCache.set('pyqs_published', data, 5);
+    return data;
   },
 
   // Increment downloads

@@ -1,5 +1,6 @@
 import { db } from './firebase';
 import { collection, getDocs, doc, updateDoc, query, where, increment } from 'firebase/firestore';
+import { DataCache } from './cache';
 
 export interface Link {
   id?: string;
@@ -20,18 +21,25 @@ const COLLECTION_NAME = 'links';
 export const linkService = {
   // Get active links by type
   async getActiveLinksByType(type: 'social' | 'important'): Promise<Link[]> {
+    const cacheKey = `links_${type}_active`;
+    const cached = DataCache.get<Link[]>(cacheKey);
+    if (cached) return cached;
+
     const q = query(
       collection(db, COLLECTION_NAME), 
       where('type', '==', type),
       where('status', '==', 'active')
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs
+    const data = querySnapshot.docs
       .map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Link))
       .sort((a, b) => a.order - b.order);
+    
+    DataCache.set(cacheKey, data, 10);
+    return data;
   },
 
   // Increment click count

@@ -7,6 +7,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://namdapha.iitmbs.org'),
   title: 'Namdapha House',
   description: 'Namdapha House | General Student Body | IIT Madras',
 };

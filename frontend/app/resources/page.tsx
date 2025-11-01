@@ -56,6 +56,8 @@ export default function ResourcesPage(){
 
   // Fetch categories and resource counts from Firebase
   useEffect(() => {
+    let mounted = true;
+
     const fetchData = async () => {
       try {
         const [fetchedCategories, resources] = await Promise.all([
@@ -63,6 +65,8 @@ export default function ResourcesPage(){
           resourceService.getPublishedResources()
         ]);
         
+        if (!mounted) return;
+
         // Remove duplicates by ID
         const uniqueCategories = Array.from(
           new Map(fetchedCategories.map(cat => [cat.id, cat])).values()
@@ -71,23 +75,27 @@ export default function ResourcesPage(){
         setCategories(uniqueCategories);
         
         const counts: {[key: string]: number} = {};
-        fetchedCategories.forEach(category => {
-          counts[category.name] = resources.filter(r => r.category === category.name && r.status === 'published').length;
+        uniqueCategories.forEach(category => {
+          counts[category.name] = resources.filter(r => r.category === category.name).length;
         });
         
         setResourceCounts(counts);
         
-        // Filter resources for Student Handbook and Grading Document (only published)
-        setHandbookResources(resources.filter(r => r.category === 'Student Handbook' && r.status === 'published'));
-        setGradedDocResources(resources.filter(r => r.category === 'Grading Document' && r.status === 'published'));
+        // Filter resources for Student Handbook and Grading Document
+        setHandbookResources(resources.filter(r => r.category === 'Student Handbook'));
+        setGradedDocResources(resources.filter(r => r.category === 'Grading Document'));
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleCategoryClick = (categoryName: string) => {

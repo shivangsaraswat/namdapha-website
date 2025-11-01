@@ -1,8 +1,4 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import Footer from "@/components/Footer";
-import { manrope, montserrat, pacifico, questrial, dancingScript } from './fonts';
-import PreloadData from '@/components/PreloadData';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://namdapha.iitmbs.org'),
@@ -52,28 +48,3 @@ export const metadata: Metadata = {
     },
   },
 };
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <head>
-        <link rel="canonical" href="https://namdapha.iitmbs.org" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
-        <meta name="theme-color" content="#0A0A0B" />
-      </head>
-      <body
-        className={`${manrope.variable} ${montserrat.variable} ${pacifico.variable} ${questrial.variable} ${dancingScript.variable} antialiased`}
-      >
-        <PreloadData />
-        {children}
-        <Footer />
-      </body>
-    </html>
-  );
-}
