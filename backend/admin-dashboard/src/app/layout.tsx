@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Dashboard - Admin Panel",
-  description: "Modern dashboard UI with analytics and management tools",
+  description: "Maintaining Namdapha House Website",
 };
 
 export default function RootLayout({
