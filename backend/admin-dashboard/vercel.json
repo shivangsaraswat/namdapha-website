@@ -2,5 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet backend/admin-dashboard"
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet ."
 }
