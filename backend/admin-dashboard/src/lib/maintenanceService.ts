@@ -7,6 +7,7 @@ export interface MaintenanceMode {
   estimatedEndTime?: string;
   enabledBy?: string;
   enabledAt?: Date;
+  testInDevelopment?: boolean;
 }
 
 const MAINTENANCE_DOC = 'settings/maintenance';
@@ -37,7 +38,8 @@ export const setMaintenanceMode = async (
   isEnabled: boolean,
   message: string,
   estimatedEndTime?: string,
-  enabledBy?: string
+  enabledBy?: string,
+  testInDevelopment?: boolean
 ): Promise<void> => {
   try {
     const docRef = doc(db, MAINTENANCE_DOC);
@@ -53,6 +55,10 @@ export const setMaintenanceMode = async (
     
     if (enabledBy) {
       data.enabledBy = enabledBy;
+    }
+    
+    if (testInDevelopment !== undefined) {
+      data.testInDevelopment = testInDevelopment;
     }
     
     await setDoc(docRef, data);

@@ -51,7 +51,8 @@ export default function MaintenancePage() {
         newStatus,
         maintenance.message,
         maintenance.estimatedEndTime,
-        user.email
+        user.email,
+        maintenance.testInDevelopment
       );
       
       setMaintenance({ ...maintenance, isEnabled: newStatus });
@@ -78,7 +79,8 @@ export default function MaintenancePage() {
         maintenance.isEnabled,
         maintenance.message,
         maintenance.estimatedEndTime,
-        user.email
+        user.email,
+        maintenance.testInDevelopment
       );
       toast.success('Maintenance settings saved successfully');
     } catch (error) {
@@ -206,6 +208,24 @@ export default function MaintenancePage() {
                 </div>
                 <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   Let visitors know when the website will be back online.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="testInDevelopment"
+                    checked={maintenance.testInDevelopment || false}
+                    onChange={(e) => setMaintenance({ ...maintenance, testInDevelopment: e.target.checked })}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <Label htmlFor="testInDevelopment" className="text-sm cursor-pointer">
+                    Enable in Development (Test on localhost)
+                  </Label>
+                </div>
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  When enabled, maintenance mode will also work on localhost for testing.
                 </p>
               </div>
 
