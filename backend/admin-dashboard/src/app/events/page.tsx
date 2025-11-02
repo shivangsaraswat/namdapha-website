@@ -111,22 +111,7 @@ export default function Events() {
 
   useEffect(() => {
     fetchEvents();
-    
-    const checkExpiredEvents = async () => {
-      const now = new Date();
-      for (const event of upcomingEvents) {
-        const eventDateTime = new Date(`${event.date}T${event.time || '23:59'}`);
-        if (eventDateTime < now) {
-          await eventService.moveToType(event.id!, 'past');
-          toast.info(`${event.title} moved to past events`);
-          fetchEvents();
-        }
-      }
-    };
-    
-    const interval = setInterval(checkExpiredEvents, 60000);
-    return () => clearInterval(interval);
-  }, [upcomingEvents]);
+  }, []);
 
   const handleAddClick = (type: 'upcoming' | 'past') => {
     setDialogType(type);
