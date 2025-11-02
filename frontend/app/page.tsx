@@ -190,7 +190,7 @@ export default function Page() {
       </section>
 
       {/* Open Source Section */}
-      <section className="relative bg-[rgb(228,229,231)] overflow-hidden py-16 md:py-24">
+      <section id="who-we-are" className="relative bg-[rgb(228,229,231)] overflow-hidden py-16 md:py-24">
         {/* Decorative patterns container - positioned like council page */}
         <div className="absolute inset-0 pointer-events-none z-0">
           {/* Left pattern - positioned similar to council page */}

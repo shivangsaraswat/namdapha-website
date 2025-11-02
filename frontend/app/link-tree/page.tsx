@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { linkService, Link } from "@/lib/linkService";
 
 // Social media icon mapping
@@ -158,16 +159,12 @@ export default function LinkTreePage() {
 
           {/* Important Links Section */}
           <div>
-          
-            {loading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Loading links...</p>
-              </div>
-            ) : importantLinks.length === 0 ? (
+            {loading && <LoadingSpinner />}
+            {!loading && importantLinks.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-600">No links available yet</p>
               </div>
-            ) : (
+            ) : !loading ? (
               <div className="space-y-4">
                 {importantLinks.map((link) => (
                   <a
@@ -201,7 +198,7 @@ export default function LinkTreePage() {
                   </a>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </main>

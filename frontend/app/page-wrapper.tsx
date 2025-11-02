@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { getMaintenanceStatus } from '@/lib/maintenanceService';
 import { Construction, Clock, RefreshCw } from 'lucide-react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function PageWrapper({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(true);
@@ -12,10 +14,18 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     estimatedEndTime?: string;
   } | null>(null);
   const [checking, setChecking] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     checkMaintenance();
   }, []);
+
+  useEffect(() => {
+    setIsVisible(false);
+    const timer = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   const checkMaintenance = async () => {
     try {
@@ -52,11 +62,7 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
   };
 
   if (isChecking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (maintenanceData?.isEnabled) {
@@ -111,5 +117,9 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     );
   }
 
-  return <>{children}</>;
+  return (
+    <div className={`transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {children}
+    </div>
+  );
 }

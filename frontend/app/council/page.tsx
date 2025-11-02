@@ -12,8 +12,6 @@ export default function CouncilPage(){
   }>({ houseLeadership: [], regionalCoordinators: [] });
 
   useEffect(() => {
-    let mounted = true;
-
     const fetchCouncilData = async () => {
       try {
         const [leadership, coordinators] = await Promise.all([
@@ -21,22 +19,16 @@ export default function CouncilPage(){
           councilService.getCoordinators()
         ]);
         
-        if (mounted) {
-          setCouncilData({
-            houseLeadership: leadership,
-            regionalCoordinators: coordinators
-          });
-        }
+        setCouncilData({
+          houseLeadership: leadership,
+          regionalCoordinators: coordinators
+        });
       } catch (error) {
         console.error('Error fetching council data:', error);
       }
     };
     
     fetchCouncilData();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
@@ -114,21 +106,31 @@ export default function CouncilPage(){
                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
                      {councilData.houseLeadership.map((member) => (
                        <div key={member.id} className="relative group">
-                         <div className="w-[360px] h-[480px] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
-                           {member.imageUrl ? (
+                         {member.imageUrl ? (
+                           member.imageUrl.includes('.svg') || member.imageUrl.includes('data:image/svg') ? (
                              <Image
                                src={member.imageUrl}
                                alt={member.name}
-                               width={720}
-                               height={960}
-                               className="w-full h-full object-cover"
+                               width={360}
+                               height={480}
+                               className="w-auto h-auto max-w-[360px]"
+                               unoptimized
                              />
                            ) : (
-                             <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                               <span className="text-gray-500">No Image</span>
-                             </div>
-                           )}
-                         </div>
+                             <Image
+                               src={member.imageUrl}
+                               alt={member.name}
+                               width={360}
+                               height={480}
+                               className="w-auto h-auto max-w-[360px]"
+                               unoptimized
+                             />
+                           )
+                         ) : (
+                           <div className="w-[360px] h-[480px] flex items-center justify-center bg-gray-200">
+                             <span className="text-gray-500">No Image</span>
+                           </div>
+                         )}
                        </div>
                      ))}
                    </div>
@@ -147,56 +149,37 @@ export default function CouncilPage(){
                    
                     <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We understand the challenges developers face. That’s why we build products that streamline workflows, eliminate friction, and empower developers to focus on what they do best: making great products.</p>
 
-                  {/* Cards Grid - 4 columns for regional coordinators */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center mt-8">
-                    {councilData.regionalCoordinators.map((member, idx) => {
-                      // For the last row with two items (when total % 4 === 2), place them in cols 2 and 3 to center
-                      const lgPositionClass = (idx >= 8 && idx % 4 === 0) ? 'lg:col-start-2' : (idx >= 8 && idx % 4 === 1 ? 'lg:col-start-3' : '');
+                  {/* Cards Grid - 3 columns for regional coordinators */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center mt-8">
+                    {councilData.regionalCoordinators.map((member) => {
+                      const imageSrc = typeof member.imageUrl === 'string' && member.imageUrl.trim() !== '' ? member.imageUrl.trim() : null;
                       return (
-                        <div key={member.id} className={`relative group ${lgPositionClass}`}>
-                          <div className="relative w-[240px] h-[380px] rounded-[20px] overflow-hidden">
-                          {/* Background SVG */}
-                          <div className="absolute inset-0">
-                            <Image
-                              src="/council-rc-bg.svg"
-                              alt="RC card background"
-                              width={340}
-                              height={328}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-
-                          {/* Card Content */}
-                          <div className="relative z-10 p-5 h-full flex flex-col justify-between">
-                             {/* Profile Image (expanded to fill more vertical space in RC card) */}
-                             <div className="w-full h-[84%] mx-auto mb-1 rounded-[12px] overflow-hidden mt-1">
-                               {(() => {
-                                 const imageSrc = typeof member.imageUrl === 'string' && member.imageUrl.trim() !== '' ? member.imageUrl.trim() : null;
-                                 if (imageSrc) {
-                                   return (
-                                     <Image
-                                       src={imageSrc}
-                                       alt={member.name}
-                                       width={360}
-                                       height={420}
-                                       className="w-full h-full object-cover"
-                                     />
-                                   );
-                                 }
-                                 return (
-                                   <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                                     <span className="text-gray-500 text-xs">No Image</span>
-                                   </div>
-                                 );
-                               })()}
-                             </div>
-
-                             {/* Name and Position */}
-                             <div className="text-center">
-                               {/* name/position intentionally hidden on frontend */}
-                  </div>
-                           </div>
-                         </div>
+                        <div key={member.id} className="relative group">
+                          {imageSrc ? (
+                            imageSrc.includes('.svg') || imageSrc.includes('data:image/svg') ? (
+                              <Image
+                                src={imageSrc}
+                                alt={member.name}
+                                width={400}
+                                height={386}
+                                className="w-full h-auto max-w-[400px]"
+                                unoptimized
+                              />
+                            ) : (
+                              <Image
+                                src={imageSrc}
+                                alt={member.name}
+                                width={400}
+                                height={386}
+                                className="w-full h-auto max-w-[400px]"
+                                unoptimized
+                              />
+                            )
+                          ) : (
+                            <div className="w-[400px] h-[386px] flex items-center justify-center bg-gray-200">
+                              <span className="text-gray-500">No Image</span>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

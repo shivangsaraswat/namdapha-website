@@ -9,14 +9,21 @@ export interface CouncilMember {
   type: 'leadership' | 'coordinator';
   imageUrl?: string;
   isVisible: boolean;
+  order?: number;
   createdAt?: Date;
 }
 
 const COLLECTION_NAME = 'council';
+const CACHE_KEY = 'council_visible';
+const CACHE_TTL_MINUTES = 2; // Cache for 2 minutes only
 
 export const councilService = {
-  async getVisibleMembers(): Promise<CouncilMember[]> {
-    const cached = DataCache.get<CouncilMember[]>('council_visible');
+  async getVisibleMembers(forceRefresh: boolean = false): Promise<CouncilMember[]> {
+    if (forceRefresh) {
+      DataCache.clear(CACHE_KEY);
+    }
+
+    const cached = DataCache.get<CouncilMember[]>(CACHE_KEY);
     if (cached) return cached;
 
     const snapshot = await getDocs(collection(db, COLLECTION_NAME));
@@ -37,19 +44,25 @@ export const councilService = {
         imageUrl,
         createdAt: data.createdAt?.toDate() || new Date()
       } as CouncilMember;
-    }).filter(m => m.isVisible);
+    })
+    .filter(m => m.isVisible)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    DataCache.set('council_visible', members, 60);
+    DataCache.set(CACHE_KEY, members, CACHE_TTL_MINUTES);
     return members;
   },
 
-  async getLeadership(): Promise<CouncilMember[]> {
-    const members = await this.getVisibleMembers();
+  async getLeadership(forceRefresh: boolean = false): Promise<CouncilMember[]> {
+    const members = await this.getVisibleMembers(forceRefresh);
     return members.filter(m => m.type === 'leadership');
   },
 
-  async getCoordinators(): Promise<CouncilMember[]> {
-    const members = await this.getVisibleMembers();
+  async getCoordinators(forceRefresh: boolean = false): Promise<CouncilMember[]> {
+    const members = await this.getVisibleMembers(forceRefresh);
     return members.filter(m => m.type === 'coordinator');
+  },
+
+  clearCache(): void {
+    DataCache.clear(CACHE_KEY);
   }
 };

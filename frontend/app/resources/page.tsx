@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { FaBook, FaChartLine, FaFileAlt, FaLink, FaAddressBook, FaWhatsapp, FaChartBar, FaCalculator, FaGraduationCap, FaUsers, FaNewspaper, FaVideo, FaImage, FaMusic, FaCode, FaLaptop, FaFlask, FaMedal, FaTrophy, FaCertificate, FaClipboardList } from "react-icons/fa";
 import {
   Select,
@@ -53,6 +54,7 @@ export default function ResourcesPage(){
   const [gradedDocResources, setGradedDocResources] = useState<Resource[]>([]);
   const [emptyDialogOpen, setEmptyDialogOpen] = useState(false);
   const [emptyDialogCategory, setEmptyDialogCategory] = useState('');
+  const [navigating, setNavigating] = useState(false);
 
   // Fetch categories and resource counts from Firebase
   useEffect(() => {
@@ -99,7 +101,10 @@ export default function ResourcesPage(){
   }, []);
 
   const handleCategoryClick = (categoryName: string) => {
+    setNavigating(true);
+    
     if (categoryName === "Student Handbook") {
+      setNavigating(false);
       if (handbookResources.length === 0) {
         setEmptyDialogCategory(categoryName);
         setEmptyDialogOpen(true);
@@ -107,6 +112,7 @@ export default function ResourcesPage(){
       }
       setHandbookDialogOpen(true);
     } else if (categoryName === "Grading Document") {
+      setNavigating(false);
       if (gradedDocResources.length === 0) {
         setEmptyDialogCategory(categoryName);
         setEmptyDialogOpen(true);
@@ -115,22 +121,23 @@ export default function ResourcesPage(){
       setGradedDocDialogOpen(true);
     } else if (categoryName === "Important Links") {
       router.push('/link-tree');
+      return;
     } else if (categoryName === "Important Contacts") {
       router.push('/resources/important-contacts');
+      return;
     } else if (categoryName === "PYQs") {
       router.push('/resources/pyqs');
+      return;
     } else if (categoryName === "Verify Certificate") {
       router.push('/verify-certificate');
+      return;
+    } else if (categoryName === "Join WhatsApp Groups" || categoryName === "WhatsApp Groups") {
+      router.push('/whatsapp');
+      return;
     } else {
-      // Check if category has resources
-      const categoryResourceCount = resourceCounts[categoryName] || 0;
-      if (categoryResourceCount === 0) {
-        setEmptyDialogCategory(categoryName);
-        setEmptyDialogOpen(true);
-      } else {
-        setEmptyDialogCategory(categoryName);
-        setEmptyDialogOpen(true);
-      }
+      setNavigating(false);
+      setEmptyDialogCategory(categoryName);
+      setEmptyDialogOpen(true);
     }
   };
 
@@ -255,16 +262,14 @@ export default function ResourcesPage(){
           </div>
 
           {/* Resources Grid */}
+          {(loading || navigating) && <LoadingSpinner />}
+          {!loading && !navigating && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {loading ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-600">Loading resources...</p>
-              </div>
-            ) : categories.length === 0 ? (
+            {!loading && categories.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <p className="text-gray-600">No resource categories available</p>
               </div>
-            ) : (
+            ) : !loading ? (
               categories.map((category) => {
                 const IconComponent = iconMap[category.icon] || FaBook;
                 return (
@@ -302,8 +307,9 @@ export default function ResourcesPage(){
                   </div>
                 );
               })
-            )}
+            ) : null}
           </div>
+          )}
 
         </div>
 

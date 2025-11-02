@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { contactService, Contact } from "@/lib/contactService";
 
 export default function ImportantContactsPage() {
@@ -89,11 +90,8 @@ export default function ImportantContactsPage() {
       {/* Main Content */}
       <main className="relative pt-16 pb-16 px-6 md:px-8 lg:px-12">
         <div className="max-w-[1200px] mx-auto relative z-10 space-y-16">
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading contacts...</p>
-            </div>
-          ) : (
+          {loading && <LoadingSpinner />}
+          {!loading && (
             <>
               {/* House Leadership Section */}
               <div>

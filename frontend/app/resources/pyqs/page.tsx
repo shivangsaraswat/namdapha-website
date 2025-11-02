@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,8 +66,13 @@ export default function PYQsPage() {
     ? Object.values(subjectsByLevel).flat()
     : subjectsByLevel[selectedLevel] || [];
 
+  // Check if any filter is active
+  const hasActiveFilters = selectedLevel !== "All" || selectedTerm !== "All" || 
+    selectedSubject !== "All" || selectedYear !== "All" || 
+    selectedSemester !== "All" || searchQuery !== "";
+
   // Filter PYQs based on selected filters and search
-  const filteredPYQs = pyqsData.filter((pyq) => {
+  let filteredPYQs = pyqsData.filter((pyq) => {
     const matchesLevel = selectedLevel === "All" || pyq.level === selectedLevel;
     const matchesTerm = selectedTerm === "All" || pyq.term === selectedTerm;
     const matchesSubject = selectedSubject === "All" || pyq.subject === selectedSubject;
@@ -79,6 +85,23 @@ export default function PYQsPage() {
     
     return matchesLevel && matchesTerm && matchesSubject && matchesYear && matchesSemester && matchesSearch;
   });
+
+  // If no filters active, show only 12 diverse PYQs as preview (4 rows × 3 columns)
+  if (!hasActiveFilters && filteredPYQs.length > 12) {
+    const diversePYQs: PYQ[] = [];
+    const usedCombinations = new Set<string>();
+    
+    for (const pyq of filteredPYQs) {
+      const combo = `${pyq.level}-${pyq.term}-${pyq.year}`;
+      if (!usedCombinations.has(combo)) {
+        diversePYQs.push(pyq);
+        usedCombinations.add(combo);
+        if (diversePYQs.length === 12) break;
+      }
+    }
+    
+    filteredPYQs = diversePYQs.length === 12 ? diversePYQs : filteredPYQs.slice(0, 12);
+  }
 
   const FilterSidebar = () => (
     <div className="space-y-6">
@@ -158,13 +181,13 @@ export default function PYQsPage() {
 
       {/* Semester Filter */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-900">Semester</Label>
+        <Label className="text-sm font-medium text-gray-900">Term</Label>
         <Select value={selectedSemester} onValueChange={setSelectedSemester}>
           <SelectTrigger className="w-full bg-white border-2 border-gray-900">
-            <SelectValue placeholder="Select Semester" />
+            <SelectValue placeholder="Select Term" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="All">All Semesters</SelectItem>
+            <SelectItem value="All">All Terms</SelectItem>
             {semesters.map((semester) => (
               <SelectItem key={semester} value={semester}>{semester}</SelectItem>
             ))}
@@ -192,35 +215,7 @@ export default function PYQsPage() {
 
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="container relative mx-auto h-full max-w-[1200px]">
-          <Image
-            src="/bg.svg"
-            alt="Background pattern left"
-            width={358}
-            height={1702}
-            className="absolute -top-7 left-[-304px] opacity-10 lg:hidden"
-            priority
-          />
-          <Image
-            src="/bg.svg"
-            alt="Background pattern right"
-            width={358}
-            height={1702}
-            className="absolute bottom-0 right-[-320px] opacity-10 lg:hidden"
-            priority
-          />
-          <Image
-            src="/bg.svg"
-            alt="Background pattern desktop"
-            width={672}
-            height={326}
-            className="absolute right-0 top-0 opacity-10 hidden lg:block md:-right-8 md:-top-1.5 sm:top-2"
-            priority
-          />
-        </div>
-      </div>
+
 
       {/* Hero Section with Navbar */}
       <section className="relative overflow-hidden">
@@ -290,7 +285,7 @@ export default function PYQsPage() {
                       <Filter className="w-5 h-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-80 bg-white">
+                  <SheetContent side="left" className="w-80 bg-white z-[9999]">
                     <SheetTitle>Filters</SheetTitle>
                     <div className="mt-6">
                       <FilterSidebar />
@@ -307,11 +302,8 @@ export default function PYQsPage() {
               </div>
 
               {/* PYQs Grid */}
-              {loading ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-700 font-medium">Loading PYQs...</p>
-                </div>
-              ) : filteredPYQs.length > 0 ? (
+              {loading && <LoadingSpinner />}
+              {!loading && filteredPYQs.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredPYQs.map((pyq) => (
                     <Card key={pyq.id} className="relative overflow-hidden border-2 border-gray-900 shadow-lg hover:shadow-xl transition-all group">
@@ -365,13 +357,13 @@ export default function PYQsPage() {
                     </Card>
                   ))}
                 </div>
-              ) : (
+              ) : !loading ? (
                 <Card className="p-12 text-center border-2 border-gray-900 bg-white">
                   <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No PYQs Found</h3>
                   <p className="text-gray-600">Try adjusting your filters or search query</p>
                 </Card>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

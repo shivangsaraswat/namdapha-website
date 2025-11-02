@@ -6,8 +6,8 @@ import Footer from './Footer';
 export default function ConditionalFooter() {
   const pathname = usePathname();
   
-  // Don't show footer on maintenance page
-  if (pathname === '/maintenance') {
+  // Don't show footer on maintenance and whatsapp pages
+  if (pathname === '/maintenance' || pathname === '/whatsapp' || pathname?.startsWith('/whatsapp')) {
     return null;
   }
   
