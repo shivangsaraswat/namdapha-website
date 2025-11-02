@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Eye, EyeOff, User, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff, User, ArrowLeft, Crown, Target, ClipboardList, Drama, Briefcase, Phone, RefreshCw } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { contactService, Contact } from "@/lib/contactService";
 import { toast } from "sonner";
@@ -16,29 +16,34 @@ import Image from "next/image";
 import { uploadImage } from "@/lib/cloudinary";
 import { useDeletePermission } from "@/hooks/useDeletePermission";
 
+const categories = [
+  { id: 'leadership', label: 'House Leadership', Icon: Crown },
+  { id: 'pods', label: 'PODs', Icon: Target },
+  { id: 'sec', label: 'Student Executive Committee', Icon: ClipboardList },
+  { id: 'paradox', label: 'Paradox', Icon: Drama },
+  { id: 'placement', label: 'Placement', Icon: Briefcase },
+  { id: 'others', label: 'Others', Icon: Phone }
+];
+
 export default function ContactManagement() {
   const { isDarkMode } = useTheme();
   const { canDelete: canDeleteContacts } = useDeletePermission('resource-hub-contacts');
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [, setLoading] = useState(true);
-  const [isLeadershipDialogOpen, setIsLeadershipDialogOpen] = useState(false);
-  const [isOtherDialogOpen, setIsOtherDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [visibilityConfirm, setVisibilityConfirm] = useState<Contact | null>(null);
-  const [leadershipFormData, setLeadershipFormData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     role: '',
     email: '',
     photoUrl: '',
-    description: ''
-  });
-  const [otherFormData, setOtherFormData] = useState({
-    name: '',
-    role: '',
-    email: ''
+    description: '',
+    category: 'leadership' as Contact['category']
   });
   const [uploading, setUploading] = useState(false);
+  const [clearingCache, setClearingCache] = useState(false);
 
   useEffect(() => {
     fetchContacts();
@@ -48,25 +53,22 @@ export default function ContactManagement() {
     try {
       setLoading(true);
       const data = await contactService.getAllContacts();
-      setContacts(data);
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
+      const mappedData = data.map(contact => ({
+        ...contact,
+        category: ((contact as { category?: string; type?: string }).category || (contact as { category?: string; type?: string }).type || 'leadership') as Contact['category']
+      }));
+      setContacts(mappedData);
+    } catch {
       toast.error('Failed to load contacts');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddLeadershipClick = () => {
+  const handleAddClick = (category: Contact['category']) => {
     setEditingContact(null);
-    setLeadershipFormData({ name: '', role: '', email: '', photoUrl: '', description: '' });
-    setIsLeadershipDialogOpen(true);
-  };
-
-  const handleAddOtherClick = () => {
-    setEditingContact(null);
-    setOtherFormData({ name: '', role: '', email: '' });
-    setIsOtherDialogOpen(true);
+    setFormData({ name: '', role: '', email: '', photoUrl: '', description: '', category });
+    setIsDialogOpen(true);
   };
 
   const handleImageUpload = async (file: File) => {
@@ -75,10 +77,9 @@ export default function ContactManagement() {
     setUploading(true);
     try {
       const result = await uploadImage(file, 'contacts');
-      setLeadershipFormData({ ...leadershipFormData, photoUrl: result.url });
+      setFormData({ ...formData, photoUrl: result.url });
       toast.success(result.message || 'Image uploaded successfully');
-    } catch (error) {
-      console.error('Error uploading image:', error);
+    } catch {
       toast.error('Failed to upload image');
     } finally {
       setUploading(false);
@@ -87,27 +88,19 @@ export default function ContactManagement() {
 
   const handleEditClick = (contact: Contact) => {
     setEditingContact(contact);
-    if (contact.type === 'leadership') {
-      setLeadershipFormData({
-        name: contact.name,
-        role: contact.role,
-        email: contact.email,
-        photoUrl: contact.photoUrl || '',
-        description: contact.description || ''
-      });
-      setIsLeadershipDialogOpen(true);
-    } else {
-      setOtherFormData({
-        name: contact.name,
-        role: contact.role,
-        email: contact.email
-      });
-      setIsOtherDialogOpen(true);
-    }
+    setFormData({
+      name: contact.name,
+      role: contact.role,
+      email: contact.email,
+      photoUrl: contact.photoUrl || '',
+      description: contact.description || '',
+      category: contact.category
+    });
+    setIsDialogOpen(true);
   };
 
-  const handleSaveLeadership = async () => {
-    if (!leadershipFormData.name || !leadershipFormData.role || !leadershipFormData.email || !leadershipFormData.description) {
+  const handleSave = async () => {
+    if (!formData.name || !formData.role || !formData.email) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -115,52 +108,14 @@ export default function ContactManagement() {
     try {
       if (editingContact) {
         await contactService.updateContact(editingContact.id!, {
-          ...leadershipFormData,
-          type: 'leadership',
-          updatedAt: new Date()
-        });
-        toast.success('Leadership contact updated successfully');
-      } else {
-        const maxOrder = contacts.length > 0 ? Math.max(...contacts.map(c => c.order)) : 0;
-        await contactService.addContact({
-          ...leadershipFormData,
-          type: 'leadership',
-          status: 'active',
-          order: maxOrder + 1,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        toast.success('Leadership contact added successfully');
-      }
-      setIsLeadershipDialogOpen(false);
-      setLeadershipFormData({ name: '', role: '', email: '', photoUrl: '', description: '' });
-      setEditingContact(null);
-      await fetchContacts();
-    } catch (error) {
-      console.error('Error saving contact:', error);
-      toast.error('Failed to save contact');
-    }
-  };
-
-  const handleSaveOther = async () => {
-    if (!otherFormData.name || !otherFormData.role || !otherFormData.email) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    try {
-      if (editingContact) {
-        await contactService.updateContact(editingContact.id!, {
-          ...otherFormData,
-          type: 'other',
+          ...formData,
           updatedAt: new Date()
         });
         toast.success('Contact updated successfully');
       } else {
         const maxOrder = contacts.length > 0 ? Math.max(...contacts.map(c => c.order)) : 0;
         await contactService.addContact({
-          ...otherFormData,
-          type: 'other',
+          ...formData,
           status: 'active',
           order: maxOrder + 1,
           createdAt: new Date(),
@@ -168,12 +123,11 @@ export default function ContactManagement() {
         });
         toast.success('Contact added successfully');
       }
-      setIsOtherDialogOpen(false);
-      setOtherFormData({ name: '', role: '', email: '' });
+      setIsDialogOpen(false);
+      setFormData({ name: '', role: '', email: '', photoUrl: '', description: '', category: 'leadership' });
       setEditingContact(null);
       await fetchContacts();
-    } catch (error) {
-      console.error('Error saving contact:', error);
+    } catch {
       toast.error('Failed to save contact');
     }
   };
@@ -193,8 +147,7 @@ export default function ContactManagement() {
       toast.success('Contact deleted successfully');
       setDeleteConfirm(null);
       await fetchContacts();
-    } catch (error) {
-      console.error('Error deleting contact:', error);
+    } catch {
       toast.error('Failed to delete contact');
     }
   };
@@ -206,8 +159,7 @@ export default function ContactManagement() {
       toast.success(`Contact ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
       setVisibilityConfirm(null);
       await fetchContacts();
-    } catch (error) {
-      console.error('Error updating contact:', error);
+    } catch {
       toast.error('Failed to update contact');
     }
   };
@@ -224,176 +176,162 @@ export default function ContactManagement() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Resource Hub
         </Button>
+        <Button
+          onClick={async () => {
+            setClearingCache(true);
+            try {
+              await fetch('/api/cache/clear', { method: 'POST' });
+              if (typeof window !== 'undefined') {
+                Object.keys(localStorage)
+                  .filter(k => k.startsWith('namdapha_cache_'))
+                  .forEach(k => localStorage.removeItem(k));
+                localStorage.setItem('cache_cleared_timestamp', Date.now().toString());
+              }
+              toast.success('Cache cleared successfully. Frontend will update on next visit.');
+            } catch {
+              toast.error('Failed to clear cache');
+            } finally {
+              setClearingCache(false);
+            }
+          }}
+          disabled={clearingCache}
+          className="bg-orange-600 hover:bg-orange-700 text-white"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${clearingCache ? 'animate-spin' : ''}`} />
+          {clearingCache ? 'Clearing...' : 'Clear Cache'}
+        </Button>
       </div>
 
-      {/* House Leadership Section */}
-      <Card className={`rounded-2xl shadow-sm border-0 mb-6 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              House Leadership ({contacts.filter(c => c.type === 'leadership').length})
-            </CardTitle>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddLeadershipClick}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add House Leadership
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {contacts.filter(c => c.type === 'leadership').length === 0 ? (
-              <div className="text-center py-8">
-                <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No leadership contacts yet</p>
-              </div>
-            ) : (
-              contacts.filter(c => c.type === 'leadership').map((contact) => (
-                <div key={contact.id} className={`flex items-center justify-between p-4 rounded-lg ${isDarkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-300 border-2 border-gray-400 overflow-hidden flex-shrink-0">
-                      {contact.photoUrl ? (
-                        <Image src={contact.photoUrl} alt={contact.name} width={48} height={48} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-400">
-                          <User className="w-6 h-6 text-gray-600" />
+      {loading ? (
+        <div className="text-center py-12">Loading...</div>
+      ) : (
+        categories.map((cat) => {
+          const categoryContacts = contacts.filter(c => {
+            const contactCat = c.category || (c as { type?: string }).type;
+            return contactCat === cat.id;
+          });
+          return (
+            <Card key={cat.id} className={`rounded-2xl shadow-sm border-0 mb-6 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <cat.Icon className="w-5 h-5" />
+                    {cat.label} ({categoryContacts.length})
+                  </CardTitle>
+                  <Button 
+                    className="bg-purple-600 hover:bg-purple-700 text-white" 
+                    onClick={() => handleAddClick(cat.id as Contact['category'])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Contact
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {categoryContacts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No contacts in this category yet</p>
+                    </div>
+                  ) : (
+                    categoryContacts.map((contact) => (
+                      <div key={contact.id} className={`flex items-center justify-between p-4 rounded-lg ${isDarkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gray-300 border-2 border-gray-400 overflow-hidden flex-shrink-0">
+                            {contact.photoUrl ? (
+                              <Image src={contact.photoUrl} alt={contact.name} width={48} height={48} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-400">
+                                <User className="w-6 h-6 text-gray-600" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                              {contact.name}
+                            </h4>
+                            <div className="flex items-center gap-4 text-sm">
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                                {contact.role}
+                              </span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                                {contact.email}
+                              </span>
+                              <Badge className={`${contact.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                {contact.status}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <h4 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {contact.name}
-                      </h4>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                          {contact.role}
-                        </span>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                          {contact.email}
-                        </span>
-                        <Badge className={`${contact.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {contact.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => setVisibilityConfirm(contact)} title={contact.status === 'active' ? 'Hide' : 'Show'}>
+                            {contact.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleEditClick(contact)} title="Edit">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(contact.id!)} title="Delete">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setVisibilityConfirm(contact)} title={contact.status === 'active' ? 'Hide' : 'Show'}>
-                      {contact.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEditClick(contact)} title="Edit">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(contact.id!)} title="Delete">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                    ))
+                  )}
                 </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          );
+        })
+      )}
 
-      {/* Other Contacts Section */}
-      <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Other Contacts ({contacts.filter(c => c.type === 'other').length})
-            </CardTitle>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleAddOtherClick}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Other Contact
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {contacts.filter(c => c.type === 'other').length === 0 ? (
-              <div className="text-center py-8">
-                <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No other contacts yet</p>
-              </div>
-            ) : (
-              contacts.filter(c => c.type === 'other').map((contact) => (
-                <div key={contact.id} className={`flex items-center justify-between p-4 rounded-lg ${isDarkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <h4 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {contact.name}
-                      </h4>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                          {contact.role}
-                        </span>
-                        <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                          {contact.email}
-                        </span>
-                        <Badge className={`${contact.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {contact.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setVisibilityConfirm(contact)} title={contact.status === 'active' ? 'Hide' : 'Show'}>
-                      {contact.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEditClick(contact)} title="Edit">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(contact.id!)} title="Delete">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Leadership Dialog */}
-      <Dialog open={isLeadershipDialogOpen} onOpenChange={setIsLeadershipDialogOpen}>
+      {/* Contact Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
           <DialogHeader>
             <DialogTitle className={isDarkMode ? 'text-white' : 'text-gray-900'}>
-              {editingContact ? 'Edit' : 'Add'} House Leadership Contact
+              {editingContact ? 'Edit' : 'Add'} Contact
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-2">
+              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
+                Category <span className="text-red-500">*</span>
+              </Label>
+              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value as Contact['category'] })}>
+                <SelectTrigger className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
+                  {categories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.id} className={isDarkMode ? 'hover:bg-gray-600 focus:bg-gray-600' : ''}>
+                      <div className="flex items-center gap-2">
+                        <cat.Icon className="w-4 h-4" />
+                        {cat.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
                 Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 placeholder="Enter name"
-                value={leadershipFormData.name}
-                onChange={(e) => setLeadershipFormData({ ...leadershipFormData, name: e.target.value })}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
               />
             </div>
             <div className="space-y-2">
               <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                Role <span className="text-red-500">*</span>
-              </Label>
-              <Select value={leadershipFormData.role} onValueChange={(value) => setLeadershipFormData({ ...leadershipFormData, role: value })}>
-                <SelectTrigger className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
-                  <SelectItem value="Secretary" className={isDarkMode ? 'hover:bg-gray-600 focus:bg-gray-600' : ''}>Secretary</SelectItem>
-                  <SelectItem value="Deputy Secretary" className={isDarkMode ? 'hover:bg-gray-600 focus:bg-gray-600' : ''}>Deputy Secretary</SelectItem>
-                  <SelectItem value="Web-Admin" className={isDarkMode ? 'hover:bg-gray-600 focus:bg-gray-600' : ''}>Web-Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                Description <span className="text-red-500">*</span>
+                Role/Designation <span className="text-red-500">*</span>
               </Label>
               <Input
-                placeholder="Short one-line description"
-                value={leadershipFormData.description}
-                onChange={(e) => setLeadershipFormData({ ...leadershipFormData, description: e.target.value })}
+                placeholder="Enter role or designation"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
               />
             </div>
@@ -404,17 +342,26 @@ export default function ContactManagement() {
               <Input
                 type="email"
                 placeholder="Enter email"
-                value={leadershipFormData.email}
-                onChange={(e) => setLeadershipFormData({ ...leadershipFormData, email: e.target.value })}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>Description</Label>
+              <Input
+                placeholder="Short description (optional)"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
               />
             </div>
             <div className="space-y-2">
               <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>Profile Photo</Label>
               <div className="flex items-center gap-4">
-                {leadershipFormData.photoUrl && (
+                {formData.photoUrl && (
                   <Image
-                    src={leadershipFormData.photoUrl}
+                    src={formData.photoUrl}
                     alt="Preview"
                     width={64}
                     height={64}
@@ -436,66 +383,10 @@ export default function ContactManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsLeadershipDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
               Cancel
             </Button>
-            <Button onClick={handleSaveLeadership} className="bg-blue-600 hover:bg-blue-700 text-white">
-              {editingContact ? 'Update' : 'Add'} Contact
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Other Contact Dialog */}
-      <Dialog open={isOtherDialogOpen} onOpenChange={setIsOtherDialogOpen}>
-        <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
-          <DialogHeader>
-            <DialogTitle className={isDarkMode ? 'text-white' : 'text-gray-900'}>
-              {editingContact ? 'Edit' : 'Add'} Other Contact
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                placeholder="Enter name"
-                value={otherFormData.name}
-                onChange={(e) => setOtherFormData({ ...otherFormData, name: e.target.value })}
-                className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                Role <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                placeholder="Enter role/designation"
-                value={otherFormData.role}
-                onChange={(e) => setOtherFormData({ ...otherFormData, role: e.target.value })}
-                className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="email"
-                placeholder="Enter email"
-                value={otherFormData.email}
-                onChange={(e) => setOtherFormData({ ...otherFormData, email: e.target.value })}
-                className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
-              />
-            </div>
-
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOtherDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveOther} className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700 text-white">
               {editingContact ? 'Update' : 'Add'} Contact
             </Button>
           </DialogFooter>

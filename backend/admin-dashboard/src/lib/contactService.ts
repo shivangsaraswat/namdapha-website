@@ -6,10 +6,9 @@ export interface Contact {
   name: string;
   role: string;
   email: string;
-
   photoUrl?: string;
   description?: string;
-  type: 'leadership' | 'other';
+  category: 'leadership' | 'pods' | 'sec' | 'paradox' | 'placement' | 'others';
   status: 'active' | 'inactive';
   order: number;
   createdAt: Date;

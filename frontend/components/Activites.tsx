@@ -87,60 +87,106 @@ export default function Activites() {
     const [activityCategory, setCategory] = useState('Gaming & Strategy')
 
     return (
-        <section className='flex flex-col items-center z-10 relative justify-center text-white bg-black py-10 max-sm:px-8 md:px-10'>
-            <div className=' md:w-10/12 lg:w-8/12 xl:w-6/12 flex flex-col justify-center items-center gap-6'>
-                <h2 className='text-4xl md:text-5xl text-center xl:text-6xl font-bold bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent'>Namdapha Activites</h2>
-                <p className='text-center text-sm lg:text-base font-light text-gray-300 text-pretty'>Namdapha Activities brings together a vibrant mix of 11 communities — from gaming and coding to art, storytelling, and debate. It’s where students connect, collaborate, and grow by pursuing what they love beyond the classroom.</p>
+        <section className='flex flex-col items-center z-10 relative justify-center text-white bg-black overflow-hidden'>
+            {/* Sparkling Stars Across Entire Section */}
+            <div className='absolute inset-0 pointer-events-none'>
+                {[...Array(50)].map((_, i) => (
+                    <div
+                        key={i}
+                        className='absolute w-1 h-1 bg-white rounded-full animate-twinkle'
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 3}s`,
+                            animationDuration: `${2 + Math.random() * 2}s`
+                        }}
+                    />
+                ))}
             </div>
-            <div className='flex text-sm lg:text-base text-pretty rounded-xl border border-gray-600 divide-x-2 divide-gray-600 relative my-6'>
-                <p onClick={() => setCategory('Gaming & Strategy')} aria-checked={activityCategory == "Gaming & Strategy"} className='cursor-pointer text-center px-2 py-2 lg:px-4 aria-checked:shadow-[0px_0px_30px_10px_rgba(59,12,187,1)] rounded-l-xl'>Gaming Arena</p>
-                <p onClick={() => setCategory('Tech & Innovation')} aria-checked={activityCategory == "Tech & Innovation"} className='cursor-pointer text-center px-2 py-2 lg:px-4 aria-checked:shadow-[0px_0px_45px_10px_rgba(59,12,187,1)]'>Tech Clubs</p>
-                <p onClick={() => setCategory('Arts, Expression & Public Speaking')} aria-checked={activityCategory == "Arts, Expression & Public Speaking"} className='cursor-pointer text-center px-2 py-2 lg:px-4 aria-checked:shadow-[0px_0px_45px_10px_rgba(59,12,187,1)] rounded-r-xl'>Arts & Culture</p>
+            {/* Curved Divider */}
+            <div className='w-full overflow-hidden leading-[0]'>
+                <svg className='relative block w-full h-[100px] md:h-[150px]' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'>
+                    <path d='M0,0 C240,100 480,100 720,50 C960,0 1200,0 1440,50 L1440,0 L0,0 Z' fill='rgb(228,229,231)'></path>
+                </svg>
             </div>
-            <div className='flex mx-auto justify-center items-center w-full my-6'>
-                <motion.div className='items-start justify-center w-full gap-4 flex-wrap' variants={{ initial: { display: 'none', opacity: 0, scale: 0.8 }, selected: { opacity: 1, scale: 1, display: 'flex', transition: { delay: 0.6, ease: 'easeIn' } } }} transition={{ duration: 0.6 }} animate={activityCategory == "Gaming & Strategy" ? 'selected' : 'initial'}>
-                    {dummyData.filter((element) => element.category == "Gaming & Strategy").map((element) => {
-                        return (
-                            <div className='w-64 min-[500]:w-5/12 md:w-64 relative border border-gray-700 rounded-xl flex flex-col justify-center items-center lg:w-64 bg-black'>
-                                <Image src={element.poster} alt='Valorant' width={50} height={50} className='h-32 w-full rounded-xl object-cover mb-2' />
-                                <Image src={element.logo} alt='Valorant' width={50} height={50} className='h-22 w-22 rounded-full -mt-13 bg-black object-cover' />
-                                <h4 className='text-base mb-2 font-medium lg:text-lg w-full text-start px-4'>{element.name}</h4>
-                                <p className='text-gray-300 text-xs lg:text-base w-full text-start pl-4 pr-6 text-pretty'>{element.description}</p>
-                                <div className='flex w-full px-4 my-4'>
-                                    <button className='bg-black border text-white px-2 py-1 rounded-md w-full cursor-pointer'>Register</button>
+            
+            <div className='w-full py-10 px-6 md:px-10 lg:px-12'>
+                <div className='max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start'>
+                    {/* Left Side - Heading and Category Selector */}
+                    <div className='w-full lg:w-2/5 flex flex-col gap-6'>
+                        <h2 className='text-4xl md:text-5xl xl:text-6xl font-title font-medium bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent'>Namdapha Activites</h2>
+                        <p className='text-sm lg:text-base font-light text-gray-300 text-pretty'>Namdapha Activities brings together a vibrant mix of 11 communities — from gaming and coding to art, storytelling, and debate. It&apos;s where students connect, collaborate, and grow by pursuing what they love beyond the classroom.</p>
+                        
+                        <div className='flex flex-col gap-3 mt-4'>
+                            <button onClick={() => setCategory('Gaming & Strategy')} className={`text-left px-4 py-3 rounded-xl border transition-all ${activityCategory == "Gaming & Strategy" ? 'bg-purple-900/30 border-purple-800/50 shadow-[0px_0px_30px_10px_rgba(59,12,187,0.3)]' : 'border-gray-600 hover:border-gray-500'}`}>Gaming Arena</button>
+                            <button onClick={() => setCategory('Tech & Innovation')} className={`text-left px-4 py-3 rounded-xl border transition-all ${activityCategory == "Tech & Innovation" ? 'bg-purple-900/30 border-purple-800/50 shadow-[0px_0px_30px_10px_rgba(59,12,187,0.3)]' : 'border-gray-600 hover:border-gray-500'}`}>Tech Clubs</button>
+                            <button onClick={() => setCategory('Arts, Expression & Public Speaking')} className={`text-left px-4 py-3 rounded-xl border transition-all ${activityCategory == "Arts, Expression & Public Speaking" ? 'bg-purple-900/30 border-purple-800/50 shadow-[0px_0px_30px_10px_rgba(59,12,187,0.3)]' : 'border-gray-600 hover:border-gray-500'}`}>Arts & Culture</button>
+                        </div>
+                    </div>
+
+                    {/* Right Side - 2x2 Grid of Cards */}
+                    <div className='w-full lg:w-3/5 relative'>
+                        
+                        <motion.div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8 max-w-2xl mx-auto' variants={{ initial: { display: 'none', opacity: 0, scale: 0.8 }, selected: { opacity: 1, scale: 1, display: 'grid', transition: { delay: 0.3, ease: 'easeIn' } } }} transition={{ duration: 0.4 }} animate={activityCategory == "Gaming & Strategy" ? 'selected' : 'initial'}>
+                            {dummyData.filter((element) => element.category == "Gaming & Strategy").slice(0, 4).map((element) => (
+                                <div key={element.name} className='relative rounded-xl border border-gray-700 bg-black overflow-visible'>
+                                    <div className='absolute -inset-[1px] rounded-xl bg-pink-700 blur-lg animate-border-glow'></div>
+                                    <div className='relative bg-black rounded-xl flex flex-col justify-center items-center'>
+                                        <Image src={element.poster} alt={element.name} width={50} height={50} className='h-48 w-full rounded-t-[10px] object-cover mb-2' />
+                                        <Image src={element.logo} alt={element.name} width={50} height={50} className='h-22 w-22 rounded-full -mt-13 bg-black object-cover' />
+                                        <h4 className='text-base mb-2 font-medium lg:text-lg w-full text-start px-4'>{element.name}</h4>
+                                        <p className='text-gray-300 text-xs lg:text-sm w-full text-start pl-4 pr-4 text-pretty line-clamp-3'>{element.description}</p>
+                                        <div className='flex w-full px-4 my-4'>
+                                            <button className='bg-black border text-white px-2 py-1 rounded-md w-full cursor-pointer'>Register</button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>)
-                    })}
-                </motion.div>
-                <motion.div className='items-start justify-center w-full gap-4 flex-wrap' variants={{ initial: { display: 'none', opacity: 0, scale: 0.8 }, selected: { opacity: 1, scale: 1, display: 'flex', transition: { delay: 0.6, ease: 'easeIn' } } }} transition={{ duration: 0.6 }} animate={activityCategory == "Tech & Innovation" ? 'selected' : 'initial'}>
-                    {dummyData.filter((element) => element.category == "Tech & Innovation").map((element) => {
-                        return (
-                            <div className='w-64 relative border border-gray-700 rounded-xl flex flex-col justify-center items-center lg:w-64 bg-black'>
-                                <Image src={element.poster} alt='Valorant' width={50} height={50} className='h-32 w-full rounded-xl object-cover bg-transparent mb-2' />
-                                <Image src={element.logo} alt='Valorant' width={50} height={50} className='h-22 w-22 rounded-full -mt-13 bg-black object-cover' />
-                                <h4 className='text-base mb-2 font-medium lg:text-xl w-full text-start px-4'>{element.name}</h4>
-                                <p className='text-gray-300 text-xs lg:text-base w-full text-start pl-4 pr-6 text-pretty'>{element.description}</p>
-                                <div className='flex w-full px-4 my-4'>
-                                    <button className='bg-black border text-white px-2 py-1 rounded-md w-full cursor-pointer'>Register</button>
+                            ))}
+                        </motion.div>
+                        
+                        <motion.div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8 max-w-2xl mx-auto' variants={{ initial: { display: 'none', opacity: 0, scale: 0.8 }, selected: { opacity: 1, scale: 1, display: 'grid', transition: { delay: 0.3, ease: 'easeIn' } } }} transition={{ duration: 0.4 }} animate={activityCategory == "Tech & Innovation" ? 'selected' : 'initial'}>
+                            {dummyData.filter((element) => element.category == "Tech & Innovation").slice(0, 4).map((element) => (
+                                <div key={element.name} className='relative rounded-xl border border-gray-700 bg-black overflow-visible'>
+                                    <div className='absolute -inset-[1px] rounded-xl bg-pink-700 blur-lg animate-border-glow'></div>
+                                    <div className='relative bg-black rounded-xl flex flex-col justify-center items-center'>
+                                        <Image src={element.poster} alt={element.name} width={50} height={50} className='h-48 w-full rounded-t-[10px] object-cover bg-transparent mb-2' />
+                                        <Image src={element.logo} alt={element.name} width={50} height={50} className='h-22 w-22 rounded-full -mt-13 bg-black object-cover' />
+                                        <h4 className='text-base mb-2 font-medium lg:text-lg w-full text-start px-4'>{element.name}</h4>
+                                        <p className='text-gray-300 text-xs lg:text-sm w-full text-start pl-4 pr-4 text-pretty line-clamp-3'>{element.description}</p>
+                                        <div className='flex w-full px-4 my-4'>
+                                            <button className='bg-black border text-white px-2 py-1 rounded-md w-full cursor-pointer'>Register</button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>)
-                    })}
-                </motion.div>
-                <motion.div className='items-start justify-center w-full gap-4 flex-wrap' variants={{ initial: { display: 'none', opacity: 0, scale: 0.8 }, selected: { opacity: 1, scale: 1, display: 'flex', transition: { delay: 0.6, ease: 'easeIn' } } }} transition={{ duration: 0.6 }} animate={activityCategory == "Arts, Expression & Public Speaking" ? 'selected' : 'initial'}>
-                    {dummyData.filter((element) => element.category == "Arts, Expression & Public Speaking").map((element) => {
-                        return (
-                            <div className='w-64 relative border border-gray-700 rounded-xl flex flex-col justify-center items-center lg:w-64 bg-black'>
-                                <Image src={element.poster} alt='Valorant' width={50} height={50} className='h-32 w-full rounded-xl object-cover mb-2' />
-                                <Image src={element.logo} alt='Valorant' width={50} height={50} className='h-22 w-22 rounded-full -mt-13 bg-black object-cover' />
-                                <h4 className='text-base mb-2 font-medium lg:text-xl w-full text-start px-4'>{element.name}</h4>
-                                <p className='text-gray-300 text-xs lg:text-base w-full text-start pl-4 pr-6 text-pretty'>{element.description}</p>
-                                <div className='flex w-full px-4 my-4'>
-                                    <button className='bg-black border text-white px-2 py-1 rounded-md w-full cursor-pointer'>Register</button>
+                            ))}
+                        </motion.div>
+                        
+                        <motion.div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8 max-w-2xl mx-auto' variants={{ initial: { display: 'none', opacity: 0, scale: 0.8 }, selected: { opacity: 1, scale: 1, display: 'grid', transition: { delay: 0.3, ease: 'easeIn' } } }} transition={{ duration: 0.4 }} animate={activityCategory == "Arts, Expression & Public Speaking" ? 'selected' : 'initial'}>
+                            {dummyData.filter((element) => element.category == "Arts, Expression & Public Speaking").slice(0, 4).map((element) => (
+                                <div key={element.name} className='relative rounded-xl border border-gray-700 bg-black overflow-visible'>
+                                    <div className='absolute -inset-[1px] rounded-xl bg-pink-700 blur-lg animate-border-glow'></div>
+                                    <div className='relative bg-black rounded-xl flex flex-col justify-center items-center'>
+                                        <Image src={element.poster} alt={element.name} width={50} height={50} className='h-48 w-full rounded-t-[10px] object-cover mb-2' />
+                                        <Image src={element.logo} alt={element.name} width={50} height={50} className='h-22 w-22 rounded-full -mt-13 bg-black object-cover' />
+                                        <h4 className='text-base mb-2 font-medium lg:text-lg w-full text-start px-4'>{element.name}</h4>
+                                        <p className='text-gray-300 text-xs lg:text-sm w-full text-start pl-4 pr-4 text-pretty line-clamp-3'>{element.description}</p>
+                                        <div className='flex w-full px-4 my-4'>
+                                            <button className='bg-black border text-white px-2 py-1 rounded-md w-full cursor-pointer'>Register</button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>)
-                    })}
-                </motion.div>
-            </div >
-        </section >
+                            ))}
+                        </motion.div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Curved Divider at Bottom - Inverted */}
+            <div className='w-full overflow-hidden leading-[0]'>
+                <svg className='relative block w-full h-[100px] md:h-[150px]' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'>
+                    <path d='M0,120 C240,20 480,20 720,70 C960,120 1200,120 1440,70 L1440,120 L0,120 Z' fill='#000000'></path>
+                </svg>
+            </div>
+        </section>
     )
 }

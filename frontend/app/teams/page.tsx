@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { teamService, type TeamMember } from '@/lib/teamService';
 
 export default function TeamsPage() {
@@ -11,12 +12,14 @@ export default function TeamsPage() {
     multimedia: TeamMember[];
     outreach: TeamMember[];
   }>({ webops: [], multimedia: [], outreach: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
     const fetchTeamData = async () => {
       try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         console.log('Fetching team data...');
         const [webops, multimedia, outreach] = await Promise.all([
           teamService.getMembersByCategory('webops'),
@@ -33,6 +36,10 @@ export default function TeamsPage() {
         }
       } catch (error) {
         console.error('Error fetching team data:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
     
@@ -42,6 +49,10 @@ export default function TeamsPage() {
       mounted = false;
     };
   }, []);
+
+	if (loading) {
+		return <LoadingSpinner />;
+	}
 
 	return (
 		<div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
@@ -55,7 +66,7 @@ export default function TeamsPage() {
 						className="object-cover"
 						priority
 					/>
-					<div className="absolute inset-0 flex items-center justify-center opacity-20">
+					<div className="absolute inset-0 flex items-center justify-center opacity-20 mt-16">
 						<Image
 							src="/logo-namdapha.png"
 							alt="NAMP Logo"
@@ -111,10 +122,7 @@ export default function TeamsPage() {
 									</h2>
 
 									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">
-										We understand the challenges developers face. That&apos;s why we
-										build products that streamline workflows, eliminate friction,
-										and empower developers to focus on what they do best: making
-										great products.
+										The Web-Ops Team manages Namdapha’s digital presence, automation, and tech support, ensuring smooth operations, reliable systems, and a professional online experience.
 									</p>
 
 									<div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
@@ -146,7 +154,7 @@ export default function TeamsPage() {
 							<div className="relative">
 								<div className="max-w-5xl mx-auto text-center px-4">
 									<h2 className="fs-48 text-center font-title font-medium text-gray-8">Multimedia</h2>
-									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">Creative team responsible for visuals, video and media across channels.</p>
+									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">The Multimedia Team shapes Namdapha’s visual identity through designs, reels, and campaigns, creatively capturing its spirit and showcasing every achievement across platforms.</p>
 									<div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
 										{teamData.multimedia.map((member) => (
 											<div key={member.id} className="relative group">
@@ -176,7 +184,7 @@ export default function TeamsPage() {
 							<div className="relative">
 								<div className="max-w-5xl mx-auto text-center px-4">
 									<h2 className="fs-48 text-center font-title font-medium text-gray-8">Out Reach</h2>
-									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">Team focused on events, partnerships and community engagement.</p>
+									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">The Outreach Team connects Namdapha students with learning opportunities through workshops, talks, and mentorship, fostering collaboration, growth, and continuous learning.</p>
 									<div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
 										{teamData.outreach.map((member) => (
 											<div key={member.id} className="relative group">

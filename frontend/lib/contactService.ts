@@ -1,16 +1,15 @@
 import { db } from './firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { DataCache } from './cache';
+
 
 export interface Contact {
   id?: string;
   name: string;
   role: string;
   email: string;
-
   photoUrl?: string;
   description?: string;
-  type: 'leadership' | 'other';
+  category: 'leadership' | 'pods' | 'sec' | 'paradox' | 'placement' | 'others';
   status: 'active' | 'inactive';
   order: number;
 }
@@ -19,18 +18,23 @@ const COLLECTION_NAME = 'contacts';
 
 export const contactService = {
   async getActiveContacts(): Promise<Contact[]> {
-    const cached = DataCache.get<Contact[]>('contacts_active');
-    if (cached) return cached;
-
+    console.log('Fetching from Firebase...');
     const q = query(
       collection(db, COLLECTION_NAME),
       where('status', '==', 'active')
     );
     const snapshot = await getDocs(q);
-    const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
-    const data = contacts.sort((a, b) => a.order - b.order);
-    
-    DataCache.set('contacts_active', data, 60);
-    return data;
+    console.log('Firebase snapshot size:', snapshot.size);
+    const contacts = snapshot.docs.map(doc => {
+      const rawData = doc.data();
+      const data = { 
+        id: doc.id, 
+        ...rawData,
+        category: (rawData as Record<string, unknown>).category || (rawData as Record<string, unknown>).type
+      } as Contact;
+      console.log('Contact data:', data);
+      return data;
+    });
+    return contacts.sort((a, b) => a.order - b.order);
   }
 };
