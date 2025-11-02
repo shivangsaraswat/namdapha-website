@@ -26,18 +26,6 @@ const SSList = [{
     profielpic: '/devansh.jpeg',
     story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
 },
-{
-    id: 4,
-    name: 'Devansh',
-    profielpic: '/devansh.jpeg',
-    story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
-},
-{
-    id: 5,
-    name: 'Devansh',
-    profielpic: '/devansh.jpeg',
-    story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
-}
 ]
 
 export default function SuccessStories() {
@@ -74,8 +62,8 @@ export default function SuccessStories() {
     }, [hoverCard])
 
     return (
-        <div className='flex flex-col justify-center items-center'>
-            <div className='grid auto-cols-max grid-flow-col justify-around items-center h-[30rem] w-full max-[600px]:h-[20rem] max-sm:mb-4 xl:h-[34rem]'>
+        <div className='flex flex-col justify-center items-center md:w-[58%] lg:w-[60%] overflow-hidden'>
+            <div className='grid auto-cols-max grid-flow-col justify-around items-center min-[600px]:h-[22rem] lg:h-[28rem] w-full max-[600px]:h-[20rem] max-sm:mb-4 xl:h-[34rem]'>
                 {SSList && SSList.map((story) => {
                     return (
                         <motion.div
@@ -107,14 +95,14 @@ export default function SuccessStories() {
                             onMouseEnter={() => window.innerWidth >= 768 && setHover(story.id)}
                             className='group border-2 border-gray-600 flex rounded-2xl bg-center bg-cover overflow-hidden relative
                             [--non-hover-card-display:none] md:[--non-hover-card-display:block]
-                            [--non-hover-card-width:0] md:[--non-hover-card-width:8vw] lg:[--non-hover-card-width:10vw] xl:[--non-hover-card-width:10vw] 2xl:[--non-hover-card-width:8vw]
-                            [--non-hover-card-height:0] md:[--non-hover-card-height:18rem] xl:[--non-hover-card-height:22rem]
+                            [--non-hover-card-width:0] md:[--non-hover-card-width:8vw] lg:[--non-hover-card-width:8vw] xl:[--non-hover-card-width:10vw] 2xl:[--non-hover-card-width:8vw]
+                            [--non-hover-card-height:0] md:[--non-hover-card-height:14rem] lg:[--non-hover-card-height:18rem] xl:[--non-hover-card-height:22rem]
 
-                            [--hover-width:40vw] min-[425px]:[--hover-width:44vw] md:[--hover-width:32vw] lg:[--hover-width:28vw] xl:[--hover-width:26vw] 2xl:[--hover-width:20vw]
-                            [--hover-height:18rem] min-[600px]:[--hover-height:24rem] lg:[--hover-height:30rem] xl:[--hover-height:32rem]
+                            [--hover-width:40vw] min-[425px]:[--hover-width:44vw] md:[--hover-width:28vw] lg:[--hover-width:24vw] xl:[--hover-width:24vw] 2xl:[--hover-width:20vw]
+                            [--hover-height:18rem] min-[600px]:[--hover-height:22rem] lg:[--hover-height:26rem] xl:[--hover-height:32rem]
 
-                            [--beside-hover-width:18vw] min-[425px]:[--beside-hover-width:20vw] md:[--beside-hover-width:15vw] xl:[--beside-hover-width:13vw] 2xl:[--beside-hover-width:10vw]
-                            [--beside-hover-height:15rem] min-[600px]:[--beside-hover-height:18rem] lg:[--beside-hover-height:24rem] xl:[--beside-hover-height:26rem]'
+                            [--beside-hover-width:18vw] min-[425px]:[--beside-hover-width:20vw] md:[--beside-hover-width:8vw] lg:[--beside-hover-width:11vw] xl:[--beside-hover-width:10vw] 2xl:[--beside-hover-width:10vw]
+                            [--beside-hover-height:15rem] min-[600px]:[--beside-hover-height:18rem] lg:[--beside-hover-height:22rem] xl:[--beside-hover-height:26rem]'
                             style={{ backgroundImage: `url(${story.profielpic})`, justifyContent: "center", alignItems: "end" }}>
                             <motion.div
                                 transition={{ duration: 0.25 }}
