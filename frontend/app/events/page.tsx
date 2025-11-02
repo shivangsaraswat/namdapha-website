@@ -4,187 +4,75 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import EventFooter from "@/components/EventFooter";
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-// Mock data for events - this will be replaced with API calls later
-const eventsData = [
-	{
-		id: 1,
-		title: "DevEx 101: Developer Experience Explained",
-		category: "Insights",
-		date: "Feb 5, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Learn about the fundamentals of developer experience and how to improve it in your organization.",
-		tags: ["Developer Experience", "DevEx", "Best Practices"],
-	},
-	{
-		id: 2,
-		title: "Assertions in Dart and Flutter tests: an ultimate cheat sheet",
-		category: "Flutter",
-		date: "Feb 2, 2023",
-		image: "/devansh.jpeg",
-		description:
-			"A comprehensive guide to testing in Flutter applications with practical examples.",
-		tags: ["Flutter", "Testing", "Dart"],
-	},
-	{
-		id: 3,
-		title: "Sending emails using Firestore and Firebase Extensions",
-		category: "Firebase",
-		date: "Oct 6, 2022",
-		image: "/devansh.jpeg",
-		description:
-			"How to implement email functionality using Firebase Extensions and Firestore.",
-		tags: ["Firebase", "Firestore", "Email"],
-	},
-	{
-		id: 4,
-		title: "React Native Firebase Roadmap: TurboModules Migration",
-		category: "React Native",
-		date: "Aug 27, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Discover the future of React Native Firebase with TurboModules integration.",
-		tags: ["React Native", "Firebase", "TurboModules"],
-	},
-	{
-		id: 5,
-		title: "Enable Genkit Monitoring in Your Firebase Gemini Chatbot",
-		category: "Firebase",
-		date: "Jul 2, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Learn how to implement monitoring for your AI-powered chatbot applications.",
-		tags: ["Firebase", "AI", "Monitoring", "Gemini"],
-	},
-	{
-		id: 6,
-		title: "Cloud Functions Streaming in Flutter",
-		category: "Flutter",
-		date: "Jun 11, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Implement real-time streaming with Cloud Functions in your Flutter applications.",
-		tags: ["Flutter", "Cloud Functions", "Streaming"],
-	},
-	{
-		id: 7,
-		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
-		category: "Flutter",
-		date: "Apr 8, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
-		tags: ["Flutter", "Pigeon", "Migration"],
-	},
-	{
-		id: 8,
-		title: "Making Documentation Easy for Widgetbook with docs.page",
-		category: "Success Stories",
-		date: "Feb 26, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"How docs.page empowers Widgetbook to focus entirely on content for their documentation.",
-		tags: ["Documentation", "Widgetbook", "Tools"],
-	},
-	{
-		id: 9,
-		title: "Canonical Embraces Flutter, Guided by Invertase",
-		category: "Success Stories",
-		date: "Dec 19, 2024",
-		image: "/devansh.jpeg",
-		description:
-			"How Canonical collaborated with Invertase to modernise core Ubuntu apps with Flutter.",
-		tags: ["Flutter", "Ubuntu", "Canonical"],
-	},
-	{
-		id: 10,
-		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
-		category: "Flutter",
-		date: "Apr 8, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
-		tags: ["Flutter", "Pigeon", "Migration"],
-	},
-	{
-		id: 11,
-		title: "Migrating Flutter Plugins to Pigeon: Lessons Learned",
-		category: "Flutter",
-		date: "Apr 8, 2025",
-		image: "/devansh.jpeg",
-		description:
-			"Best practices and lessons learned from migrating Flutter plugins to Pigeon.",
-		tags: ["Flutter", "Pigeon", "Migration"],
-	},
-];
+interface Event {
+	id: string;
+	title: string;
+	category: string;
+	date: string;
+	time?: string;
+	venue?: string;
+	meetLink?: string;
+	image: string;
+	description: string;
+}
+
+const categories = ["All", "Paradox", "Workshops", "Meetups", "Other Events"];
 
 export default function EventsPage() {
 	const [currentEventIndex, setCurrentEventIndex] = useState(0);
-	const [visiblePastEvents, setVisiblePastEvents] = useState(2)
-	const [categories, setCategories] = useState<string[] | null>(null)
+	const [selectedCategory, setSelectedCategory] = useState("All");
+	const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+	const [pastEventsData, setPastEventsData] = useState<Event[]>([]);
+	const [visibleCount, setVisibleCount] = useState<{[key: string]: number}>({
+		"Paradox": 4,
+		"Workshops": 4,
+		"Meetups": 4,
+		"Other Events": 4
+	});
 
 	useEffect(() => {
-		const categories: string[] = []
-		eventsData.map((event) => {
-			// console.log(categories.filter((cat) => cat==event.category).length)
-			if (categories.filter((cat: string) => cat == event.category).length == 0) {
-				categories.push(event.category)
+		const fetchEvents = async () => {
+			try {
+				const upcomingQuery = query(collection(db, 'events'), where('type', '==', 'upcoming'), where('status', '==', 'active'));
+				const pastQuery = query(collection(db, 'events'), where('type', '==', 'past'), where('status', '==', 'active'));
+				
+				const [upcomingSnap, pastSnap] = await Promise.all([
+					getDocs(upcomingQuery),
+					getDocs(pastQuery)
+				]);
+
+				const upcoming = upcomingSnap.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+					image: doc.data().imageUrl
+				})) as Event[];
+
+				const past = pastSnap.docs.map(doc => ({
+					id: doc.id,
+					...doc.data(),
+					image: doc.data().imageUrl
+				})) as Event[];
+
+				if (upcoming.length > 0) setUpcomingEvents(upcoming.sort((a, b) => ((a as Event & {order: number}).order || 0) - ((b as Event & {order: number}).order || 0)));
+				if (past.length > 0) setPastEventsData(past.sort((a, b) => ((a as Event & {order: number}).order || 0) - ((b as Event & {order: number}).order || 0)));
+			} catch (error) {
+				console.error('Error fetching events:', error);
 			}
-		})
-		setCategories(categories)
-	}, [])
+		};
+		fetchEvents();
+	}, []);
 
-	// Upcoming events data
-	const upcomingEvents = [
-		{
-			id: 1,
-			title: "DevEx 101: Developer Experience Workshop",
-			description: "Learn the fundamentals of developer experience and how to improve it in your organization. This comprehensive workshop covers best practices, tools, and methodologies.",
-			image: "/devansh.jpeg",
-			date: "Feb 15, 2025 • 2:00 PM",
-			venue: "Conference Hall A, Main Building",
-			tags: [
-				{ name: "Productivity", color: "bg-blue-600" },
-				{ name: "Workshop", color: "bg-orange-600" }
-			]
-		},
-		{
-			id: 2,
-			title: "Flutter Testing Masterclass",
-			description: "Master testing in Flutter applications with comprehensive examples, best practices, and hands-on exercises covering unit, widget, and integration tests.",
-			image: "/devansh.jpeg",
-			date: "Feb 22, 2025 • 3:00 PM",
-			venue: "Lab 201, Computer Science Building",
-			tags: [
-				{ name: "Flutter", color: "bg-blue-500" },
-				{ name: "Testing", color: "bg-purple-600" }
-			]
-		},
-		{
-			id: 3,
-			title: "Firebase Extensions Workshop",
-			description: "Build powerful backends with Firebase Extensions. Learn to integrate authentication, cloud functions, and real-time databases in your applications.",
-			image: "/devansh.jpeg",
-			date: "Mar 1, 2025 • 4:00 PM",
-			venue: "Innovation Hub, Block C",
-			tags: [
-				{ name: "Firebase", color: "bg-orange-500" },
-				{ name: "Backend", color: "bg-red-600" }
-			]
-		}
-	];
-
-	// Auto-advance functionality
 	useEffect(() => {
+		if (upcomingEvents.length === 0) return;
 		const timer = setInterval(() => {
 			setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
-		}, 5000); // Auto-advance every 5 seconds
-
+		}, 5000);
 		return () => clearInterval(timer);
 	}, [upcomingEvents.length]);
 
-	// Navigation functions
 	const nextEvent = () => {
 		setCurrentEventIndex((prev) => (prev + 1) % upcomingEvents.length);
 	};
@@ -195,374 +83,245 @@ export default function EventsPage() {
 
 	const currentEvent = upcomingEvents[currentEventIndex];
 
-	// Remove global footer on mount for this page
 	useEffect(() => {
 		document.querySelectorAll('footer').forEach((f) => {
 			if (!f.hasAttribute('data-events-footer')) {
-				// hide the footer instead of removing it to avoid breaking React/Next insertBefore operations
 				try {
 					(f as HTMLElement).style.display = 'none';
 					f.setAttribute('data-invisible-for-events', 'true');
-				} catch {
-					// ignore
-				}
+				} catch {}
 			}
 		});
 
 		return () => {
-			// restore any hidden footers when unmounting
 			document.querySelectorAll('footer[data-invisible-for-events]').forEach((f) => {
 				try {
 					(f as HTMLElement).style.display = '';
 					f.removeAttribute('data-invisible-for-events');
-				} catch {
-					// ignore
-				}
+				} catch {}
 			});
 		};
 	}, []);
 
-	// Filter events based on search and category
-
-
-
+	const hasUpcomingEvents = upcomingEvents.length > 0;
 
 	return (
 		<div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
-			{/* Hero Section with Navbar */}
-			<section className="relative overflow-hidden">
+			<section className="relative overflow-hidden bg-black">
 				<div className="absolute inset-0">
-					<Image
-						src="/events-hero-bg.svg"
-						alt="Hero background"
-						fill
-						className="object-cover"
-						priority
-					/>
+					<Image src="/events-hero-bg.svg" alt="Hero background" fill className="object-cover" priority />
 				</div>
-				
-				<div className="relative z-[60]">
-					<Navbar />
-				</div>
-
+				<div className="relative z-[60]"><Navbar /></div>
 				<div className="relative z-10 py-20 px-6 md:px-8 lg:px-12">
 					<div className="max-w-[1400px] mx-auto text-center">
-						<h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
+						<h1 className="text-4xl sm:text-[3rem] md:text-[3.5rem] lg:text-6xl xl:text-[4rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-title font-medium text-transparent leading-[1.1] tracking-tight">
 							Events & Workshops
 						</h1>
-						<p className="mt-6 text-[13px] md:text-[15px] lg:text-[18px] text-gray-300 max-w-3xl mx-auto">
+						<p className="mt-6 text-sm md:text-base lg:text-lg text-gray-300 max-w-3xl mx-auto">
 							Join our exciting events, workshops, and learning sessions. Connect, learn, and grow.
 						</p>
 					</div>
 				</div>
 			</section>
 
-			{/* Main Content */}
-			<main className="relative z-10 px-6 md:px-8 lg:px-12 pt-16 pb-32">
-				<div className="max-w-[1200px] mx-auto pt-16 relative">
-					{/* ensure content stacks above gradients */}
-					<div className="relative z-10">
-						{/* Header - rebranded as Upcoming Events */}
-						<div className="mb-12">
-							<h1 className="text-[2rem] md:text-[2.5rem] font-bold mb-4 leading-[1.1] text-left">
-								Upcoming Events
-							</h1>
-							<p className="text-gray-400 text-base text-left max-w-xl">
-								Join us for exciting upcoming events and workshops.
-							</p>
-						</div>
+			<main className="relative z-10 px-6 md:px-8 lg:px-12 py-16">
+				<div className="max-w-[1200px] mx-auto">
+					<div className="mb-20">
+						<h2 className="text-3xl md:text-4xl font-title font-medium mb-3 text-gray-800">Upcoming Events</h2>
+						<p className="text-gray-600 text-sm md:text-base mb-8 max-w-2xl">Join us for exciting upcoming events and workshops.</p>
 
-						{/* Upcoming Events - responsive single card with navigation */}
-						<div className="relative mb-16">
-							{/* Desktop & Tablet Layout */}
+						{!hasUpcomingEvents ? (
+							<div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
+								<svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+								</svg>
+								<h3 className="text-xl font-semibold text-gray-900 mb-2">No Upcoming Events</h3>
+								<p className="text-gray-600">Check back soon for new events and workshops!</p>
+							</div>
+						) : (
+							<div className="relative">
 							<div className="hidden md:flex items-center gap-4">
-								{/* Previous Button */}
-								<button
-									onClick={prevEvent}
-									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
-									aria-label="Previous event"
-								>
-									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-									</svg>
+								<button onClick={prevEvent} className="flex-shrink-0 w-12 h-12 bg-gray-800/80 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all" aria-label="Previous event">
+									<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
 								</button>
 
-								{/* Event Card - Desktop/Tablet */}
-								<div className="flex-1 group cursor-pointer transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
-									<div className="relative w-full h-[280px] lg:h-[320px] xl:h-[360px] rounded-[20px] lg:rounded-[24px] overflow-hidden">
-										{/* Background SVG from council page */}
-										<div className="absolute inset-0">
-											<Image
-												src="/council-card-bg.svg"
-												alt="Card background"
-												width={1000}
-												height={360}
-												className="w-full h-full object-cover"
-											/>
+								<div className="flex-1 bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+									<div className="flex h-[280px]">
+										<div className="w-2/5 relative">
+											<Image src={currentEvent.image} alt={currentEvent.title} fill className="object-cover" />
 										</div>
-
-										{/* Card Content - Horizontal Layout */}
-										<div className="relative z-10 h-full flex">
-											{/* Left: Event Image */}
-											<div className="w-[240px] lg:w-[320px] xl:w-[380px] flex-shrink-0 pl-0 pr-4 py-0 lg:pr-6">
-												<div className="w-full h-full overflow-hidden shadow-xl">
-													<Image
-														src={currentEvent.image}
-														alt={`${currentEvent.title} Poster`}
-														width={380}
-														height={300}
-														className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-													/>
-												</div>
+										<div className="w-3/5 p-6 flex flex-col justify-between">
+											<div>
+												<h3 className="text-2xl font-semibold text-gray-900 mb-3">{currentEvent.title}</h3>
+												<p className="text-gray-600 text-sm mb-4 line-clamp-2">{currentEvent.description}</p>
 											</div>
-
-											{/* Right: Event Details */}
-											<div className="flex-1 p-4 lg:p-6 xl:p-8 flex flex-col justify-between">
-												<div className="space-y-3 lg:space-y-4">
-													{/* Title */}
-													<h3 className="text-white text-lg lg:text-2xl xl:text-3xl font-bold leading-tight">
-														{currentEvent.title}
-													</h3>
-													
-													{/* Description */}
-													<p className="text-gray-300 text-sm lg:text-base xl:text-lg leading-relaxed line-clamp-3 lg:line-clamp-none">
-														{currentEvent.description}
-													</p>
-													
-													{/* Venue */}
-													<p className="text-gray-400 text-sm lg:text-base flex items-center">
-														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-														</svg>
-														{currentEvent.venue}
-													</p>
+											<div className="space-y-2">
+												<div className="flex items-center gap-3 text-sm text-gray-700">
+													<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+													<span>{currentEvent.date} • {currentEvent.time}</span>
 												</div>
-												
-												{/* Bottom Section: Tags and Date */}
-												<div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 lg:gap-4 mt-4 lg:mt-6">
-													{/* Category Tags */}
-													<div className="flex gap-2 lg:gap-3 flex-wrap">
-														{currentEvent.tags.map((tag, index) => (
-															<span key={index} className={`inline-block px-2 lg:px-3 xl:px-4 py-1 lg:py-2 ${tag.color} text-white text-xs lg:text-sm font-medium rounded-full`}>
-																{tag.name}
-															</span>
-														))}
+												<div className="flex items-center justify-between">
+													<div className="flex items-center gap-2 text-sm text-gray-700">
+														<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+														<span>{currentEvent.venue}</span>
 													</div>
-													
-													{/* Date/Time */}
-													<div className="text-[#9AE634] text-sm lg:text-base font-semibold flex items-center">
-														<svg className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-														</svg>
-														{currentEvent.date}
-													</div>
+													{currentEvent.meetLink && (
+														<a href={`https://${currentEvent.meetLink}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+															<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+															Join Google Meet
+														</a>
+													)}
 												</div>
 											</div>
 										</div>
 									</div>
 								</div>
 
-								{/* Next Button */}
-								<button
-									onClick={nextEvent}
-									className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 bg-gray-800/50 hover:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-gray-600/30"
-									aria-label="Next event"
-								>
-									<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-									</svg>
+								<button onClick={nextEvent} className="flex-shrink-0 w-12 h-12 bg-gray-800/80 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all" aria-label="Next event">
+									<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
 								</button>
 							</div>
 
-							{/* Mobile Layout */}
 							<div className="md:hidden">
-								{/* Mobile Event Card */}
-								<div className="group cursor-pointer transform transition-all duration-500 active:scale-[0.98]">
-									<div className="relative w-full h-[500px] rounded-[16px] overflow-hidden">
-										{/* Background SVG from council page */}
-										<div className="absolute inset-0">
-											<Image
-												src="/council-card-bg.svg"
-												alt="Card background"
-												width={400}
-												height={500}
-												className="w-full h-full object-cover"
-											/>
-										</div>
-
-										{/* Card Content - Vertical Layout for Mobile */}
-										<div className="relative z-10 h-full flex flex-col">
-											{/* Event Image */}
-											<div className="w-full h-[280px] overflow-hidden shadow-xl">
-												<Image
-													src={currentEvent.image}
-													alt={`${currentEvent.title} Poster`}
-													width={350}
-													height={280}
-													className="w-full h-full object-cover transition-transform duration-500 group-active:scale-105"
-												/>
+								<div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+									<div className="relative h-48">
+										<Image src={currentEvent.image} alt={currentEvent.title} fill className="object-cover" />
+									</div>
+									<div className="p-4 space-y-3">
+										<h3 className="text-xl font-semibold text-gray-900">{currentEvent.title}</h3>
+										<p className="text-gray-600 text-sm line-clamp-2">{currentEvent.description}</p>
+										<div className="space-y-2">
+											<div className="flex items-center gap-2 text-sm text-gray-700">
+												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+												<span>{currentEvent.date} • {currentEvent.time}</span>
 											</div>
-
-											{/* Event Details */}
-											<div className="flex-1 p-4 space-y-3">
-												{/* Title */}
-												<h3 className="text-white text-xl font-bold leading-tight">
-													{currentEvent.title}
-												</h3>
-												
-												{/* Description */}
-												<p className="text-gray-300 text-sm leading-relaxed line-clamp-3">
-													{currentEvent.description}
-												</p>
-												
-												{/* Venue */}
-												<p className="text-gray-400 text-sm flex items-center">
-													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-													</svg>
-													{currentEvent.venue}
-												</p>
-												
-												{/* Category Tags */}
-												<div className="flex gap-2 flex-wrap">
-													{currentEvent.tags.map((tag, index) => (
-														<span key={index} className={`inline-block px-3 py-1 ${tag.color} text-white text-xs font-medium rounded-full`}>
-															{tag.name}
-														</span>
-													))}
-												</div>
-												
-												{/* Date/Time */}
-												<div className="text-[#9AE634] text-sm font-semibold flex items-center pt-2">
-													<svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-													</svg>
-													{currentEvent.date}
-												</div>
+											<div className="flex items-center gap-2 text-sm text-gray-700">
+												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+												<span>{currentEvent.venue}</span>
 											</div>
+											{currentEvent.meetLink && (
+												<a href={`https://${currentEvent.meetLink}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors w-full">
+													<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+													Join Google Meet
+												</a>
+											)}
 										</div>
 									</div>
 								</div>
 
-								{/* Mobile Navigation Buttons */}
 								<div className="flex justify-center items-center gap-4 mt-4">
-									<button
-										onClick={prevEvent}
-										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
-										aria-label="Previous event"
-									>
-										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-										</svg>
+									<button onClick={prevEvent} className="w-10 h-10 bg-gray-800/80 rounded-full flex items-center justify-center">
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
 									</button>
-
-									{/* Make counter text dark on light background */}
-									<div className="text-black text-sm font-medium">
-										{currentEventIndex + 1} of {upcomingEvents.length}
-									</div>
-
-									<button
-										onClick={nextEvent}
-										className="w-10 h-10 bg-gray-800/50 active:bg-gray-700/70 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 backdrop-blur-sm border border-gray-600/30"
-										aria-label="Next event"
-									>
-										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-										</svg>
+									<div className="text-gray-700 text-sm font-medium">{currentEventIndex + 1} of {upcomingEvents.length}</div>
+									<button onClick={nextEvent} className="w-10 h-10 bg-gray-800/80 rounded-full flex items-center justify-center">
+										<svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
 									</button>
 								</div>
 							</div>
 
-							{/* Event Indicators - Hidden on Mobile, Visible on Desktop */}
-							<div className="hidden md:flex justify-center mt-6 gap-2">
+							<div className="flex justify-center mt-6 gap-2">
 								{upcomingEvents.map((_, index) => (
-									<button
-										key={index}
-										onClick={() => setCurrentEventIndex(index)}
-										className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-300 ${
-											index === currentEventIndex 
-												? 'bg-[#9AE634] scale-125' 
-												: 'bg-gray-600 hover:bg-gray-500'
-										}`}
-										aria-label={`Go to event ${index + 1}`}
-									/>
+									<button key={index} onClick={() => setCurrentEventIndex(index)} className={`w-2 h-2 rounded-full transition-all ${index === currentEventIndex ? 'bg-gray-800 w-6' : 'bg-gray-400'}`} />
 								))}
 							</div>
 						</div>
-						{/* Insights Section - rebranded from blog posts */}
-						<div className="mb-8">
-							<h2 className="text-[2rem] md:text-[2.5rem] font-bold mb-4 leading-[1.1] text-left">
-								Past Events
-							</h2>
-							<p className="text-gray-400 text-base text-left max-w-xl">
-								Get the latest news and updates from the Invertase team.
-							</p>
+						)}
+					</div>
+
+					<div>
+						<h2 className="text-3xl md:text-4xl font-title font-medium mb-3 text-gray-800">Past Events</h2>
+						<p className="text-gray-600 text-sm md:text-base mb-6 max-w-2xl">Explore our previous events and workshops.</p>
+
+						{pastEventsData.length === 0 ? (
+							<div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
+								<svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+								</svg>
+								<h3 className="text-xl font-semibold text-gray-900 mb-2">No Past Events</h3>
+								<p className="text-gray-600">Past events will appear here once they&apos;re completed.</p>
+							</div>
+						) : (
+							<>
+							<div className="flex flex-wrap justify-center gap-3 mb-8">
+							{categories.map((category) => (
+								<button key={category} onClick={() => setSelectedCategory(category)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${selectedCategory === category ? 'bg-gray-800 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400 hover:shadow-sm'}`}>
+									{category}
+								</button>
+							))}
 						</div>
 
-						{/* Bottom Grid - additional events from the filtered data */}
-						<div className="flex flex-col">
-							{categories && categories.slice(0, visiblePastEvents).map((category) => {
-								// filter specific category events
-								const catEvents = eventsData.filter((event) => event.category == category)
+						{selectedCategory === "All" ? (
+							<div className="space-y-12">
+								{categories.slice(1).map((category) => {
+									const categoryEvents = pastEventsData.filter(e => e.category === category);
+									const displayedEvents = categoryEvents.slice(0, visibleCount[category] || 4);
+									const hasMore = categoryEvents.length > (visibleCount[category] || 4);
 
-								// checks whether the cards are overflowing and have to show the scroll buttons
-								const el = document.getElementById(category);
-								const isOverflowing = el && el.scrollWidth > el.clientWidth;
+									if (categoryEvents.length === 0) return null;
 
-								return (catEvents.length > 0 && (
-									<div key={category} className="flex flex-col gap-2">
-										<h3 className="text-[1.2rem] font-semibold md:text-xl ml-6 md:ml-14">{category}</h3>
-										<div className="flex items-center">
-											<button onClick={() => document.getElementById(category)?.scrollBy({ left: -200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
-												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-												</svg>
-											</button>
-											<div id={`${category}`} className="flex overflow-x-hidden scroll-smooth md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 sm:mx-2 py-3 px-2">
-												{catEvents.map((event) => {
-													return (
-														// Past Event Card
-														<article key={event.id} className="group cursor-pointer shrink-0 w-48 md:w-52 lg:w-60 relative border flex flex-col items-center py-3 justify-between px-3 border-gray-700 rounded-2xl transition-all duration-500 hover:scale-105">
-															<Image
-																src={"/devansh.jpeg"}
-																alt={`${event.title} Poster`}
-																width={250}
-																height={180}
-																className="w-full h-40 md:h-44 lg:h-52 object-cover rounded-xl"
-															/>
-															<div className="space-y-2 mr-5 my-4 md:mr-2">
-																<div className="flex flex-col items-start gap-2">
-																	<div className="text-gray-500 text-xs">
-																		{event.date}
-																	</div>
-																</div>
-																<h3 className="text-sm md:text-base lg:text-lg text-black transition-colors leading-tight">
-																	{event.title}
-																</h3>
-															</div>
-															</article>
-														)
-													})}
+									return (
+										<div key={category}>
+											<div className="flex items-center gap-4 mb-6">
+												<h3 className="text-2xl font-semibold text-gray-800 whitespace-nowrap">{category} Events</h3>
+												<div className="flex-1 h-px bg-gray-300"></div>
 											</div>
-											<button onClick={() => document.getElementById(category)?.scrollBy({ left: 200, behavior: 'smooth' })} className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 backdrop-blur-sm border border-gray-600/30" style={{ visibility: isOverflowing ? 'visible' : 'hidden' }}>
-												<svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-												</svg>
-											</button>
+											<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+												{displayedEvents.map((event) => (
+													<article key={event.id} className="group bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+														<div className="relative w-full aspect-[3/4]">
+															<Image src={event.image} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+														</div>
+														<div className="p-3 md:p-4 space-y-1.5">
+															<div className="text-xs text-gray-500 font-medium">{event.date}</div>
+															<h3 className="text-sm md:text-base font-semibold text-gray-900 line-clamp-2 leading-tight">{event.title}</h3>
+															<p className="text-xs md:text-sm text-gray-600 line-clamp-2 leading-relaxed">{event.description}</p>
+														</div>
+													</article>
+												))}
+											</div>
+											{hasMore && (
+												<div className="flex justify-center mt-6">
+													<button onClick={() => { setVisibleCount(prev => ({...prev, [category]: (prev[category] || 4) + 4})); setTimeout(() => { setVisibleCount(prev => ({...prev, [category]: 4})); }, 5000); }} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
+														Load More
+													</button>
+												</div>
+											)}
 										</div>
+									);
+								})}
+							</div>
+						) : (
+							<div>
+								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+									{pastEventsData.filter(e => e.category === selectedCategory).slice(0, visibleCount[selectedCategory] || 4).map((event) => (
+										<article key={event.id} className="group bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+											<div className="relative w-full aspect-[3/4]">
+												<Image src={event.image} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+											</div>
+											<div className="p-3 md:p-4 space-y-1.5">
+												<div className="text-xs text-gray-500 font-medium">{event.date}</div>
+												<h3 className="text-sm md:text-base font-semibold text-gray-900 line-clamp-2 leading-tight">{event.title}</h3>
+												<p className="text-xs md:text-sm text-gray-600 line-clamp-2 leading-relaxed">{event.description}</p>
+											</div>
+										</article>
+									))}
+								</div>
+								{pastEventsData.filter(e => e.category === selectedCategory).length > (visibleCount[selectedCategory] || 4) && (
+									<div className="flex justify-center mt-6">
+										<button onClick={() => { setVisibleCount(prev => ({...prev, [selectedCategory]: (prev[selectedCategory] || 4) + 4})); setTimeout(() => { setVisibleCount(prev => ({...prev, [selectedCategory]: 4})); }, 5000); }} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
+											Load More
+										</button>
 									</div>
-
-								))
-							})}
-							{categories && <button className="border text-sm md:text-base lg:text-lg border-gray-700 rounded-xl w-fit px-3 py-1 mx-auto transition-all duration-300 hover:scale-105 hover:bg-gray-700/70" onClick={() => visiblePastEvents <= categories.length ? setVisiblePastEvents(prev => prev + 2) : setVisiblePastEvents(2)}>{visiblePastEvents <= categories.length ? "Show More" : "Show Less"}</button>}
-						</div>
+								)}
+							</div>
+						)}
+						</>
+						)}
 					</div>
 				</div>
 			</main>
 
-			{/* Custom Event Footer */}
 			<EventFooter />
 		</div>
 	);

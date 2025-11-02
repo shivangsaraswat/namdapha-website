@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from 'react';
 import { councilService, type CouncilMember } from '@/lib/councilService';
 
@@ -10,10 +11,12 @@ export default function CouncilPage(){
     houseLeadership: CouncilMember[];
     regionalCoordinators: CouncilMember[];
   }>({ houseLeadership: [], regionalCoordinators: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCouncilData = async () => {
       try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const [leadership, coordinators] = await Promise.all([
           councilService.getLeadership(),
           councilService.getCoordinators()
@@ -25,11 +28,17 @@ export default function CouncilPage(){
         });
       } catch (error) {
         console.error('Error fetching council data:', error);
+      } finally {
+        setLoading(false);
       }
     };
     
     fetchCouncilData();
   }, []);
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
       {/* Hero Section with Navbar */}
@@ -42,7 +51,7 @@ export default function CouncilPage(){
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 flex items-center justify-center opacity-20">
+          <div className="absolute inset-0 flex items-center justify-center opacity-20 mt-16">
             <Image
               src="/logo-namdapha.png"
               alt="NAMP Logo"
@@ -100,7 +109,7 @@ export default function CouncilPage(){
                  <div className="max-w-7xl mx-auto text-center px-6">
                      <h2 className="fs-48 text-center font-title font-medium text-gray-8">House Leadership</h2>
 
-                   <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We understand the challenges developers face. That’s why we build products that streamline workflows, eliminate friction, and empower developers to focus on what they do best: making great products.</p>
+                   <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">The Upper House Council (UHC) leads Namdapha by guiding its members, organizing events, and representing the House in inter-house and institutional meetings. It ensures coordination, inclusivity, and the overall growth of the Namdapha community.</p>
 
                    {/* Cards Row (flex) - center the fixed-width posters so side gaps are even */}
                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
@@ -147,7 +156,7 @@ export default function CouncilPage(){
                  <div className="max-w-5xl mx-auto text-center px-4">
                   <h2 className="fs-48 text-center font-title font-medium text-gray-8">Regional Coordinators</h2>
                    
-                    <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We understand the challenges developers face. That’s why we build products that streamline workflows, eliminate friction, and empower developers to focus on what they do best: making great products.</p>
+                    <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">Regional Coordinators (RCs) form Namdapha’s Lower House Council, connecting students across regions, sharing updates, and offering guidance to keep everyone informed and supported.</p>
 
                   {/* Cards Grid - 3 columns for regional coordinators */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center mt-8">

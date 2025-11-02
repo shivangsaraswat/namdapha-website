@@ -13,9 +13,10 @@ export default function Navbar() {
   const handleNavigation = (href: string) => {
     // Don't show loading for same-page anchor links
     if (href.startsWith('/#')) {
-      const element = document.querySelector(href.substring(1));
+      const id = href.substring(2); // Remove '/#'
+      const element = document.getElementById(id);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
     }
@@ -34,7 +35,7 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center space-x-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-          <button onClick={() => handleNavigation('/#who-we-are')} className="text-white hover:opacity-90 transition-colors text-base px-3 py-1">
+          <button onClick={() => handleNavigation('/#about')} className="text-white hover:opacity-90 transition-colors text-base px-3 py-1">
             About us
           </button>
 
@@ -106,7 +107,7 @@ export default function Navbar() {
           <div className="flex-1 px-6 py-8">
             <div className="space-y-8">
               <button
-                onClick={() => { setIsMenuOpen(false); handleNavigation('/#who-we-are'); }}
+                onClick={() => { setIsMenuOpen(false); handleNavigation('/#about'); }}
                 className="block text-white hover:opacity-90 transition-colors text-lg py-2 w-full text-left"
               >
                 About us

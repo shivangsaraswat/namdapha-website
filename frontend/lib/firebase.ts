@@ -1,6 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
-import { getFunctions } from 'firebase/functions';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,22 +10,5 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize services
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
-export const functions = getFunctions(app);
-
-// Enable offline persistence
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.warn('Persistence failed: Multiple tabs open');
-    } else if (err.code === 'unimplemented') {
-      console.warn('Persistence not available in this browser');
-    }
-  });
-}
-
-export default app;

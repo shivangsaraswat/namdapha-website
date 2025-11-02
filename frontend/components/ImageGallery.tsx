@@ -3,19 +3,26 @@ import React from 'react'
 
 export default function ImageGallery() {
     const items = ['/bgmi.jpg', '/chess.jpg', '/valorant.jpg', '/freefire.jpg', '/coc.jpg', '/photography.jpg', '/devansh.jpeg']
+    const rotations = ['-rotate-1', 'rotate-1', '-rotate-3']
+    const margins = ['', 'ml-2', 'ml-2']
 
     return (
-        <div className="w-full md:w-[58%] grid grid-cols-3 gap-2 md:gap-4 relative max-md:h-[16rem] md:h-[28rem] lg:h-[36rem] overflow-hidden md:order-1">
-            <div className='w-full h-5 absolute -top-1 bg-black z-10 blur-[10px]'/>
-            <div className='w-full h-5 absolute -bottom-1 bg-black z-10 blur-[10px]'/>
+        <div className="w-full md:w-[58%] grid grid-cols-3 gap-2 md:gap-4 relative max-md:h-[20rem] max-md:overflow-hidden md:h-[40rem] lg:h-[50rem] md:order-1 md:ml-8">
+            <div className='w-full h-5 absolute -top-1 bg-white z-10 blur-[10px] md:hidden'/>
+            <div className='w-full h-5 absolute -bottom-1 bg-white z-10 blur-[10px] md:hidden'/>
             {[0, 1, 2].map((col) => (
                 <div
                     key={col}
-                    className={`flex flex-col gap-4 animate-marquee ${col % 2 == 1 ? "direction-down" : "direction-up"
+                    className={`flex flex-col gap-4 animate-marquee md:${rotations[col]} ${margins[col] ? `md:${margins[col]}` : ''} ${col % 2 == 1 ? "direction-down" : "direction-up"
                         }`}
                 >
                     {[...items, ...items].map((link, i) => (
-                        <Image width={500} height={500} alt=' ' src={link} className='h-auto w-auto'></Image>
+                        <React.Fragment key={`${col}-${i}`}>
+                            <Image width={500} height={500} alt=' ' src={link} className='h-auto w-auto rounded-2xl md:hidden' />
+                            <div className='relative w-full aspect-[3/4] hidden md:block'>
+                                <Image fill alt=' ' src={link} className='object-cover rounded-2xl' />
+                            </div>
+                        </React.Fragment>
                     ))}
                 </div>
             ))}

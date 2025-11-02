@@ -4,7 +4,7 @@ import LightningBackground from "@/components/LightningBackground";
 import DesignGallery from "@/components/DesignGallery";
 import SuccessStories from "@/components/SuccessStories";
 import Activites from "@/components/Activites";
-import { FaWhatsapp } from "react-icons/fa";
+
 import ImageGallery from "@/components/ImageGallery";
 
 export default function Page() {
@@ -130,7 +130,7 @@ export default function Page() {
                 <div className="max-w-4xl mx-auto text-center px-4">
                   <h2 className="fs-48 text-center font-title font-medium text-gray-8">Who we are !</h2>
 
-                  <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We embrace freedom, flexibility, and global collaboration. As a fully remote company, our team is empowered to do their best work, from anywhere in the world. Together we're transforming developer experiences.</p>
+                  <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We embrace freedom, flexibility, and global collaboration. As a fully remote company, our team is empowered to do their best work, from anywhere in the world. Together we&apos;re transforming developer experiences.</p>
 
                   {/* Stats Grid - centered layout */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center mt-8 max-w-2xl mx-auto">
@@ -167,7 +167,7 @@ export default function Page() {
               <div className="relative mb-12">
                 <div className="max-w-4xl mx-auto text-center px-4">
                   <h2 className="fs-48 text-center font-title font-medium text-gray-8">Developer tools, reimagined</h2>
-                  <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We understand the challenges developers face. That's why we build products that streamline workflows, eliminate friction, and empower developers to focus on what they do best: making great products.</p>
+                  <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">We understand the challenges developers face. That&apos;s why we build products that streamline workflows, eliminate friction, and empower developers to focus on what they do best: making great products.</p>
 
                   {/* Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center mt-8">
