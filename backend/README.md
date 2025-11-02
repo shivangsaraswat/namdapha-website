@@ -1,28 +1,17 @@
-# Project S Backend
+# Backend
 
-## Structure
+## Admin Dashboard
 
-- `api/` - Express.js API server
-- `admin-dashboard/` - Next.js 15 admin dashboard (initialize with `npx create-next-app@latest`)
-- `shared/` - Shared utilities and constants
-- `docker/` - Deployment configurations
+Next.js 15 admin dashboard for managing Namdapha House website content.
 
-## Getting Started
+### Getting Started
 
-### API Server
 ```bash
-cd api
+cd admin-dashboard
 npm install
 npm run dev
 ```
 
-### Admin Dashboard
-```bash
-cd admin-dashboard
-# Initialize Next.js 15 here
-npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
-```
+### Deployment
 
-## Deployment
-- API: Railway/Render
-- Admin Dashboard: Vercel
+Deploy to Vercel or Firebase Hosting.

@@ -36,10 +36,10 @@ export default function Footer() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <a href="#" target="_blank" rel="noreferrer" className="inline-flex items-center bg-[#25D366] hover:bg-[#1da851] text-white px-6 py-3 rounded-lg font-medium transition-colors text-base">
+              <Link href="/whatsapp" className="inline-flex items-center bg-[#25D366] hover:bg-[#1da851] text-white px-6 py-3 rounded-lg font-medium transition-colors text-base">
                 <FaWhatsapp className="w-5 h-5 mr-2" />
                 Join Now
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -85,17 +85,17 @@ export default function Footer() {
               <h3 className="text-white font-semibold text-base mb-4">Visit</h3>
               <ul className="space-y-3">
                  <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/link-tree" className="text-gray-400 hover:text-white transition-colors text-sm">
                     LinkTree
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/verify-certificate" className="text-gray-400 hover:text-white transition-colors text-sm">
                     Certificate Verification
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/whatsapp" className="text-gray-400 hover:text-white transition-colors text-sm">
                     Join WhatsApp Groups
                   </Link>
                 </li>
@@ -131,33 +131,34 @@ export default function Footer() {
 
             {/* Resources */}
             <div>
-              <h3 className="text-white font-semibold text-base mb-4">Resources</h3>
+              <h3 className="text-white font-semibold text-base mb-4">Tools</h3>
               <ul className="space-y-3">
                 <li>
                   <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                    Open source
+                    Grade Predictor
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                    Blog
+                   Grade Calculator
                   </Link>
                 </li>
+               
               </ul>
             </div>
 
             {/* Company */}
             <div>
-              <h3 className="text-white font-semibold text-base mb-4">Company</h3>
+              <h3 className="text-white font-semibold text-base mb-4">About Us</h3>
               <ul className="space-y-3">
                 <li>
                   <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                    About us
+                    Explore Gallery
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                    Careers
+                    Blogs
                   </Link>
                 </li>
               </ul>

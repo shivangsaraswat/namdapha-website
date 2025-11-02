@@ -24,7 +24,7 @@ export default function DesignGallery() {
     }, delay);
 
     return () => {
-      if (timer.current) window.clearInterval(timer.current);
+      if (timer.current !== null) window.clearInterval(timer.current);
     };
   }, []);
 
@@ -34,9 +34,6 @@ export default function DesignGallery() {
         // i === 0 => front (visible)
         // i === 1 => second (revealing)
         // i >= 2 => back
-        const isFront = i === 0;
-        const isSecond = i === 1;
-
         const baseWidth = 300; // rectangle width
         const baseHeight = 380; // rectangle height
 
@@ -74,7 +71,7 @@ export default function DesignGallery() {
             className={`absolute rounded-[18px] overflow-hidden border border-white/10 flex items-center justify-center`}            
             style={style}
           >
-            <img src={src} alt={`gallery-${i}`} className="w-full h-full object-cover" />
+            <img src={src} alt={`gallery-${i}`} className="w-full h-full object-cover" /> {/* eslint-disable-line @next/next/no-img-element */}
           </div>
         );
       })}

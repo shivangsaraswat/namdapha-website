@@ -1,13 +1,43 @@
 # Complete Deployment Guide
 
-## 🏗️ Architecture
+## 🏗️ Architecture Options
+
+### Option 1: Multi-Platform (Original)
 ```
 yoursite.com (Frontend - Vercel)
 admin.yoursite.com (Admin - Vercel)  
 api.yoursite.com (API - Railway)
 ```
 
-## 📋 Pre-Deployment Checklist
+### Option 2: Firebase (Recommended)
+```
+yoursite.com (Frontend + API - Firebase)
+admin.yoursite.com (Admin - Vercel)
+```
+
+## 🔥 Firebase Deployment (Recommended)
+
+### Quick Deploy
+```bash
+# Deploy everything to Firebase
+./deploy/scripts/deploy-firebase.sh
+```
+
+### Manual Deploy
+```bash
+cd deploy/firebase
+firebase deploy
+```
+
+**Benefits:**
+- ✅ $0/month cost (vs $5/month Railway)
+- ✅ Auto-scaling functions
+- ✅ Real-time database
+- ✅ Global CDN
+
+---
+
+## 📋 Multi-Platform Deployment (Alternative)
 
 ### 1. Frontend Deployment (Vercel)
 ```bash
