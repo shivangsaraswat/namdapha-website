@@ -7,13 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, Eye, EyeOff, Trash2, Plus, Crown, Shield, Edit, Loader2, AlertTriangle } from "lucide-react";
+import { Upload, Eye, EyeOff, Trash2, Plus, Crown, Shield, Edit, Loader2, AlertTriangle, GripVertical } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import Image from "next/image";
-import { saveCouncilMember, getCouncilMembers, updateCouncilMember, deleteCouncilMember, CouncilMember } from "@/lib/councilService";
+import { saveCouncilMember, getCouncilMembers, updateCouncilMember, deleteCouncilMember, reorderCouncilMembers, CouncilMember } from "@/lib/councilService";
 import { toast } from "sonner";
 import { useDeletePermission } from "@/hooks/useDeletePermission";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const leadershipPositions = [
   { value: "secretary", label: "Secretary" },
@@ -216,12 +219,34 @@ export default function Council() {
     }
   };
 
-  const MemberCard = ({ member, memberType }: { member: CouncilMember; memberType: 'leadership' | 'coordinator' }) => {
-    
+  const SortableCard = ({ member, memberType }: { member: CouncilMember; memberType: 'leadership' | 'coordinator' }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: member.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
     return (
-      <Card className={`rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
-        isDarkMode ? 'bg-gray-700' : 'bg-white'
-      }`}>
+      <div ref={setNodeRef} style={style}>
+        <Card className={`relative rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
+          isDarkMode ? 'bg-gray-700' : 'bg-white'
+        }`}>
+          <div className="absolute top-2 left-2 z-20 cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+            <div className={`p-1 rounded ${
+              isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
+            }`}>
+              <GripVertical className="w-4 h-4" />
+            </div>
+          </div>
         <div className="relative -mb-2">
           <div className="absolute top-2 right-2 z-10">
             <Badge className={`${
@@ -333,9 +358,48 @@ export default function Council() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     );
   };
+
+  const handleDragEnd = async (event: DragEndEvent, type: 'leadership' | 'coordinator') => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const items = type === 'leadership' ? leadership : coordinators;
+    const oldIndex = items.findIndex(m => m.id === active.id);
+    const newIndex = items.findIndex(m => m.id === over.id);
+
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    
+    if (type === 'leadership') {
+      setLeadership(reordered);
+    } else {
+      setCoordinators(reordered);
+    }
+
+    try {
+      const updates = reordered.map((member, index) => ({
+        id: member.id,
+        order: index
+      }));
+      await reorderCouncilMembers(updates);
+      toast.success('Order updated successfully!');
+    } catch (error) {
+      console.error('Error reordering:', error);
+      toast.error('Failed to update order');
+      await loadCouncilMembers();
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   return (
     <PageLayout title="Council Management" subtitle="Manage council member posters and visibility" activeItem="Council">
@@ -373,11 +437,19 @@ export default function Council() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-              {leadership.map((member) => (
-                <MemberCard key={member.id} member={member} memberType="leadership" />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => handleDragEnd(e, 'leadership')}
+            >
+              <SortableContext items={leadership.map(m => m.id)} strategy={horizontalListSortingStrategy}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+                  {leadership.map((member) => (
+                    <SortableCard key={member.id} member={member} memberType="leadership" />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
 
@@ -413,11 +485,19 @@ export default function Council() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 md:gap-6">
-              {coordinators.map((member) => (
-                <MemberCard key={member.id} member={member} memberType="coordinator" />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => handleDragEnd(e, 'coordinator')}
+            >
+              <SortableContext items={coordinators.map(m => m.id)} strategy={horizontalListSortingStrategy}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 md:gap-6">
+                  {coordinators.map((member) => (
+                    <SortableCard key={member.id} member={member} memberType="coordinator" />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
 

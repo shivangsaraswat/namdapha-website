@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Eye, EyeOff, Download, FileText, Link as LinkIcon, BookOpen, Calendar, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff, Download, FileText, Link as LinkIcon, BookOpen, Calendar, ArrowLeft, ExternalLink } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { pyqService, PYQ } from "@/lib/pyqService";
 import { toast } from "sonner";
@@ -34,12 +34,44 @@ export default function PYQManagement() {
   const [pyqs, setPyqs] = useState<PYQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false);
+  const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
+  const [filters, setFilters] = useState({
+    level: 'All',
+    term: 'All',
+    subject: 'All',
+    year: 'All',
+    semester: 'All',
+    status: 'All',
+  });
+  const INITIAL_LOAD = 8; // 2 rows × 4 columns
+  const LOAD_MORE = 8; // 2 rows × 4 columns
   
-  // Group PYQs by level
+  // Filter PYQs
+  const filteredPYQs = pyqs.filter(pyq => {
+    if (filters.level !== 'All' && pyq.level !== filters.level) return false;
+    if (filters.term !== 'All' && pyq.term !== filters.term) return false;
+    if (filters.subject !== 'All' && pyq.subject !== filters.subject) return false;
+    if (filters.year !== 'All' && pyq.year !== filters.year) return false;
+    if (filters.semester !== 'All' && pyq.semester !== filters.semester) return false;
+    if (filters.status === 'Hidden' && pyq.status !== 'draft') return false;
+    if (filters.status === 'Published' && pyq.status !== 'published') return false;
+    return true;
+  });
+
+  // Group filtered PYQs by level and sort by creation date (newest first)
   const pyqsByLevel = levels.reduce((acc, level) => {
-    acc[level] = pyqs.filter(pyq => pyq.level === level);
+    acc[level] = filteredPYQs
+      .filter(pyq => pyq.level === level)
+      .sort((a, b) => {
+        const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+        const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+        return dateB.getTime() - dateA.getTime(); // Newest first
+      });
     return acc;
   }, {} as Record<string, PYQ[]>);
+
+  // Get unique values for filters
+  const uniqueSubjects = Array.from(new Set(pyqs.map(p => p.subject))).sort();
   
   // Get unique subjects from existing PYQs
   const existingSubjects = Array.from(new Set(pyqs.map(p => p.subject))).sort();
@@ -60,6 +92,41 @@ export default function PYQManagement() {
   useEffect(() => {
     fetchPYQs();
   }, []);
+
+  useEffect(() => {
+    // Initialize visible counts for each level
+    const initialCounts: Record<string, number> = {};
+    levels.forEach(level => {
+      initialCounts[level] = INITIAL_LOAD;
+    });
+    setVisibleCounts(initialCounts);
+  }, [pyqs]);
+
+  const handleLoadMore = (level: string) => {
+    setVisibleCounts(prev => ({
+      ...prev,
+      [level]: (prev[level] || INITIAL_LOAD) + LOAD_MORE
+    }));
+    
+    // Auto-collapse after 10 seconds
+    setTimeout(() => {
+      setVisibleCounts(prev => ({
+        ...prev,
+        [level]: INITIAL_LOAD
+      }));
+    }, 10000);
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      level: 'All',
+      term: 'All',
+      subject: 'All',
+      year: 'All',
+      semester: 'All',
+      status: 'All',
+    });
+  };
 
   const fetchPYQs = async () => {
     try {
@@ -190,20 +257,102 @@ export default function PYQManagement() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => window.location.href = '/resource-hub'}
-          className={isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Resource Hub
-        </Button>
-        <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleAddClick}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add PYQ
-        </Button>
+      <div className="space-y-6 mb-6">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.location.href = '/resource-hub'}
+            className={isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Resource Hub
+          </Button>
+          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleAddClick}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add PYQ
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-end justify-end gap-2 mb-6">
+          <div className="w-40">
+            <Label className={`text-xs mb-1 block ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Level</Label>
+            <Select value={filters.level} onValueChange={(val) => setFilters({...filters, level: val})}>
+              <SelectTrigger className={`h-9 text-sm ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}`}>
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
+                <SelectItem value="All" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>All Levels</SelectItem>
+                {levels.map(l => <SelectItem key={l} value={l} className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-48">
+            <Label className={`text-xs mb-1 block ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Subject</Label>
+            <Select value={filters.subject} onValueChange={(val) => setFilters({...filters, subject: val})}>
+              <SelectTrigger className={`h-9 text-sm ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}`}>
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
+                <SelectItem value="All" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>All Subjects</SelectItem>
+                {uniqueSubjects.map(s => <SelectItem key={s} value={s} className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-36">
+            <Label className={`text-xs mb-1 block ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Exam Type</Label>
+            <Select value={filters.term} onValueChange={(val) => setFilters({...filters, term: val})}>
+              <SelectTrigger className={`h-9 text-sm ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}`}>
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
+                <SelectItem value="All" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>All Types</SelectItem>
+                {terms.map(t => <SelectItem key={t} value={t} className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-36">
+            <Label className={`text-xs mb-1 block ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Term</Label>
+            <Select value={filters.semester} onValueChange={(val) => setFilters({...filters, semester: val})}>
+              <SelectTrigger className={`h-9 text-sm ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}`}>
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
+                <SelectItem value="All" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>All Terms</SelectItem>
+                {semesters.map(s => <SelectItem key={s} value={s} className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-28">
+            <Label className={`text-xs mb-1 block ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Year</Label>
+            <Select value={filters.year} onValueChange={(val) => setFilters({...filters, year: val})}>
+              <SelectTrigger className={`h-9 text-sm ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}`}>
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
+                <SelectItem value="All" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>All Years</SelectItem>
+                {years.map(y => <SelectItem key={y} value={y} className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-32">
+            <Label className={`text-xs mb-1 block ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Status</Label>
+            <Select value={filters.status} onValueChange={(val) => setFilters({...filters, status: val})}>
+              <SelectTrigger className={`h-9 text-sm ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}`}>
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}>
+                <SelectItem value="All" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>All Status</SelectItem>
+                <SelectItem value="Published" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>Published</SelectItem>
+                <SelectItem value="Hidden" className={isDarkMode ? 'text-white hover:bg-gray-600' : ''}>Hidden</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" size="sm" onClick={resetFilters} className={`h-9 px-4 ${isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''}`}>
+            Reset
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -215,6 +364,20 @@ export default function PYQManagement() {
           <CardContent className="py-8">
             <div className="text-center">
               <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No PYQs yet</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : filteredPYQs.length === 0 ? (
+        <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+          <CardContent className="py-12">
+            <div className="text-center">
+              <FileText className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                No PYQs Found
+              </h3>
+              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {filters.status === 'Hidden' ? 'No hidden PYQs found' : 'Try using a different filter combination'}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -245,7 +408,7 @@ export default function PYQManagement() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {levelPYQs.map((pyq) => (
+                    {levelPYQs.slice(0, visibleCounts[level] || INITIAL_LOAD).map((pyq) => (
                       <Card key={pyq.id} className={`p-4 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-50'} border-0 shadow-sm hover:shadow-md transition-shadow`}>
                         <div className="space-y-3">
                           <div className="flex items-start justify-between">
@@ -279,6 +442,9 @@ export default function PYQManagement() {
                           </div>
                           
                           <div className="flex items-center gap-1 pt-2 border-t ${isDarkMode ? 'border-gray-500' : 'border-gray-200'}">
+                            <Button variant="ghost" size="sm" onClick={() => window.open(pyq.fileUrl, '_blank')} title="View" className="flex-1">
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => setVisibilityConfirm(pyq)} title={pyq.status === 'published' ? 'Hide' : 'Show'} className="flex-1">
                               {pyq.status === 'published' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </Button>
@@ -293,6 +459,17 @@ export default function PYQManagement() {
                       </Card>
                     ))}
                   </div>
+                  {levelPYQs.length > (visibleCounts[level] || INITIAL_LOAD) && (
+                    <div className="mt-6 text-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleLoadMore(level)}
+                        className={isDarkMode ? 'border-gray-500 text-gray-300 hover:bg-gray-600' : ''}
+                      >
+                        Load More ({levelPYQs.length - (visibleCounts[level] || INITIAL_LOAD)} remaining)
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

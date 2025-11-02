@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User, Power } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "next-auth/react";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface SidebarProps {
   activeItem?: string;
@@ -14,6 +17,14 @@ interface SidebarProps {
 export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
   const { isDarkMode, toggleDarkMode, mounted } = useTheme();
   const { user, hasPermission, isLoading } = useAuth();
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleNavigation = (href: string) => {
+    startTransition(() => {
+      router.push(href);
+    });
+  };
 
   const allMenuItems = [
     { name: "Dashboard", icon: Grid3X3, href: "/dashboard", permission: "dashboard" },
@@ -175,10 +186,10 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
           const isActive = item.name === activeItem;
           
           return (
-            <Link
+            <button
               key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+              onClick={() => handleNavigation(item.href)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors text-left ${
                 isActive 
                   ? isDarkMode ? "bg-gray-800" : "bg-gray-100"
                   : isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-50"
@@ -196,7 +207,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
               }`}>
                 {item.name}
               </span>
-            </Link>
+            </button>
           );
         })}
         {adminItems.map((item) => {
@@ -204,10 +215,10 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
           const isActive = item.name === activeItem;
           
           return (
-            <Link
+            <button
               key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+              onClick={() => handleNavigation(item.href)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors text-left ${
                 isActive 
                   ? isDarkMode ? "bg-gray-800" : "bg-gray-100"
                   : isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-50"
@@ -225,10 +236,11 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
               }`}>
                 {item.name}
               </span>
-            </Link>
+            </button>
           );
         })}
       </nav>
+      {isPending && <LoadingSpinner />}
       
       {/* User Profile Section */}
       <div className={`border-t pt-3 space-y-1 ${
