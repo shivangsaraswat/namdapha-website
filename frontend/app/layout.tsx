@@ -5,6 +5,7 @@ import PreloadData from '@/components/PreloadData';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import PageWrapper from './page-wrapper';
 
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://namdapha.iitmbs.org'),
   title: {

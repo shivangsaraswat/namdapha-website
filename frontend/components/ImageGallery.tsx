@@ -2,7 +2,7 @@ import Image from 'next/image';
 import React from 'react'
 
 export default function ImageGallery() {
-    const items = ['/bgmi.jpg', '/chess.jpg', '/valorant.jpg', '/freefire.jpg', '/coc.jpg', '/photography.jpg', '/devansh.jpeg']
+    const items = ['/_MG_0268.jpg', '/_MG_0296.jpg', '/_MG_0303.jpg', '/_MG_0307.jpg', '/_MG_0312.jpg', '/_MG_0336.jpg', '/_MG_0354.jpg', '/_MG_0355.jpg', '/_MG_0464.jpg']
     const rotations = ['-rotate-1', 'rotate-1', '-rotate-3']
     const margins = ['', 'ml-2', 'ml-2']
 

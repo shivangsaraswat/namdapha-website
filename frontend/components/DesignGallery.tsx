@@ -3,9 +3,14 @@
 import React, { useEffect, useState, useRef } from "react";
 
 const initialImages = [
-  "/devansh.jpeg",
-  "/councilelement.avif",
-  "/logo-nap.avif",
+  "/_MG_0268.jpg",
+  "/_MG_0296.jpg",
+  "/_MG_0303.jpg",
+  "/_MG_0307.jpg",
+  "/_MG_0312.jpg",
+  "/_MG_0336.jpg",
+  "/_MG_0354.jpg",
+  "/_MG_0355.jpg",
 ];
 
 export default function DesignGallery() {
