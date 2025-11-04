@@ -21,7 +21,7 @@ export default function LinkTree() {
   const { canDelete: canDeleteSocial } = useDeletePermission('link-tree-social');
   const { canDelete: canDeleteImportant } = useDeletePermission('link-tree-important');
   const [links, setLinks] = useState<Link[]>([]);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([
     { label: "Total Links", value: "0", change: "+0" },
     { label: "Total Clicks", value: "0", change: "+0%" },
@@ -210,15 +210,15 @@ export default function LinkTree() {
   };
 
   return (
-    <PageLayout title="Link Tree Management" subtitle="Manage your link tree and track performance" activeItem="Link Tree">
+    <PageLayout title="Link Tree Management" subtitle="Manage your link tree and track performance" activeItem="Link Tree" isLoading={loading}>
       <div className="space-y-6">
         <div className="flex items-center justify-end">
           <div className="flex items-center gap-3">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddSocialClick}>
+            <Button className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm" onClick={handleAddSocialClick}>
               <Plus className="w-4 h-4 mr-2" />
               Add Social Media
             </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleAddLinkClick}>
+            <Button className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm" onClick={handleAddLinkClick}>
               <Plus className="w-4 h-4 mr-2" />
               Add Link
             </Button>

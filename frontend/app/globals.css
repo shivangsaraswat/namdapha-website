@@ -12,11 +12,12 @@
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0; transform: scale(0); }
-  50% { opacity: 1; transform: scale(1); }
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 .animate-twinkle {
   animation: twinkle 3s ease-in-out infinite;
+  will-change: opacity;
 }
 
 @keyframes border-glow {
@@ -26,21 +27,23 @@
 .animate-border-glow {
   animation: border-glow 2s ease-in-out infinite;
   opacity: 0.4;
+  will-change: opacity;
 }
 
 @keyframes marquee {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -50%, 0); }
 }
 @keyframes marquee-reverse {
-  0% { transform: translateY(-50%); }
-  100% { transform: translateY(0); }
+  0% { transform: translate3d(0, -50%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 
 .animate-marquee {
   animation-duration: 20s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  will-change: transform;
 }
 
 .direction-up {
@@ -167,9 +170,34 @@
   }
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+  
+  /* Smooth scrolling optimizations */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* GPU acceleration for smooth scrolling */
+  section {
+    transform: translate3d(0, 0, 0);
+  }
+  
+  /* Prevent layout shifts */
+  img, svg {
+    display: block;
+  }
+  
+  /* Optimize animations */
+  @media (prefers-reduced-motion: no-preference) {
+    * {
+      scroll-behavior: smooth;
+    }
   }
 }
 
@@ -196,6 +224,18 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  .transform-gpu {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+  .contain-paint {
+    contain: paint layout;
+  }
+  .will-change-transform {
+    will-change: transform;
   }
 }
 .text-gray-8 {
@@ -385,4 +425,13 @@
     font-size: 48px;
     line-height: 1;
     letter-spacing: -.04em;
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

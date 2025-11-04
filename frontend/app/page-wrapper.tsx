@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { getMaintenanceStatus } from '@/lib/maintenanceService';
 import { Construction, Clock, RefreshCw } from 'lucide-react';
@@ -8,23 +8,50 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function PageWrapper({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [maintenanceData, setMaintenanceData] = useState<{
     isEnabled: boolean;
     message: string;
     estimatedEndTime?: string;
   } | null>(null);
   const [checking, setChecking] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const pathname = usePathname();
+  const hasLoadedRef = useRef(false);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     checkMaintenance();
   }, []);
 
   useEffect(() => {
-    setIsVisible(false);
-    const timer = setTimeout(() => setIsVisible(true), 50);
-    return () => clearTimeout(timer);
+    if (hasLoadedRef.current) {
+      return;
+    }
+
+    setIsLoading(true);
+    
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+
+    const handleComplete = () => {
+      loadingTimeoutRef.current = setTimeout(() => {
+        setIsLoading(false);
+        hasLoadedRef.current = true;
+      }, 500);
+    };
+
+    if (document.readyState === 'complete') {
+      handleComplete();
+    } else {
+      window.addEventListener('load', handleComplete);
+      return () => {
+        window.removeEventListener('load', handleComplete);
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+        }
+      };
+    }
   }, [pathname]);
 
   const checkMaintenance = async () => {
@@ -61,9 +88,7 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     }
   };
 
-  if (isChecking) {
-    return <LoadingSpinner />;
-  }
+  const showLoading = (isChecking && !hasLoadedRef.current) || isLoading;
 
   if (maintenanceData?.isEnabled) {
     return (
@@ -118,8 +143,11 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className={`transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {children}
-    </div>
+    <>
+      {showLoading && <LoadingSpinner />}
+      <div style={showLoading ? { position: 'absolute', visibility: 'hidden', pointerEvents: 'none', overflow: 'hidden', height: 0 } : undefined}>
+        {children}
+      </div>
+    </>
   );
 }

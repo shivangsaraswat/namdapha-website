@@ -9,10 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Upload, Eye, EyeOff, Trash2, Plus, Edit, Loader2, AlertTriangle, Users } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
-import { saveTeamMember, getTeamMembers, updateTeamMember, deleteTeamMember, TeamMember } from "@/lib/teamService";
+import { saveTeamMember, getTeamMembers, updateTeamMember, deleteTeamMember, reorderTeamMembers, TeamMember } from "@/lib/teamService";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { toast } from "sonner";
 
 const categories = [
@@ -148,6 +152,46 @@ export default function Teams() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent, category: 'webops' | 'multimedia' | 'outreach') => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const items = category === 'webops' ? webops : category === 'multimedia' ? multimedia : outreach;
+    const oldIndex = items.findIndex(m => m.id === active.id);
+    const newIndex = items.findIndex(m => m.id === over.id);
+
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    
+    if (category === 'webops') {
+      setWebops(reordered);
+    } else if (category === 'multimedia') {
+      setMultimedia(reordered);
+    } else {
+      setOutreach(reordered);
+    }
+
+    try {
+      const updates = reordered.map((member, index) => ({
+        id: member.id,
+        order: index
+      }));
+      await reorderTeamMembers(updates);
+      toast.success('Order updated successfully!');
+    } catch (error) {
+      console.error('Error reordering:', error);
+      toast.error('Failed to update order');
+      await loadTeamMembers();
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const editMember = (member: TeamMember) => {
     setEditingMember(member);
     setForm({
@@ -159,12 +203,37 @@ export default function Teams() {
     setShowForm(true);
   };
 
-  const MemberCard = ({ member }: { member: TeamMember }) => {
+  const SortableCard = ({ member }: { member: TeamMember; category: 'webops' | 'multimedia' | 'outreach' }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: member.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
     return (
-      <Card className={`rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
-        isDarkMode ? 'bg-gray-700' : 'bg-white'
-      }`}>
-        <div className="relative -mb-2">
+      <div ref={setNodeRef} style={style}>
+        <Card className={`relative rounded-lg shadow-sm border-0 overflow-hidden p-0 ${
+          isDarkMode ? 'bg-gray-700' : 'bg-white'
+        }`}>
+          <div className="absolute top-2 left-2 z-20 cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+            <div className={`p-1 rounded ${
+              isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
+            }`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+              </svg>
+            </div>
+          </div>
+          <div className="relative -mb-2">
           <div className="absolute top-2 right-2 z-10">
             <Badge className={`${
               member.isVisible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -265,17 +334,18 @@ export default function Teams() {
             )}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     );
   };
 
   return (
-    <PageLayout title="Teams Management" subtitle="Manage team member posters and visibility" activeItem="Teams">
+    <PageLayout title="Teams Management" subtitle="Manage team member posters and visibility" activeItem="Teams" isLoading={isLoading}>
       <div className="space-y-8">
         <div className="flex items-center justify-end">
           <Button 
             onClick={() => setShowForm(true)}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Team Member
@@ -302,11 +372,19 @@ export default function Teams() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-              {webops.map((member) => (
-                <MemberCard key={member.id} member={member} />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => handleDragEnd(e, 'webops')}
+            >
+              <SortableContext items={webops.map(m => m.id)} strategy={horizontalListSortingStrategy}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
+                  {webops.map((member) => (
+                    <SortableCard key={member.id} member={member} category="webops" />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
 
@@ -330,11 +408,19 @@ export default function Teams() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-              {multimedia.map((member) => (
-                <MemberCard key={member.id} member={member} />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => handleDragEnd(e, 'multimedia')}
+            >
+              <SortableContext items={multimedia.map(m => m.id)} strategy={horizontalListSortingStrategy}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
+                  {multimedia.map((member) => (
+                    <SortableCard key={member.id} member={member} category="multimedia" />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
 
@@ -358,11 +444,19 @@ export default function Teams() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-              {outreach.map((member) => (
-                <MemberCard key={member.id} member={member} />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(e) => handleDragEnd(e, 'outreach')}
+            >
+              <SortableContext items={outreach.map(m => m.id)} strategy={horizontalListSortingStrategy}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
+                  {outreach.map((member) => (
+                    <SortableCard key={member.id} member={member} category="outreach" />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
 
@@ -553,6 +647,7 @@ export default function Teams() {
         </Dialog>
     
       </div>
+      
     </PageLayout>
   );
 }

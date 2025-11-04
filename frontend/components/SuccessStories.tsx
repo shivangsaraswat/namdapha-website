@@ -64,8 +64,8 @@ export default function SuccessStories() {
     }, [hoverCard])
 
     return (
-        <div className='flex flex-col justify-center items-center md:w-[58%] lg:w-[60%] overflow-hidden'>
-            <div className='grid auto-cols-max grid-flow-col justify-around items-center min-[600px]:h-[22rem] lg:h-[28rem] w-full max-[600px]:h-[20rem] max-sm:mb-4 xl:h-[34rem]'>
+        <div className='flex flex-col justify-center items-center md:w-[58%] lg:w-[60%] overflow-hidden contain-paint'>
+            <div className='grid auto-cols-max grid-flow-col justify-around items-center min-[600px]:h-[22rem] lg:h-[28rem] w-full max-[600px]:h-[20rem] max-sm:mb-4 xl:h-[34rem] will-change-transform'>
                 {SSList && SSList.map((story) => {
                     return (
                         <motion.div

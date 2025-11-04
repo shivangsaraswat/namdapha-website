@@ -96,7 +96,7 @@ export default function TeamsPage() {
 					<div className="max-w-7xl mx-auto">
 						<div className="mb-16">
 							<div className="relative mb-12">
-								<div className="hidden lg:block absolute left-0 top-[141%] -translate-y-1/2 opacity-100 transform -translate-x-[220px] scale-105 pointer-events-none z-0">
+								<div className="hidden lg:block absolute left-0 top-[140%] -translate-y-1/2 opacity-100 transform -translate-x-[220px] scale-105 pointer-events-none z-0">
 									<Image
 										src="/bg2.svg"
 										alt="Pattern"
@@ -106,7 +106,7 @@ export default function TeamsPage() {
 									/>
 								</div>
 
-								<div className="hidden lg:block absolute right-0 top-[250%] -translate-y-1/2 opacity-100 transform translate-x-[220px] scale-105 pointer-events-none z-0">
+								<div className="hidden lg:block absolute right-0 top-[140%] -translate-y-1/2 opacity-100 transform translate-x-[220px] scale-105 pointer-events-none z-0">
 									<Image
 										src="/bg2.svg"
 										alt="Pattern"
@@ -125,10 +125,10 @@ export default function TeamsPage() {
 										The Web-Ops Team manages Namdapha’s digital presence, automation, and tech support, ensuring smooth operations, reliable systems, and a professional online experience.
 									</p>
 
-									<div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 max-w-5xl mx-auto">
 										{teamData.webops.map((member) => (
 											<div key={member.id} className="relative group">
-												<div className="w-[360px] h-[480px] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
+												<div className="w-full aspect-[3/4] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
 													{member.imageUrl ? (
 														<Image
 															src={member.imageUrl}
@@ -155,10 +155,10 @@ export default function TeamsPage() {
 								<div className="max-w-5xl mx-auto text-center px-4">
 									<h2 className="fs-48 text-center font-title font-medium text-gray-8">Multimedia</h2>
 									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">The Multimedia Team shapes Namdapha’s visual identity through designs, reels, and campaigns, creatively capturing its spirit and showcasing every achievement across platforms.</p>
-									<div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 max-w-5xl mx-auto">
 										{teamData.multimedia.map((member) => (
 											<div key={member.id} className="relative group">
-												<div className="w-[360px] h-[480px] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
+												<div className="w-full aspect-[3/4] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
 													{member.imageUrl ? (
 														<Image
 															src={member.imageUrl}
@@ -185,10 +185,10 @@ export default function TeamsPage() {
 								<div className="max-w-5xl mx-auto text-center px-4">
 									<h2 className="fs-48 text-center font-title font-medium text-gray-8">Out Reach</h2>
 									<p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">The Outreach Team connects Namdapha students with learning opportunities through workshops, talks, and mentorship, fostering collaboration, growth, and continuous learning.</p>
-									<div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 lg:gap-6 mt-8">
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 max-w-5xl mx-auto">
 										{teamData.outreach.map((member) => (
 											<div key={member.id} className="relative group">
-												<div className="w-[360px] h-[480px] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
+												<div className="w-full aspect-[3/4] rounded-none overflow-hidden bg-[rgb(245,245,245)] flex items-center justify-center">
 													{member.imageUrl ? (
 														<Image
 															src={member.imageUrl}

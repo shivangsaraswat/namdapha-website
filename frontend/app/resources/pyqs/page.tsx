@@ -15,18 +15,7 @@ import { Download, Filter, FileText, Calendar, GraduationCap, BookOpen } from "l
 import { pyqService, PYQ } from "@/lib/pyqService";
 import { useEffect } from "react";
 
-// Subject data organized by level
-const subjectsByLevel: Record<string, string[]> = {
-  "Foundation": ["Mathematics", "Physics", "Chemistry", "Biology", "English"],
-  "Diploma": ["Engineering Mathematics", "Computer Science", "Electronics", "Mechanical", "Civil Engineering"],
-  "BSc": ["Advanced Mathematics", "Quantum Physics", "Organic Chemistry", "Molecular Biology", "Statistics"],
-  "BS": ["Research Methodology", "Advanced Physics", "Computational Mathematics", "Biochemistry", "Data Science"]
-};
 
-const years = ["2024", "2023", "2022", "2021", "2020"];
-const semesters = ["January", "May", "September"];
-const levels = ["Foundation", "Diploma", "BSc", "BS"];
-const terms = ["Quiz 1", "Quiz 2", "End Term"];
 
 export default function PYQsPage() {
   const [pyqsData, setPyqsData] = useState<PYQ[]>([]);
@@ -37,6 +26,12 @@ export default function PYQsPage() {
   const [selectedYear, setSelectedYear] = useState<string>("All");
   const [selectedSemester, setSelectedSemester] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
+  const [availableSemesters, setAvailableSemesters] = useState<string[]>([]);
+  const [availableLevels, setAvailableLevels] = useState<string[]>([]);
+  const [availableTerms, setAvailableTerms] = useState<string[]>([]);
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
 
   useEffect(() => {
     fetchPYQs();
@@ -47,6 +42,21 @@ export default function PYQsPage() {
       setLoading(true);
       const data = await pyqService.getPublishedPYQs();
       setPyqsData(data);
+      
+      const allYears = ['2025', '2024', '2023', '2022', '2021'];
+      setAvailableYears(allYears);
+      
+      const allSemesters = ['January', 'May', 'September'];
+      setAvailableSemesters(allSemesters);
+      
+      const allLevels = ['Foundation', 'Diploma', 'BSc', 'BS'];
+      setAvailableLevels(allLevels);
+      
+      const allTerms = ['Quiz 1', 'Quiz 2', 'End Term'];
+      setAvailableTerms(allTerms);
+      
+      const subjects = [...new Set(data.map(p => p.subject))].sort();
+      setAvailableSubjects(subjects);
     } catch (error) {
       console.error('Error fetching PYQs:', error);
     } finally {
@@ -61,10 +71,9 @@ export default function PYQsPage() {
     window.open(pyq.fileUrl, '_blank');
   };
 
-  // Get subjects for the selected level
   const currentSubjects = selectedLevel === "All" 
-    ? Object.values(subjectsByLevel).flat()
-    : subjectsByLevel[selectedLevel] || [];
+    ? availableSubjects
+    : [...new Set(pyqsData.filter(p => p.level === selectedLevel).map(p => p.subject))].sort();
 
   // Check if any filter is active
   const hasActiveFilters = selectedLevel !== "All" || selectedTerm !== "All" || 
@@ -86,13 +95,12 @@ export default function PYQsPage() {
     return matchesLevel && matchesTerm && matchesSubject && matchesYear && matchesSemester && matchesSearch;
   });
 
-  // If no filters active, show only 12 diverse PYQs as preview (4 rows × 3 columns)
   if (!hasActiveFilters && filteredPYQs.length > 12) {
     const diversePYQs: PYQ[] = [];
     const usedCombinations = new Set<string>();
     
     for (const pyq of filteredPYQs) {
-      const combo = `${pyq.level}-${pyq.term}-${pyq.year}`;
+      const combo = `${pyq.subject}-${pyq.term}-${pyq.year}`;
       if (!usedCombinations.has(combo)) {
         diversePYQs.push(pyq);
         usedCombinations.add(combo);
@@ -119,9 +127,9 @@ export default function PYQsPage() {
           <SelectTrigger className="w-full bg-white border-2 border-gray-900">
             <SelectValue placeholder="Select Year" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white z-[99999]">
             <SelectItem value="All">All Years</SelectItem>
-            {years.map((year) => (
+            {availableYears.map((year) => (
               <SelectItem key={year} value={year}>{year}</SelectItem>
             ))}
           </SelectContent>
@@ -138,9 +146,9 @@ export default function PYQsPage() {
           <SelectTrigger className="w-full bg-white border-2 border-gray-900">
             <SelectValue placeholder="Select Level" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white z-[99999]">
             <SelectItem value="All">All Levels</SelectItem>
-            {levels.map((level) => (
+            {availableLevels.map((level) => (
               <SelectItem key={level} value={level}>{level}</SelectItem>
             ))}
           </SelectContent>
@@ -154,7 +162,7 @@ export default function PYQsPage() {
           <SelectTrigger className="w-full bg-white border-2 border-gray-900">
             <SelectValue placeholder="Select Subject" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white z-[99999] max-h-[300px]">
             <SelectItem value="All">All Subjects</SelectItem>
             {currentSubjects.map((subject) => (
               <SelectItem key={subject} value={subject}>{subject}</SelectItem>
@@ -170,9 +178,9 @@ export default function PYQsPage() {
           <SelectTrigger className="w-full bg-white border-2 border-gray-900">
             <SelectValue placeholder="Select Term" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white z-[99999]">
             <SelectItem value="All">All Types</SelectItem>
-            {terms.map((term) => (
+            {availableTerms.map((term) => (
               <SelectItem key={term} value={term}>{term}</SelectItem>
             ))}
           </SelectContent>
@@ -186,9 +194,9 @@ export default function PYQsPage() {
           <SelectTrigger className="w-full bg-white border-2 border-gray-900">
             <SelectValue placeholder="Select Term" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white z-[99999]">
             <SelectItem value="All">All Terms</SelectItem>
-            {semesters.map((semester) => (
+            {availableSemesters.map((semester) => (
               <SelectItem key={semester} value={semester}>{semester}</SelectItem>
             ))}
           </SelectContent>

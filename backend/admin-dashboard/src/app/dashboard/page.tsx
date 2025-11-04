@@ -8,6 +8,7 @@ import { ChevronRight } from "lucide-react";
 import { FaUsers, FaFileAlt, FaBook, FaCalendar, FaLink, FaAward } from "react-icons/fa";
 import Sidebar from "@/components/Sidebar";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import AuthGuard from "@/components/AuthGuard";
 import * as councilService from "@/lib/councilService";
 import * as teamService from "@/lib/teamService";
@@ -15,6 +16,7 @@ import { resourceService } from "@/lib/resourceService";
 
 export default function Dashboard() {
   const { isDarkMode } = useTheme();
+  const { isCollapsed } = useSidebar();
   const [stats, setStats] = useState({
     totalCouncil: 0,
     totalTeams: 0,
@@ -31,13 +33,13 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [council, teams, resources] = await Promise.all([
+        const [council, teams, resources, pyqs, events] = await Promise.all([
           councilService.getCouncilMembers(),
           teamService.getTeamMembers(),
           resourceService.getAllResources(),
+          import('@/lib/pyqService').then(m => m.pyqService.getAllPYQs()),
+          import('@/lib/eventService').then(m => m.eventService.getAllEvents()),
         ]);
-
-        const pyqs = resources.filter(r => r.category === 'PYQs');
 
         setStats({
           totalCouncil: council.length,
@@ -47,7 +49,7 @@ export default function Dashboard() {
           visibleCouncil: council.filter(m => m.isVisible).length,
           visibleTeams: teams.filter(m => m.isVisible).length,
           totalPYQs: pyqs.length,
-          totalEvents: 0,
+          totalEvents: events.length,
         });
 
         setRecentResources(resources.slice(0, 5));
@@ -67,7 +69,8 @@ export default function Dashboard() {
         <div className="flex">
           <Sidebar activeItem="Dashboard" />
 
-          <div className="flex-1 ml-60 p-8">
+          <div className={`flex-1 p-8 transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-60'}`}>
+            <div className="max-w-[1400px] mx-auto">
             <div className="mb-8">
               <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 Dashboard
@@ -78,90 +81,90 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
-              <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
-                      <FaUsers style={{ width: '24px', height: '24px', color: '#3B82F6' }} />
+              <Card className={`rounded-xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
+                      <FaUsers style={{ width: '20px', height: '20px', color: '#3B82F6' }} />
                     </div>
-                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs">
                       {stats.visibleCouncil} visible
                     </Badge>
                   </div>
-                  <div className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`text-2xl font-bold mb-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {stats.totalCouncil}
                   </div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     Council Members
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
-                      <FaUsers style={{ width: '24px', height: '24px', color: '#22C55E' }} />
+              <Card className={`rounded-xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                      <FaUsers style={{ width: '20px', height: '20px', color: '#22C55E' }} />
                     </div>
-                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">
                       {stats.visibleTeams} visible
                     </Badge>
                   </div>
-                  <div className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`text-2xl font-bold mb-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {stats.totalTeams}
                   </div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     Team Members
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)' }}>
-                      <FaFileAlt style={{ width: '24px', height: '24px', color: '#A855F7' }} />
+              <Card className={`rounded-xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)' }}>
+                      <FaFileAlt style={{ width: '20px', height: '20px', color: '#A855F7' }} />
                     </div>
-                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
+                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 text-xs">
                       {stats.publishedResources} published
                     </Badge>
                   </div>
-                  <div className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`text-2xl font-bold mb-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {stats.totalResources}
                   </div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     Total Resources
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}>
-                      <FaBook style={{ width: '24px', height: '24px', color: '#F97316' }} />
+              <Card className={`rounded-xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}>
+                      <FaBook style={{ width: '20px', height: '20px', color: '#F97316' }} />
                     </div>
                   </div>
-                  <div className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`text-2xl font-bold mb-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {stats.totalPYQs}
                   </div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     PYQs Uploaded
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(20, 184, 166, 0.1)' }}>
-                      <FaCalendar style={{ width: '24px', height: '24px', color: '#14B8A6' }} />
+              <Card className={`rounded-xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(20, 184, 166, 0.1)' }}>
+                      <FaCalendar style={{ width: '20px', height: '20px', color: '#14B8A6' }} />
                     </div>
                   </div>
-                  <div className={`text-3xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`text-2xl font-bold mb-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {stats.totalEvents}
                   </div>
-                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     Total Events
                   </div>
                 </CardContent>
@@ -257,6 +260,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
             </div>
           </div>
         </div>

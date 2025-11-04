@@ -460,7 +460,7 @@ export default function ResourceHub() {
     : resources;
 
   return (
-    <PageLayout title="Resource Hub Management" subtitle="Manage documents, files, and resources" activeItem="Resource Hub">
+    <PageLayout title="Resource Hub Management" subtitle="Manage documents, files, and resources" activeItem="Resource Hub" isLoading={loading}>
       <div className="space-y-6">
         <div className="flex items-center justify-end">
           <Dialog open={isCategoryDialogOpen} onOpenChange={(open) => {
@@ -471,7 +471,7 @@ export default function ResourceHub() {
             }
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Button className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Resource
               </Button>
@@ -513,7 +513,7 @@ export default function ResourceHub() {
                 <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
                   Cancel
                 </Button>
-                <Button onClick={handleSaveCategory} className="bg-green-600 hover:bg-green-700 text-white">
+                <Button onClick={handleSaveCategory} className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm">
                   {editingCategory ? 'Update Category' : 'Add Category'}
                 </Button>
               </DialogFooter>
@@ -598,7 +598,7 @@ export default function ResourceHub() {
                     {(category.name === 'Student Handbook' || category.name === 'Grading Document') && (
                       <Button 
                         size="sm" 
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleAddResourceClick(category.name);
@@ -676,7 +676,7 @@ export default function ResourceHub() {
               <Button variant="outline" onClick={() => setIsResourceDialogOpen(false)} className={isDarkMode ? 'border-gray-600 text-gray-300' : ''}>
                 Cancel
               </Button>
-              <Button onClick={handleSaveResource} className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={handleSaveResource} className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm">
                 {editingResource ? 'Update Resource' : 'Add Resource'}
               </Button>
             </DialogFooter>
@@ -861,6 +861,7 @@ export default function ResourceHub() {
           </Card>
         )}
       </div>
+      
     </PageLayout>
   );
 }

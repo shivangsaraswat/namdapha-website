@@ -402,7 +402,7 @@ export default function Council() {
   );
 
   return (
-    <PageLayout title="Council Management" subtitle="Manage council member posters and visibility" activeItem="Council">
+    <PageLayout title="Council Management" subtitle="Manage council member posters and visibility" activeItem="Council" isLoading={isLoading}>
       <div className="space-y-8">
 
         {/* House Leadership Section */}
@@ -413,7 +413,7 @@ export default function Council() {
             }`}>House Leadership</h3>
             <Button 
               onClick={() => setShowLeadershipForm(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Leadership
@@ -443,7 +443,7 @@ export default function Council() {
               onDragEnd={(e) => handleDragEnd(e, 'leadership')}
             >
               <SortableContext items={leadership.map(m => m.id)} strategy={horizontalListSortingStrategy}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
                   {leadership.map((member) => (
                     <SortableCard key={member.id} member={member} memberType="leadership" />
                   ))}
@@ -461,7 +461,7 @@ export default function Council() {
             }`}>Regional Coordinators</h3>
             <Button 
               onClick={() => setShowCoordinatorForm(true)}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Coordinator
@@ -491,7 +491,7 @@ export default function Council() {
               onDragEnd={(e) => handleDragEnd(e, 'coordinator')}
             >
               <SortableContext items={coordinators.map(m => m.id)} strategy={horizontalListSortingStrategy}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl">
                   {coordinators.map((member) => (
                     <SortableCard key={member.id} member={member} memberType="coordinator" />
                   ))}
@@ -786,6 +786,7 @@ export default function Council() {
         </Dialog>
     
       </div>
+      
     </PageLayout>
   );
 }

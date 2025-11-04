@@ -45,7 +45,6 @@ export default function ResourcesPage(){
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string>("Filter");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [resourceCounts, setResourceCounts] = useState<{[key: string]: number}>({});
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
   const [handbookDialogOpen, setHandbookDialogOpen] = useState(false);
@@ -76,13 +75,6 @@ export default function ResourcesPage(){
         
         setCategories(uniqueCategories);
         
-        const counts: {[key: string]: number} = {};
-        uniqueCategories.forEach(category => {
-          counts[category.name] = resources.filter(r => r.category === category.name).length;
-        });
-        
-        setResourceCounts(counts);
-        
         // Filter resources for Student Handbook and Grading Document
         setHandbookResources(resources.filter(r => r.category === 'Student Handbook'));
         setGradedDocResources(resources.filter(r => r.category === 'Grading Document'));
@@ -99,6 +91,14 @@ export default function ResourcesPage(){
       mounted = false;
     };
   }, []);
+
+  // Transform admin descriptions to user-centric
+  const getUserCentricDescription = (description: string) => {
+    return description
+      .replace(/^Manage\s+/i, 'Access ')
+      .replace(/Manage\s+/gi, 'access ')
+      .replace(/manage\s+/gi, 'access ');
+  };
 
   const handleCategoryClick = (categoryName: string) => {
     setNavigating(true);
@@ -296,13 +296,9 @@ export default function ResourcesPage(){
                           {category.name}
                         </h3>
 
-                        <p className="text-white/90 text-[14px] leading-relaxed mb-3">
-                          {category.description}
+                        <p className="text-white/90 text-[14px] leading-relaxed">
+                          {getUserCentricDescription(category.description)}
                         </p>
-
-                        <div className="text-white/80 text-[12px] font-medium">
-                          {resourceCounts[category.name] || 0} resources available
-                        </div>
                       </div>
                   </div>
                 );

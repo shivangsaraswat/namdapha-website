@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -16,10 +17,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <AuthProvider>
         <ThemeProvider>
-          <ActivityWrapper>
-            {children}
-            <Toaster />
-          </ActivityWrapper>
+          <SidebarProvider>
+            <ActivityWrapper>
+              {children}
+              <Toaster />
+            </ActivityWrapper>
+          </SidebarProvider>
         </ThemeProvider>
       </AuthProvider>
     </SessionProvider>

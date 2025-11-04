@@ -3,7 +3,7 @@ export async function uploadImage(file: File, folder: string = 'council'): Promi
 
   const originalSize = file.size;
 
-  // Helper: compress image using canvas
+  // Helper: compress image using canvas with high-quality preservation
   async function compressImage(inputFile: File): Promise<Blob> {
     return new Promise<Blob>((resolve, reject) => {
       const img = new Image();
@@ -17,16 +17,20 @@ export async function uploadImage(file: File, folder: string = 'council'): Promi
           const width = img.naturalWidth;
           const height = img.naturalHeight;
 
-          // Start parameters
-          let quality = 0.92;
+          // Start with high quality and gentle reduction
+          let quality = 0.95;
           let scale = 1.0;
 
+          // Enable high-quality image smoothing
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+
           // Try iterations to get under size limit
-          for (let i = 0; i < 15; i++) {
+          for (let i = 0; i < 20; i++) {
             canvas.width = Math.max(1, Math.floor(width * scale));
             canvas.height = Math.max(1, Math.floor(height * scale));
 
-            // draw with smoothing
+            // draw with high-quality smoothing
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
@@ -36,22 +40,29 @@ export async function uploadImage(file: File, folder: string = 'council'): Promi
 
             if (blob.size <= MAX_FILE_SIZE) return resolve(blob);
 
-            // otherwise reduce quality or scale
-            if (quality > 0.5) {
-              quality = Math.max(0.45, quality - 0.08);
+            // Gentle quality reduction to preserve visual quality
+            if (quality > 0.75) {
+              quality = Math.max(0.75, quality - 0.05);
+            } else if (quality > 0.65) {
+              quality = Math.max(0.65, quality - 0.03);
+            } else if (scale > 0.9) {
+              // Only reduce dimensions after quality is optimized
+              scale = Math.max(0.9, scale - 0.05);
+            } else if (quality > 0.55) {
+              quality = Math.max(0.55, quality - 0.03);
             } else {
-              scale = scale * 0.85; // reduce dimensions
+              scale = scale * 0.92; // gentle dimension reduction
             }
 
-            // stop if image becomes very small
-            if (canvas.width < 300 || canvas.height < 300) {
+            // stop if image becomes too small
+            if (canvas.width < 400 || canvas.height < 400) {
               // accept current blob even if larger, to avoid infinite loop
               return resolve(blob);
             }
           }
 
-          // fallback: final attempt with low quality
-          const finalBlob: Blob | null = await new Promise((res) => canvas.toBlob(res as BlobCallback, inputFile.type || 'image/jpeg', 0.4));
+          // fallback: final attempt with moderate quality
+          const finalBlob: Blob | null = await new Promise((res) => canvas.toBlob(res as BlobCallback, inputFile.type || 'image/jpeg', 0.6));
           if (!finalBlob) return reject(new Error('Failed to create final compressed image'));
           return resolve(finalBlob);
         } catch (e) {

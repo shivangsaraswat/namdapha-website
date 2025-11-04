@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+
 import { useTheme } from "@/contexts/ThemeContext";
 import { eventService, Event } from "@/lib/eventService";
 import { uploadImage } from "@/lib/cloudinary";
@@ -22,21 +23,27 @@ import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } 
 import { CSS } from '@dnd-kit/utilities';
 import { FC } from 'react';
 
-const categories = ['Paradox', 'Workshops', 'Meetups', 'Other Events'] as const;
+const categories = ['Paradox', 'Workshops', 'Meetups', 'Other Events', 'Custom'] as const;
 
 interface SortableRowProps {
   event: Event;
   onEdit: (event: Event) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (event: Event) => void;
+  isHighlighted?: boolean;
 }
 
-const SortableRow: FC<SortableRowProps> = ({ event, onEdit, onDelete, onToggleStatus }) => {
+const SortableRow: FC<SortableRowProps> = ({ event, onEdit, onDelete, onToggleStatus, isHighlighted }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: event.id! });
   const style = { transform: CSS.Transform.toString(transform), transition };
   
   return (
-    <TableRow ref={setNodeRef} style={style}>
+    <TableRow 
+      ref={setNodeRef} 
+      style={style}
+      id={`event-${event.id}`}
+      className={isHighlighted ? 'bg-blue-100 dark:bg-blue-900 transition-colors' : ''}
+    >
       <TableCell>
         <div className="cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
           <GripVertical className="w-4 h-4 text-gray-400" />
@@ -79,16 +86,20 @@ export default function Events() {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
+  const [collapseTimers, setCollapseTimers] = useState<Record<string, NodeJS.Timeout>>({});
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: '' as Event['category'] | '',
+    category: '' as Event['category'] | 'Custom' | '',
     date: '',
     time: '',
     venue: '',
     meetLink: '',
     imageUrl: ''
   });
+  const [customCategory, setCustomCategory] = useState('');
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -117,22 +128,25 @@ export default function Events() {
     setDialogType(type);
     setEditingEvent(null);
     setFormData({ title: '', description: '', category: '', date: '', time: '', venue: '', meetLink: '', imageUrl: '' });
+    setCustomCategory('');
     setIsDialogOpen(true);
   };
 
   const handleEditClick = (event: Event) => {
     setDialogType(event.type);
     setEditingEvent(event);
+    const isCustom = !categories.slice(0, -1).includes(event.category as typeof categories[number]);
     setFormData({
       title: event.title,
       description: event.description,
-      category: event.category,
+      category: (isCustom ? 'Custom' : event.category) as Event['category'] | 'Custom',
       date: event.date,
       time: event.time || '',
       venue: event.venue || '',
       meetLink: event.meetLink || '',
       imageUrl: event.imageUrl
     });
+    setCustomCategory(isCustom ? event.category : '');
     setIsDialogOpen(true);
   };
 
@@ -156,21 +170,27 @@ export default function Events() {
       return;
     }
 
+    if (formData.category === 'Custom' && !customCategory.trim()) {
+      toast.error('Please enter a custom category name');
+      return;
+    }
+
     try {
       const events = dialogType === 'upcoming' ? upcomingEvents : pastEvents;
       const maxOrder = events.length > 0 ? Math.max(...events.map(e => e.order)) : 0;
+      const finalCategory = formData.category === 'Custom' ? customCategory : formData.category;
 
       if (editingEvent) {
         await eventService.updateEvent(editingEvent.id!, {
           ...formData,
-          category: formData.category as Event['category'],
+          category: finalCategory as Event['category'],
           updatedAt: new Date()
         });
         toast.success('Event updated');
       } else {
         await eventService.addEvent({
           ...formData,
-          category: formData.category as Event['category'],
+          category: finalCategory as Event['category'],
           type: dialogType,
           order: maxOrder + 1,
           status: 'active',
@@ -181,6 +201,7 @@ export default function Events() {
       }
 
       setIsDialogOpen(false);
+      setCustomCategory('');
       fetchEvents();
     } catch (error) {
       console.error('Error saving event:', error);
@@ -245,28 +266,99 @@ export default function Events() {
     return acc;
   }, {} as Record<string, Event[]>);
 
+  const allEvents = [...upcomingEvents, ...pastEvents];
+  const searchData = allEvents.map(e => ({
+    id: e.id!,
+    title: e.title,
+    category: e.category,
+    type: e.type === 'upcoming' ? 'Upcoming' : 'Past'
+  }));
+
+  const handleSearchSelect = (id: string) => {
+    const element = document.getElementById(`event-${id}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedId(id);
+      setTimeout(() => setHighlightedId(null), 2000);
+    }
+  };
+
+  const handleLoadMore = (category: string) => {
+    setVisibleCounts(prev => {
+      const current = prev[category] || 10;
+      return { ...prev, [category]: current + 5 };
+    });
+  };
+
+  const handleShowLess = (category: string) => {
+    if (collapseTimers[category]) {
+      clearTimeout(collapseTimers[category]);
+    }
+    setVisibleCounts(prev => ({ ...prev, [category]: 10 }));
+    setCollapseTimers(prev => {
+      const newTimers = { ...prev };
+      delete newTimers[category];
+      return newTimers;
+    });
+  };
+
+  useEffect(() => {
+    categories.forEach(cat => {
+      const events = groupedPastEvents[cat];
+      const visible = visibleCounts[cat] || 10;
+      if (events && visible >= events.length && events.length > 10) {
+        if (collapseTimers[cat]) {
+          clearTimeout(collapseTimers[cat]);
+        }
+        const timer = setTimeout(() => {
+          setVisibleCounts(prev => ({ ...prev, [cat]: 10 }));
+          setCollapseTimers(prev => {
+            const newTimers = { ...prev };
+            delete newTimers[cat];
+            return newTimers;
+          });
+        }, 20000);
+        setCollapseTimers(prev => ({ ...prev, [cat]: timer }));
+      }
+    });
+    return () => {
+      Object.values(collapseTimers).forEach(timer => clearTimeout(timer));
+    };
+  }, [visibleCounts, pastEvents, collapseTimers, groupedPastEvents]);
+
   return (
-    <PageLayout title="Events Management" subtitle="Manage upcoming and past events" activeItem="Events">
+    <PageLayout 
+      title="Events Management" 
+      subtitle="Manage upcoming and past events" 
+      activeItem="Events"
+      searchData={searchData}
+      onSearchSelect={handleSearchSelect}
+      isLoading={loading}
+    >
       <div className="space-y-8">
         {/* Upcoming Events */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Upcoming Events</h3>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleAddClick('upcoming')}>
+            <Button className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm" onClick={() => handleAddClick('upcoming')}>
               <Plus className="w-4 h-4 mr-2" />
               Add Upcoming Event
             </Button>
           </div>
-          {loading ? (
-            <div className="text-center py-8">Loading...</div>
-          ) : upcomingEvents.length === 0 ? (
+          {upcomingEvents.length === 0 && !loading ? (
             <Card className={`p-8 text-center ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
               <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No upcoming events</p>
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {upcomingEvents.map(event => (
-                <Card key={event.id} className={`rounded-xl shadow-sm border-0 overflow-hidden ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+                <Card 
+                  key={event.id} 
+                  id={`event-${event.id}`}
+                  className={`rounded-xl shadow-sm border-0 overflow-hidden transition-all ${isDarkMode ? 'bg-gray-700' : 'bg-white'} ${
+                    highlightedId === event.id ? 'ring-4 ring-blue-500' : ''
+                  }`}
+                >
                   <div className="relative w-full aspect-[3/4]">
                     <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
                     <div className="absolute top-2 right-2">
@@ -309,14 +401,12 @@ export default function Events() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Past Events</h3>
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleAddClick('past')}>
+            <Button className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm" onClick={() => handleAddClick('past')}>
               <Plus className="w-4 h-4 mr-2" />
               Add Past Event
             </Button>
           </div>
-          {loading ? (
-            <div className="text-center py-8">Loading...</div>
-          ) : pastEvents.length === 0 ? (
+          {pastEvents.length === 0 && !loading ? (
             <Card className={`p-8 text-center ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
               <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No past events</p>
             </Card>
@@ -325,6 +415,10 @@ export default function Events() {
               {categories.map(cat => {
                 const events = groupedPastEvents[cat];
                 if (events.length === 0) return null;
+                const visibleCount = visibleCounts[cat] || 10;
+                const visibleEvents = events.slice(0, visibleCount);
+                const hasMore = events.length > visibleCount;
+                const allLoaded = visibleCount >= events.length;
                 return (
                   <div key={cat}>
                     <h4 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{cat}</h4>
@@ -341,15 +435,16 @@ export default function Events() {
                               <TableHead>Actions</TableHead>
                             </TableRow>
                           </TableHeader>
-                          <SortableContext items={events.map(e => e.id!)} strategy={verticalListSortingStrategy}>
+                          <SortableContext items={visibleEvents.map(e => e.id!)} strategy={verticalListSortingStrategy}>
                             <TableBody>
-                              {events.map(event => (
+                              {visibleEvents.map(event => (
                                 <SortableRow
                                   key={event.id}
                                   event={event}
                                   onEdit={handleEditClick}
                                   onDelete={setDeleteConfirm}
                                   onToggleStatus={handleToggleStatus}
+                                  isHighlighted={highlightedId === event.id}
                                 />
                               ))}
                             </TableBody>
@@ -357,6 +452,27 @@ export default function Events() {
                         </Table>
                       </DndContext>
                     </Card>
+                    {events.length > 10 && (
+                      <div className="flex justify-center mt-3">
+                        {hasMore ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleLoadMore(cat)}
+                            className={isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : ''}
+                          >
+                            Load More ({events.length - visibleCount} remaining)
+                          </Button>
+                        ) : allLoaded && (
+                          <Button
+                            variant="outline"
+                            onClick={() => handleShowLess(cat)}
+                            className={isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : ''}
+                          >
+                            Show Less
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -390,6 +506,27 @@ export default function Events() {
                   {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {formData.category === 'Custom' && (
+                <>
+                  <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-yellow-900/20 border-yellow-700 text-yellow-200' : 'bg-yellow-50 border-yellow-300 text-yellow-800'}`}>
+                    <p className="text-xs font-medium flex items-start gap-2">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span>Only create a custom category if you have more than 5 events in this category. Otherwise, use existing categories.</span>
+                    </p>
+                  </div>
+                  <div className="space-y-2 mt-2">
+                    <Label>Custom Category Name <span className="text-red-500">*</span></Label>
+                    <Input 
+                      value={customCategory} 
+                      onChange={(e) => setCustomCategory(e.target.value)} 
+                      placeholder="Enter custom category name (e.g., Hackathons, Seminars)"
+                      className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''} 
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -442,6 +579,7 @@ export default function Events() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
     </PageLayout>
   );
 }

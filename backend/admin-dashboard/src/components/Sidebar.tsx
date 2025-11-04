@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useTransition } from "react";
+import { useTransition, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User, Power } from "lucide-react";
+import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User, Power, Sparkles, PanelLeftClose, PanelLeft } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { signOut } from "next-auth/react";
 import LoadingSpinner from "./LoadingSpinner";
 
@@ -17,8 +18,23 @@ interface SidebarProps {
 export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
   const { isDarkMode, toggleDarkMode, mounted } = useTheme();
   const { user, hasPermission, isLoading } = useAuth();
+  const { isCollapsed, setIsCollapsed } = useSidebar();
   const [isPending, startTransition] = useTransition();
+  const [showPopup, setShowPopup] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setShowPopup(false);
+      }
+    };
+    if (showPopup) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPopup]);
 
   const handleNavigation = (href: string) => {
     startTransition(() => {
@@ -29,6 +45,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
   const allMenuItems = [
     { name: "Dashboard", icon: Grid3X3, href: "/dashboard", permission: "dashboard" },
     { name: "Events", icon: Calendar, href: "/events", permission: "events" },
+    { name: "Activities", icon: Sparkles, href: "/activities", permission: "activities" },
     { name: "Resource Hub", icon: BookOpen, href: "/resource-hub", permission: "resource-hub" },
     { name: "Link Tree", icon: Link2, href: "/link-tree", permission: "link-tree" },
     { name: "Council", icon: Shield, href: "/council", permission: "council" },
@@ -54,7 +71,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
   if (!mounted || isLoading) {
     return (
       <div className="w-60 h-screen fixed left-0 top-0 p-6 flex flex-col bg-white">
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex items-center gap-2 mb-6 flex-shrink-0">
           <Image
             src="/namd-new-logo.png"
             alt="Namdapha Logo"
@@ -63,7 +80,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
             className="rounded-full"
           />
         </div>
-        <nav className="space-y-1 flex-1">
+        <nav className="space-y-1 flex-1 overflow-y-auto overflow-x-hidden pr-2 min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.name === activeItem;
@@ -113,8 +130,11 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
         </nav>
         
         {/* User Profile Section */}
-        <div className="border-t pt-4 space-y-2">
-          <div className="flex items-center gap-3 px-3 py-2">
+        <div className="border-t pt-3 mt-3 flex-shrink-0 relative" ref={popupRef}>
+          <button
+            onClick={() => setShowPopup(!showPopup)}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             {user?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -130,7 +150,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
             <div className={`rounded-full w-8 h-8 flex items-center justify-center bg-gray-200 ${user?.image ? 'hidden' : ''}`}>
               <User className="w-5 h-5 text-gray-600" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-sm font-medium text-gray-900 truncate">
                 {user?.name}
               </p>
@@ -138,49 +158,68 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
                 {user?.role?.replace('-', ' ')}
               </p>
             </div>
-          </div>
-          
-          {user?.role === 'super-admin' && (
-            <Link
-              href="/admin/users"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Settings className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">
-                User Management
-              </span>
-            </Link>
-          )}
-          
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors text-left"
-          >
-            <LogOut className="w-4 h-4 text-red-500" />
-            <span className="text-sm font-medium text-red-600">
-              Sign Out
-            </span>
           </button>
+          
+          {showPopup && (
+            <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+              {user?.role === 'super-admin' && (
+                <Link
+                  href="/admin/users"
+                  onClick={() => setShowPopup(false)}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">User Management</span>
+                </Link>
+              )}
+              <button
+                onClick={toggleDarkMode}
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors text-left"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4 text-gray-500" /> : <Moon className="w-4 h-4 text-gray-500" />}
+                <span className="text-sm font-medium text-gray-700">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors text-left"
+              >
+                <LogOut className="w-4 h-4 text-red-500" />
+                <span className="text-sm font-medium text-red-600">Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`w-60 min-h-screen fixed left-0 top-0 p-6 flex flex-col ${
+    <div className={`${isCollapsed ? 'w-20' : 'w-60'} h-screen fixed left-0 top-0 ${isCollapsed ? 'p-3' : 'p-6'} flex flex-col transition-all duration-300 ${
       isDarkMode ? 'bg-gray-900' : 'bg-white'
     }`}>
-      <div className="flex items-center gap-2 mb-8">
-        <Image
-          src="/namd-new-logo.png"
-          alt="Namdapha Logo"
-          width={64}
-          height={64}
-          className="rounded-full"
-        />
+      <div className="flex items-center justify-between mb-6 flex-shrink-0">
+        {!isCollapsed && (
+          <Image
+            src="/namd-new-logo.png"
+            alt="Namdapha Logo"
+            width={64}
+            height={64}
+            className="rounded-full"
+          />
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} ${isCollapsed ? 'mx-auto' : ''}`}
+        >
+          {isCollapsed ? <PanelLeft className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+        </button>
       </div>
       
-      <nav className="space-y-1 flex-1">
+      <nav className={`space-y-1 flex-1 overflow-y-auto overflow-x-hidden pr-2 min-h-0 ${
+        isDarkMode 
+          ? 'scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600' 
+          : 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400'
+      }`}>
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.name === activeItem;
@@ -189,24 +228,25 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
             <button
               key={item.name}
               onClick={() => handleNavigation(item.href)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors text-left ${
+              title={isCollapsed ? item.name : ''}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg cursor-pointer transition-colors text-left ${
                 isActive 
                   ? isDarkMode ? "bg-gray-800" : "bg-gray-100"
                   : isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-50"
               }`}
             >
-              <Icon className={`w-4 h-4 ${
+              <Icon className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'} ${
                 isActive 
                   ? isDarkMode ? "text-gray-300" : "text-gray-700"
                   : isDarkMode ? "text-gray-400" : "text-gray-500"
               }`} />
-              <span className={`text-sm font-medium ${
+              {!isCollapsed && <span className={`text-sm font-medium ${
                 isActive 
                   ? isDarkMode ? "text-white" : "text-gray-900"
                   : isDarkMode ? "text-gray-300" : "text-gray-700"
               }`}>
                 {item.name}
-              </span>
+              </span>}
             </button>
           );
         })}
@@ -218,35 +258,45 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
             <button
               key={item.name}
               onClick={() => handleNavigation(item.href)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors text-left ${
+              title={isCollapsed ? item.name : ''}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg cursor-pointer transition-colors text-left ${
                 isActive 
                   ? isDarkMode ? "bg-gray-800" : "bg-gray-100"
                   : isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-50"
               }`}
             >
-              <Icon className={`w-4 h-4 ${
+              <Icon className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'} ${
                 isActive 
                   ? isDarkMode ? "text-gray-300" : "text-gray-700"
                   : isDarkMode ? "text-gray-400" : "text-gray-500"
               }`} />
-              <span className={`text-sm font-medium ${
+              {!isCollapsed && <span className={`text-sm font-medium ${
                 isActive 
                   ? isDarkMode ? "text-white" : "text-gray-900"
                   : isDarkMode ? "text-gray-300" : "text-gray-700"
               }`}>
                 {item.name}
-              </span>
+              </span>}
             </button>
           );
         })}
       </nav>
-      {isPending && <LoadingSpinner />}
+      {isPending && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999999 }}>
+          <LoadingSpinner />
+        </div>
+      )}
       
       {/* User Profile Section */}
-      <div className={`border-t pt-3 space-y-1 ${
+      <div className={`border-t pt-3 mt-3 flex-shrink-0 relative ${
         isDarkMode ? 'border-gray-700' : 'border-gray-200'
-      }`}>
-        <div className="flex items-center gap-3 px-3 py-2">
+      }`} ref={popupRef}>
+        <button
+          onClick={() => setShowPopup(!showPopup)}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg transition-colors ${
+            isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
+          }`}
+        >
           {user?.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -264,68 +314,58 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
           } ${user?.image ? 'hidden' : ''}`}>
             <User className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className={`text-sm font-medium truncate ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              {user?.name || 'Loading...'}
-            </p>
-            <p className={`text-xs capitalize ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
-              {user?.role?.replace('-', ' ') || 'User'}
-            </p>
-          </div>
-        </div>
-        
-        {user?.role === 'super-admin' && (
-          <Link
-            href="/admin/users"
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-              isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
-            }`}
-          >
-            <Settings className={`w-4 h-4 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`} />
-            <span className={`text-sm font-medium ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              User Management
-            </span>
-          </Link>
-        )}
-        
-        <button
-          onClick={handleSignOut}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left ${
-            isDarkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'
-          }`}
-        >
-          <LogOut className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-medium text-red-600">
-            Sign Out
-          </span>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0 text-left">
+              <p className={`text-sm font-medium truncate ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {user?.name || 'Loading...'}
+              </p>
+              <p className={`text-xs capitalize ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                {user?.role?.replace('-', ' ') || 'User'}
+              </p>
+            </div>
+          )}
         </button>
-      </div>
-      
-      <div className="flex justify-center pt-2">
-        <button 
-          onClick={toggleDarkMode}
-          className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-          }`}
-        >
-          <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 flex items-center justify-center ${
-            isDarkMode ? 'translate-x-6' : 'translate-x-0'
+        
+        {showPopup && (
+          <div className={`absolute bottom-full left-0 mb-2 w-full rounded-lg shadow-lg border py-2 z-50 ${
+            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
           }`}>
-            {isDarkMode ? (
-              <Moon className="w-3 h-3 text-gray-600" />
-            ) : (
-              <Sun className="w-3 h-3 text-yellow-500" />
+            {user?.role === 'super-admin' && (
+              <Link
+                href="/admin/users"
+                onClick={() => setShowPopup(false)}
+                className={`flex items-center gap-3 px-4 py-2 transition-colors ${
+                  isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                }`}
+              >
+                <Settings className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>User Management</span>
+              </Link>
             )}
+            <button
+              onClick={() => { toggleDarkMode(); setShowPopup(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-2 transition-colors text-left ${
+                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+              }`}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4 text-gray-400" /> : <Moon className="w-4 h-4 text-gray-500" />}
+              <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+            <button
+              onClick={handleSignOut}
+              className={`w-full flex items-center gap-3 px-4 py-2 transition-colors text-left ${
+                isDarkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'
+              }`}
+            >
+              <LogOut className="w-4 h-4 text-red-500" />
+              <span className="text-sm font-medium text-red-600">Sign Out</span>
+            </button>
           </div>
-        </button>
+        )}
       </div>
     </div>
   );
