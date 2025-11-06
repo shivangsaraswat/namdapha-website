@@ -264,6 +264,7 @@ export default function LinkTree() {
                 </div>
               ) : (
                 links.filter(link => link.type === 'social').map((link) => {
+                  const isInactive = link.status === 'inactive';
                   const SocialIcon = () => {
                     const iconClass = `w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`;
                     switch(link.platform) {
@@ -287,12 +288,14 @@ export default function LinkTree() {
                   return (
                     <div key={link.id} className={`flex items-center justify-between p-4 rounded-lg ${
                       isDarkMode ? 'bg-gray-600' : 'bg-gray-50'
+                    } ${
+                      isInactive ? 'opacity-50 bg-gray-300 dark:bg-gray-800' : ''
                     }`}>
                       <div className="flex items-center gap-3">
                         <SocialIcon />
                         <div>
                           <h4 className={`font-medium capitalize ${
-                            isDarkMode ? 'text-white' : 'text-gray-900'
+                            isInactive ? 'line-through text-gray-500' : isDarkMode ? 'text-white' : 'text-gray-900'
                           }`}>{link.platform}</h4>
                           <div className="flex items-center gap-2 text-sm">
                             <Badge className={`${
@@ -346,9 +349,13 @@ export default function LinkTree() {
                   <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No important links yet</p>
                 </div>
               ) : (
-                links.filter(link => link.type === 'important').map((link) => (
+                links.filter(link => link.type === 'important').map((link) => {
+                  const isInactive = link.status === 'inactive';
+                  return (
                   <div key={link.id} className={`flex items-center justify-between p-4 rounded-lg ${
                     isDarkMode ? 'bg-gray-600' : 'bg-gray-50'
+                  } ${
+                    isInactive ? 'opacity-50 bg-gray-300 dark:bg-gray-800' : ''
                   }`}>
                     <div className="flex items-center gap-3">
                       <LinkIcon className={`w-8 h-8 ${
@@ -356,7 +363,7 @@ export default function LinkTree() {
                       }`} />
                       <div>
                         <h4 className={`font-medium ${
-                          isDarkMode ? 'text-white' : 'text-gray-900'
+                          isInactive ? 'line-through text-gray-500' : isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}>{link.title}</h4>
                         <div className="flex items-center gap-2 text-sm">
                           <Badge className={`${
@@ -387,7 +394,8 @@ export default function LinkTree() {
                       </Button>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </CardContent>

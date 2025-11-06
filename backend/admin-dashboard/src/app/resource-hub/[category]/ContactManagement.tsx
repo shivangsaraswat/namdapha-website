@@ -234,12 +234,18 @@ export default function ContactManagement() {
                       <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No contacts in this category yet</p>
                     </div>
                   ) : (
-                    categoryContacts.map((contact) => (
-                      <div key={contact.id} className={`flex items-center justify-between p-4 rounded-lg ${isDarkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
+                    categoryContacts.map((contact) => {
+                      const isInactive = contact.status === 'inactive';
+                      return (
+                      <div key={contact.id} className={`flex items-center justify-between p-4 rounded-lg ${
+                        isDarkMode ? 'bg-gray-600' : 'bg-gray-50'
+                      } ${
+                        isInactive ? 'opacity-50 bg-gray-300 dark:bg-gray-800' : ''
+                      }`}>
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-full bg-gray-300 border-2 border-gray-400 overflow-hidden flex-shrink-0">
                             {contact.photoUrl ? (
-                              <Image src={contact.photoUrl} alt={contact.name} width={48} height={48} className="w-full h-full object-cover" />
+                              <Image src={contact.photoUrl} alt={contact.name} width={48} height={48} className={`w-full h-full object-cover ${isInactive ? 'opacity-60 grayscale' : ''}`} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gray-400">
                                 <User className="w-6 h-6 text-gray-600" />
@@ -247,7 +253,9 @@ export default function ContactManagement() {
                             )}
                           </div>
                           <div>
-                            <h4 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <h4 className={`font-medium ${
+                              isInactive ? 'line-through text-gray-500' : isDarkMode ? 'text-white' : 'text-gray-900'
+                            }`}>
                               {contact.name}
                             </h4>
                             <div className="flex items-center gap-4 text-sm">
@@ -275,7 +283,7 @@ export default function ContactManagement() {
                           </Button>
                         </div>
                       </div>
-                    ))
+                    )})
                   )}
                 </div>
               </CardContent>

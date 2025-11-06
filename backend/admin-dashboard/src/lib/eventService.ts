@@ -53,6 +53,28 @@ export const eventService = {
     } as Event)).sort((a, b) => a.order - b.order);
   },
 
+  async getAllUpcomingEvents(): Promise<Event[]> {
+    const q = query(collection(db, COLLECTION_NAME), where('type', '==', 'upcoming'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    } as Event)).sort((a, b) => a.order - b.order);
+  },
+
+  async getAllPastEvents(): Promise<Event[]> {
+    const q = query(collection(db, COLLECTION_NAME), where('type', '==', 'past'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    } as Event)).sort((a, b) => a.order - b.order);
+  },
+
   async addEvent(event: Omit<Event, 'id'>): Promise<string> {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...event,

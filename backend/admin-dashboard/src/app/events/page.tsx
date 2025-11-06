@@ -36,13 +36,18 @@ interface SortableRowProps {
 const SortableRow: FC<SortableRowProps> = ({ event, onEdit, onDelete, onToggleStatus, isHighlighted }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: event.id! });
   const style = { transform: CSS.Transform.toString(transform), transition };
+  const isInactive = event.status === 'inactive';
   
   return (
     <TableRow 
       ref={setNodeRef} 
       style={style}
       id={`event-${event.id}`}
-      className={isHighlighted ? 'bg-blue-100 dark:bg-blue-900 transition-colors' : ''}
+      className={`${
+        isHighlighted ? 'bg-blue-100 dark:bg-blue-900' : ''
+      } ${
+        isInactive ? 'opacity-50 bg-gray-100 dark:bg-gray-800' : ''
+      } transition-colors`}
     >
       <TableCell>
         <div className="cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
@@ -50,10 +55,12 @@ const SortableRow: FC<SortableRowProps> = ({ event, onEdit, onDelete, onToggleSt
         </div>
       </TableCell>
       <TableCell>
-        <Image src={event.imageUrl} alt={event.title} width={60} height={60} className="rounded-lg object-cover" />
+        <div className={isInactive ? 'opacity-60' : ''}>
+          <Image src={event.imageUrl} alt={event.title} width={60} height={60} className="rounded-lg object-cover" />
+        </div>
       </TableCell>
-      <TableCell className="font-medium">{event.title}</TableCell>
-      <TableCell>{event.date}</TableCell>
+      <TableCell className={`font-medium ${isInactive ? 'line-through text-gray-500' : ''}`}>{event.title}</TableCell>
+      <TableCell className={isInactive ? 'text-gray-500' : ''}>{event.date}</TableCell>
       <TableCell>
         <Badge className={event.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
           {event.status}
@@ -61,7 +68,7 @@ const SortableRow: FC<SortableRowProps> = ({ event, onEdit, onDelete, onToggleSt
       </TableCell>
       <TableCell>
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => onToggleStatus(event)}>
+          <Button variant="ghost" size="sm" onClick={() => onToggleStatus(event)} title={event.status === 'active' ? 'Hide from frontend' : 'Show on frontend'}>
             {event.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => onEdit(event)}>
@@ -107,8 +114,8 @@ export default function Events() {
     try {
       setLoading(true);
       const [upcoming, past] = await Promise.all([
-        eventService.getUpcomingEvents(),
-        eventService.getPastEvents()
+        eventService.getAllUpcomingEvents(),
+        eventService.getAllPastEvents()
       ]);
       setUpcomingEvents(upcoming);
       setPastEvents(past);
@@ -351,16 +358,22 @@ export default function Events() {
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {upcomingEvents.map(event => (
+              {upcomingEvents.map(event => {
+                const isInactive = event.status === 'inactive';
+                return (
                 <Card 
                   key={event.id} 
                   id={`event-${event.id}`}
-                  className={`rounded-xl shadow-sm border-0 overflow-hidden transition-all ${isDarkMode ? 'bg-gray-700' : 'bg-white'} ${
+                  className={`rounded-xl shadow-sm border-0 overflow-hidden transition-all ${
+                    isDarkMode ? 'bg-gray-700' : 'bg-white'
+                  } ${
                     highlightedId === event.id ? 'ring-4 ring-blue-500' : ''
+                  } ${
+                    isInactive ? 'opacity-50 bg-gray-200 dark:bg-gray-800' : ''
                   }`}
                 >
                   <div className="relative w-full aspect-[3/4]">
-                    <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
+                    <Image src={event.imageUrl} alt={event.title} fill className={`object-cover ${isInactive ? 'opacity-60 grayscale' : ''}`} />
                     <div className="absolute top-2 right-2">
                       <Badge className={event.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
                         {event.status}
@@ -368,7 +381,7 @@ export default function Events() {
                     </div>
                   </div>
                   <CardContent className="p-3 space-y-2">
-                    <h3 className={`font-semibold text-sm line-clamp-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{event.title}</h3>
+                    <h3 className={`font-semibold text-sm line-clamp-1 ${isInactive ? 'line-through text-gray-500' : isDarkMode ? 'text-white' : 'text-gray-900'}`}>{event.title}</h3>
                     <div className="space-y-1 text-xs">
                       <div className={`flex items-center gap-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -392,7 +405,7 @@ export default function Events() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )})}
             </div>
           )}
         </div>
