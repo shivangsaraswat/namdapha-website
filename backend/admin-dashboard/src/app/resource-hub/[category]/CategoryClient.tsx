@@ -15,12 +15,16 @@ import { resourceService, Resource } from "@/lib/resourceService";
 import { toast } from "sonner";
 import ContactManagement from "./ContactManagement";
 import PYQManagement from "./PYQManagement";
+import NotesManagement from "./NotesManagement";
+import VideoLecturesManagement from "./VideoLecturesManagement";
 
 export default function CategoryClient({ categorySlug }: { categorySlug: string }) {
   const { isDarkMode } = useTheme();
   const categoryName = categorySlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   const isContactsPage = categoryName === 'Important Contacts';
   const isPYQsPage = categoryName === 'Pyqs';
+  const isNotesPage = categoryName === 'Notes';
+  const isVideoLecturesPage = categoryName === 'Video Lectures';
   
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,11 +52,11 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
   };
 
   useEffect(() => {
-    if (!isContactsPage && !isPYQsPage) {
+    if (!isContactsPage && !isPYQsPage && !isNotesPage && !isVideoLecturesPage) {
       fetchResources();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryName, isContactsPage, isPYQsPage]);
+  }, [categoryName, isContactsPage, isPYQsPage, isNotesPage, isVideoLecturesPage]);
 
   const handleDeleteClick = (resource: Resource) => {
     setResourceToDelete(resource);
@@ -153,6 +157,22 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
     return (
       <PageLayout title="PYQs Management" subtitle="Manage previous year question papers" activeItem="Resource Hub">
         <PYQManagement />
+      </PageLayout>
+    );
+  }
+
+  if (isNotesPage) {
+    return (
+      <PageLayout title="Notes Management" subtitle="Manage study notes" activeItem="Resource Hub">
+        <NotesManagement />
+      </PageLayout>
+    );
+  }
+
+  if (isVideoLecturesPage) {
+    return (
+      <PageLayout title="Video Lectures Management" subtitle="Manage video lectures and playlists" activeItem="Resource Hub">
+        <VideoLecturesManagement />
       </PageLayout>
     );
   }

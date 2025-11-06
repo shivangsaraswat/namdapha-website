@@ -452,8 +452,11 @@ export default function ResourceHub() {
     } else if (selectedCategoryForResource === 'Grading Document') {
       return ['DS Grading Doc', 'ES Grading Doc'];
     }
+    // For other categories, return empty array (will use free text input)
     return [];
   };
+  
+  const isFixedSubcategory = selectedCategoryForResource === 'Student Handbook' || selectedCategoryForResource === 'Grading Document';
 
   const filteredResources = selectedCategory 
     ? resources.filter(r => r.category === selectedCategory)
@@ -592,10 +595,12 @@ export default function ResourceHub() {
                     }`}>{category.description}</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Badge className="bg-gray-100 text-gray-700">
-                      {resourceCounts[category.name] || 0} items
-                    </Badge>
                     {(category.name === 'Student Handbook' || category.name === 'Grading Document') && (
+                      <Badge className="bg-gray-100 text-gray-700">
+                        {resourceCounts[category.name] || 0} items
+                      </Badge>
+                    )}
+                    {!['Important Links', 'Verify Certificate', 'Important Contacts', 'PYQs', 'Notes', 'Join WhatsApp Groups', 'WhatsApp Groups'].includes(category.name) && (
                       <Button 
                         size="sm" 
                         className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"
@@ -632,18 +637,28 @@ export default function ResourceHub() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="subcategory" className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                  Subcategory <span className="text-red-500">*</span>
+                  {isFixedSubcategory ? 'Subcategory' : 'Title'} <span className="text-red-500">*</span>
                 </Label>
-                <Select value={resourceFormData.subcategory} onValueChange={(value) => setResourceFormData({ ...resourceFormData, subcategory: value })}>
-                  <SelectTrigger className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
-                    <SelectValue placeholder="Select subcategory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getSubcategoryOptions().map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isFixedSubcategory ? (
+                  <Select value={resourceFormData.subcategory} onValueChange={(value) => setResourceFormData({ ...resourceFormData, subcategory: value })}>
+                    <SelectTrigger className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}>
+                      <SelectValue placeholder="Select subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getSubcategoryOptions().map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="subcategory"
+                    placeholder="Enter resource title"
+                    value={resourceFormData.subcategory}
+                    onChange={(e) => setResourceFormData({ ...resourceFormData, subcategory: e.target.value })}
+                    className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
+                  />
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description" className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>

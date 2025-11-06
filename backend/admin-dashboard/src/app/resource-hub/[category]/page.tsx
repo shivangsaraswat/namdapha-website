@@ -4,6 +4,8 @@ export function generateStaticParams() {
   return [
     { category: 'important-contacts' },
     { category: 'pyqs' },
+    { category: 'notes' },
+    { category: 'video-lectures' },
   ];
 }
 

@@ -47,10 +47,10 @@ export default function ResourcesPage(){
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
-  const [handbookDialogOpen, setHandbookDialogOpen] = useState(false);
-  const [gradedDocDialogOpen, setGradedDocDialogOpen] = useState(false);
-  const [handbookResources, setHandbookResources] = useState<Resource[]>([]);
-  const [gradedDocResources, setGradedDocResources] = useState<Resource[]>([]);
+  const [resourceDialogOpen, setResourceDialogOpen] = useState(false);
+  const [selectedCategoryName, setSelectedCategoryName] = useState('');
+  const [categoryResources, setCategoryResources] = useState<Resource[]>([]);
+  const [allResources, setAllResources] = useState<Resource[]>([]);
   const [emptyDialogOpen, setEmptyDialogOpen] = useState(false);
   const [emptyDialogCategory, setEmptyDialogCategory] = useState('');
   const [navigating, setNavigating] = useState(false);
@@ -74,10 +74,7 @@ export default function ResourcesPage(){
         );
         
         setCategories(uniqueCategories);
-        
-        // Filter resources for Student Handbook and Grading Document
-        setHandbookResources(resources.filter(r => r.category === 'Student Handbook'));
-        setGradedDocResources(resources.filter(r => r.category === 'Grading Document'));
+        setAllResources(resources);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -101,44 +98,47 @@ export default function ResourcesPage(){
   };
 
   const handleCategoryClick = (categoryName: string) => {
-    setNavigating(true);
-    
-    if (categoryName === "Student Handbook") {
-      setNavigating(false);
-      if (handbookResources.length === 0) {
-        setEmptyDialogCategory(categoryName);
-        setEmptyDialogOpen(true);
-        return;
-      }
-      setHandbookDialogOpen(true);
-    } else if (categoryName === "Grading Document") {
-      setNavigating(false);
-      if (gradedDocResources.length === 0) {
-        setEmptyDialogCategory(categoryName);
-        setEmptyDialogOpen(true);
-        return;
-      }
-      setGradedDocDialogOpen(true);
-    } else if (categoryName === "Important Links") {
+    if (categoryName === "Important Links") {
+      setNavigating(true);
       router.push('/link-tree');
       return;
     } else if (categoryName === "Important Contacts") {
+      setNavigating(true);
       router.push('/resources/important-contacts');
       return;
     } else if (categoryName === "PYQs") {
+      setNavigating(true);
       router.push('/resources/pyqs');
       return;
+    } else if (categoryName === "Notes") {
+      setNavigating(true);
+      router.push('/resources/notes');
+      return;
+    } else if (categoryName === "Video Lectures") {
+      setNavigating(true);
+      router.push('/resources/video-lectures');
+      return;
     } else if (categoryName === "Verify Certificate") {
+      setNavigating(true);
       router.push('/verify-certificate');
       return;
     } else if (categoryName === "Join WhatsApp Groups" || categoryName === "WhatsApp Groups") {
+      setNavigating(true);
       router.push('/whatsapp');
       return;
-    } else {
-      setNavigating(false);
+    }
+    
+    const resources = allResources.filter(r => r.category === categoryName);
+    
+    if (resources.length === 0) {
       setEmptyDialogCategory(categoryName);
       setEmptyDialogOpen(true);
+      return;
     }
+    
+    setSelectedCategoryName(categoryName);
+    setCategoryResources(resources);
+    setResourceDialogOpen(true);
   };
 
   return (
@@ -309,44 +309,51 @@ export default function ResourcesPage(){
 
         </div>
 
-        {/* Student Handbook Dialog */}
-        {handbookDialogOpen && (
+        {/* Unified Resource Dialog */}
+        {resourceDialogOpen && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative">
-              <button onClick={() => setHandbookDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors">
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative max-h-[90vh] overflow-y-auto">
+              <button onClick={() => setResourceDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors z-10">
                 ×
               </button>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" onClick={(e) => e.stopPropagation()}>
-                {handbookResources.length > 0 ? (
-                  handbookResources.map((resource) => (
-                    <a 
-                      key={resource.id} 
-                      href={resource.fileUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      onClick={() => resource.id && resourceService.incrementClicks(resource.id)}
-                      className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30"
-                    >
-                      <div className="absolute inset-0 z-0">
-                        <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
-                      </div>
-                      <div className="absolute top-4 right-4 z-20 bg-white/90 rounded-lg p-2 shadow-md">
-                        <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </div>
-                      <div className="relative z-10">
-                        <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mb-6">
-                          <FaBook className="w-8 h-8 text-blue-600" />
+              <h2 className="text-[28px] md:text-[32px] font-bold text-white mb-8">{selectedCategoryName}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6" onClick={(e) => e.stopPropagation()}>
+                {categoryResources.length > 0 ? (
+                  categoryResources.map((resource) => {
+                    const category = categories.find(c => c.name === selectedCategoryName);
+                    const IconComponent = category ? iconMap[category.icon] || FaBook : FaBook;
+                    const iconColor = category?.iconColor || 'text-blue-600';
+                    
+                    return (
+                      <a 
+                        key={resource.id} 
+                        href={resource.fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        onClick={() => resource.id && resourceService.incrementClicks(resource.id)}
+                        className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30"
+                      >
+                        <div className="absolute inset-0 z-0">
+                          <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
                         </div>
-                        <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-3">{resource.title}</h3>
-                        <p className="text-white/90 text-[16px]">{resource.description}</p>
-                      </div>
-                    </a>
-                  ))
+                        <div className="absolute top-4 right-4 z-20 bg-white/90 rounded-lg p-2 shadow-md">
+                          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </div>
+                        <div className="relative z-10">
+                          <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mb-6">
+                            <IconComponent className={`w-8 h-8 ${iconColor}`} />
+                          </div>
+                          <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-3">{resource.title}</h3>
+                          <p className="text-white/90 text-[16px]">{resource.description}</p>
+                        </div>
+                      </a>
+                    );
+                  })
                 ) : (
                   <div className="col-span-2 text-center py-12">
-                    <p className="text-white text-lg">No handbooks available yet</p>
+                    <p className="text-white text-lg">No resources available yet</p>
                   </div>
                 )}
               </div>
@@ -354,7 +361,6 @@ export default function ResourcesPage(){
           </div>
         )}
 
-        {/* Graded Document Dialog */}
         {/* Empty Category Dialog */}
         {emptyDialogOpen && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -370,49 +376,7 @@ export default function ResourcesPage(){
           </div>
         )}
 
-        {gradedDocDialogOpen && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative">
-              <button onClick={() => setGradedDocDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors">
-                ×
-              </button>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" onClick={(e) => e.stopPropagation()}>
-                {gradedDocResources.length > 0 ? (
-                  gradedDocResources.map((resource) => (
-                    <a 
-                      key={resource.id} 
-                      href={resource.fileUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      onClick={() => resource.id && resourceService.incrementClicks(resource.id)}
-                      className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30"
-                    >
-                      <div className="absolute inset-0 z-0">
-                        <Image src="/councilbg.svg" alt="Card background" fill className="object-cover" />
-                      </div>
-                      <div className="absolute top-4 right-4 z-20 bg-white/90 rounded-lg p-2 shadow-md">
-                        <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </div>
-                      <div className="relative z-10">
-                        <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mb-6">
-                          <FaChartLine className="w-8 h-8 text-green-600" />
-                        </div>
-                        <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-3">{resource.title}</h3>
-                        <p className="text-white/90 text-[16px]">{resource.description}</p>
-                      </div>
-                    </a>
-                  ))
-                ) : (
-                  <div className="col-span-2 text-center py-12">
-                    <p className="text-white text-lg">No graded documents available yet</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+
 
       </main>
     </div>
