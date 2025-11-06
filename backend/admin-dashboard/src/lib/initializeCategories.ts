@@ -72,12 +72,31 @@ export const defaultCategories = [
     bgColor: "bg-green-50",
     order: 8,
     isActive: true
+  },
+  {
+    name: "Notes",
+    description: "Manage comprehensive study notes",
+    icon: "FaBook",
+    iconColor: "text-blue-600",
+    bgColor: "bg-blue-50",
+    order: 9,
+    isActive: true
+  },
+  {
+    name: "Video Lectures",
+    description: "Manage video lectures and playlists",
+    icon: "FaVideo",
+    iconColor: "text-purple-600",
+    bgColor: "bg-purple-50",
+    order: 10,
+    isActive: true
   }
 ];
 
 export async function initializeCategories() {
   try {
     const existingCategories = await resourceService.getAllCategories();
+    const existingNames = existingCategories.map(c => c.name);
     
     if (existingCategories.length === 0) {
       console.log('Initializing default categories...');
@@ -93,8 +112,26 @@ export async function initializeCategories() {
       console.log('Default categories initialized successfully!');
       return true;
     } else {
-      console.log('Categories already exist. Skipping initialization.');
-      return false;
+      // Add missing categories
+      let added = false;
+      for (const category of defaultCategories) {
+        if (!existingNames.includes(category.name)) {
+          console.log(`Adding missing category: ${category.name}`);
+          await resourceService.addCategory({
+            ...category,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+          added = true;
+        }
+      }
+      
+      if (added) {
+        console.log('Missing categories added successfully!');
+      } else {
+        console.log('All categories already exist.');
+      }
+      return added;
     }
   } catch (error) {
     console.error('Error initializing categories:', error);

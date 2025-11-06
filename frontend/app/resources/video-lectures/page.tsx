@@ -5,11 +5,12 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, Video, User, Clock } from "lucide-react";
 import { videoLectureService, VideoLecture } from "@/lib/videoLectureService";
+import { FaPlay, FaUser, FaClock, FaEye, FaYoutube, FaListUl, FaGraduationCap } from "react-icons/fa";
+
+
 
 const levels = ['Foundation', 'Diploma', 'BSc', 'BS'];
 
@@ -55,7 +56,7 @@ export default function VideoLecturesPage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/resource-hub-bg.svg"
+            src="/bg.svg"
             alt="Hero background"
             fill
             className="object-cover"
@@ -73,7 +74,7 @@ export default function VideoLecturesPage() {
               Video Lectures
             </h1>
             <p className="mt-6 text-[13px] md:text-[15px] lg:text-[18px] text-gray-300 max-w-3xl mx-auto">
-              Access comprehensive video lectures and playlists to enhance your learning
+              Comprehensive video lectures and playlists to enhance your learning
             </p>
           </div>
         </div>
@@ -81,160 +82,219 @@ export default function VideoLecturesPage() {
 
       <main className="relative z-10 pt-16 pb-16 px-6 md:px-8 lg:px-12">
         <div className="max-w-[1400px] mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <p className="text-gray-700 font-medium">
-              Showing <span className="text-gray-900 font-bold">{displayVideos.length}</span> video{displayVideos.length !== 1 ? 's' : ''}
-            </p>
-            
-            <div className="flex items-center gap-3">
-              <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                <SelectTrigger className="w-[200px] bg-white border-2 border-gray-900">
-                  <SelectValue placeholder="All Levels" />
-                </SelectTrigger>
-                <SelectContent className="bg-white z-[99999]">
-                  <SelectItem value="All">All Levels</SelectItem>
-                  {levels.map((level) => (
-                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center justify-end mb-8">
+            <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+              <SelectTrigger className="w-[200px] bg-white/90 backdrop-blur-sm border border-gray-300 shadow-md hover:shadow-lg transition-shadow rounded-lg">
+                <SelectValue placeholder="All Levels" />
+              </SelectTrigger>
+              <SelectContent className="bg-white z-[99999] rounded-lg shadow-xl border border-gray-200">
+                <SelectItem value="All">All Levels</SelectItem>
+                {levels.map((level) => (
+                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {loading && <LoadingSpinner />}
           {!loading && displayVideos.length > 0 ? (
             selectedLevel === "All" ? (
-              <div className="space-y-12">
+              <div className="space-y-16">
                 {levels.map((level) => {
                   const levelVideos = videosByLevel[level];
                   if (levelVideos.length === 0) return null;
                   
                   return (
                     <div key={level}>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                          <Video className="w-5 h-5 text-white" />
+                      <div className="mb-8 pb-4 border-b-2 border-gray-300">
+                        <div className="flex items-center gap-3">
+                          <FaGraduationCap className="w-8 h-8 text-gray-800" />
+                          <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-bold text-gray-900 leading-tight tracking-tight">
+                            {level}
+                          </h2>
                         </div>
-                        {level}
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {levelVideos.map((video) => (
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {levelVideos.map((video) => {
+                          const thumbnail = video.thumbnailUrl || '/placeholder-video.svg';
+                          return (
                           <Card 
                             key={video.id} 
-                            className="relative overflow-hidden border-2 border-gray-900 shadow-lg hover:shadow-xl transition-all group cursor-pointer bg-gradient-to-br from-purple-50 to-pink-50"
+                            className="relative overflow-hidden bg-white border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer rounded-xl"
                             onClick={() => handleVideoClick(video)}
                           >
-                            <div className="relative z-10 p-5 flex flex-col h-full">
-                              <div className="flex items-start justify-between mb-3">
-                                <Badge className={`${video.videoType === 'playlist' ? 'bg-purple-600' : 'bg-red-600'} text-white font-medium px-2 py-1 text-xs`}>
-                                  {video.videoType === 'playlist' ? 'Playlist' : 'Video'}
+                            <div className="relative w-full aspect-[16/9] overflow-hidden bg-gray-900">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={thumbnail}
+                                alt={video.title}
+                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = '/placeholder-video.svg';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                              
+                              <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                                <Badge className={`${video.videoType === 'playlist' ? 'bg-purple-600' : 'bg-red-600'} text-white font-bold px-2.5 py-1 text-[10px] uppercase tracking-wide flex items-center gap-1.5 shadow-lg`}>
+                                  {video.videoType === 'playlist' ? (
+                                    <>
+                                      <FaListUl className="w-2.5 h-2.5" />
+                                      <span>Playlist</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaYoutube className="w-3 h-3" />
+                                      <span>Video</span>
+                                    </>
+                                  )}
                                 </Badge>
-                                <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                  <Play className="w-5 h-5 text-white fill-white" />
+                              </div>
+
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div className="w-16 h-16 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-2xl">
+                                  <FaPlay className="w-6 h-6 text-red-600 ml-1" />
                                 </div>
                               </div>
 
-                              <h3 className="text-lg font-bold text-gray-900 leading-tight mb-2 line-clamp-2 flex-grow">
+                              {video.duration && (
+                                <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-white text-xs font-semibold flex items-center gap-1">
+                                  <FaClock className="w-3 h-3" />
+                                  {video.duration}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="p-4">
+                              <h3 className="text-base font-bold text-gray-900 leading-tight mb-2 line-clamp-2 min-h-[2.5rem]">
                                 {video.title}
                               </h3>
 
-                              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                              <p className="text-xs text-gray-600 mb-3 line-clamp-2 leading-relaxed min-h-[2rem]">
                                 {video.description}
                               </p>
 
-                              <div className="space-y-2 mt-auto">
-                                <div className="flex items-center justify-between text-xs text-gray-600">
-                                  <span className="font-medium bg-purple-100 px-2 py-1 rounded">{video.subject}</span>
-                                  {video.duration && (
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      <span>{video.duration}</span>
-                                    </div>
-                                  )}
+                              <div className="border-t border-gray-200 pt-3 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                                    {video.subject}
+                                  </span>
+                                  <div className="flex items-center gap-1 text-gray-500 text-xs">
+                                    <FaEye className="w-3 h-3" />
+                                    <span className="font-medium">{video.views || 0}</span>
+                                  </div>
                                 </div>
                                 
                                 {video.instructor && (
-                                  <div className="flex items-center text-xs text-gray-600">
-                                    <User className="w-3 h-3 mr-1" />
-                                    <span>{video.instructor}</span>
+                                  <div className="flex items-center gap-1.5 text-gray-600 text-xs">
+                                    <FaUser className="w-3 h-3" />
+                                    <span className="font-medium truncate">{video.instructor}</span>
                                   </div>
                                 )}
-
-                                <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-200">
-                                  <div className="flex items-center gap-1">
-                                    <Play className="w-3 h-3" />
-                                    <span>{video.views || 0} views</span>
-                                  </div>
-                                </div>
                               </div>
                             </div>
                           </Card>
-                        ))}
+                        );
+                        })}
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {displayVideos.map((video) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {displayVideos.map((video) => {
+                  const thumbnail = video.thumbnailUrl || '/placeholder-video.svg';
+                  return (
                   <Card 
                     key={video.id} 
-                    className="relative overflow-hidden border-2 border-gray-900 shadow-lg hover:shadow-xl transition-all group cursor-pointer bg-gradient-to-br from-purple-50 to-pink-50"
+                    className="relative overflow-hidden bg-white border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 group cursor-pointer rounded-xl"
                     onClick={() => handleVideoClick(video)}
                   >
-                    <div className="relative z-10 p-5 flex flex-col h-full">
-                      <div className="flex items-start justify-between mb-3">
-                        <Badge className={`${video.videoType === 'playlist' ? 'bg-purple-600' : 'bg-red-600'} text-white font-medium px-2 py-1 text-xs`}>
-                          {video.videoType === 'playlist' ? 'Playlist' : 'Video'}
+                    <div className="relative w-full aspect-[16/9] overflow-hidden bg-gray-900">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={thumbnail}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-video.svg';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                      
+                      <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                        <Badge className={`${video.videoType === 'playlist' ? 'bg-purple-600' : 'bg-red-600'} text-white font-bold px-2.5 py-1 text-[10px] uppercase tracking-wide flex items-center gap-1.5 shadow-lg`}>
+                          {video.videoType === 'playlist' ? (
+                            <>
+                              <FaListUl className="w-2.5 h-2.5" />
+                              <span>Playlist</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaYoutube className="w-3 h-3" />
+                              <span>Video</span>
+                            </>
+                          )}
                         </Badge>
-                        <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Play className="w-5 h-5 text-white fill-white" />
+                      </div>
+
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-16 h-16 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-2xl">
+                          <FaPlay className="w-6 h-6 text-red-600 ml-1" />
                         </div>
                       </div>
 
-                      <h3 className="text-lg font-bold text-gray-900 leading-tight mb-2 line-clamp-2 flex-grow">
+                      {video.duration && (
+                        <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-white text-xs font-semibold flex items-center gap-1">
+                          <FaClock className="w-3 h-3" />
+                          {video.duration}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="text-base font-bold text-gray-900 leading-tight mb-2 line-clamp-2 min-h-[2.5rem]">
                         {video.title}
                       </h3>
 
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2 leading-relaxed min-h-[2rem]">
                         {video.description}
                       </p>
 
-                      <div className="space-y-2 mt-auto">
-                        <div className="flex items-center justify-between text-xs text-gray-600">
-                          <span className="font-medium bg-purple-100 px-2 py-1 rounded">{video.subject}</span>
-                          {video.duration && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>{video.duration}</span>
-                            </div>
-                          )}
+                      <div className="border-t border-gray-200 pt-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                            {video.subject}
+                          </span>
+                          <div className="flex items-center gap-1 text-gray-500 text-xs">
+                            <FaEye className="w-3 h-3" />
+                            <span className="font-medium">{video.views || 0}</span>
+                          </div>
                         </div>
                         
                         {video.instructor && (
-                          <div className="flex items-center text-xs text-gray-600">
-                            <User className="w-3 h-3 mr-1" />
-                            <span>{video.instructor}</span>
+                          <div className="flex items-center gap-1.5 text-gray-600 text-xs">
+                            <FaUser className="w-3 h-3" />
+                            <span className="font-medium truncate">{video.instructor}</span>
                           </div>
                         )}
-
-                        <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-200">
-                          <div className="flex items-center gap-1">
-                            <Play className="w-3 h-3" />
-                            <span>{video.views || 0} views</span>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </Card>
-                ))}
+                );
+                })}
               </div>
             )
           ) : !loading ? (
-            <Card className="p-12 text-center border-2 border-gray-900 bg-white">
-              <Video className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Videos Found</h3>
+            <Card className="p-12 text-center border border-gray-200 bg-white rounded-xl shadow-lg">
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <FaPlay className="w-10 h-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Videos Found</h3>
               <p className="text-gray-600">Check back later for new video lectures</p>
             </Card>
           ) : null}

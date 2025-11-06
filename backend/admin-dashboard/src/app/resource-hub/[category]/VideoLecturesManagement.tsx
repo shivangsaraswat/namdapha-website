@@ -65,10 +65,20 @@ export default function VideoLecturesManagement() {
     level: '',
     videoUrl: '',
     videoType: 'youtube' as 'youtube' | 'playlist' | 'other',
-    thumbnailUrl: '',
     instructor: '',
     duration: '',
   });
+
+  const extractYouTubeThumbnail = (url: string): string => {
+    if (!url) return '';
+    const watchMatch = url.match(/[?&]v=([^&]+)/);
+    if (watchMatch) return `https://i.ytimg.com/vi/${watchMatch[1]}/hqdefault.jpg`;
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+    if (shortMatch) return `https://i.ytimg.com/vi/${shortMatch[1]}/hqdefault.jpg`;
+    const embedMatch = url.match(/\/embed\/([^?&]+)/);
+    if (embedMatch) return `https://i.ytimg.com/vi/${embedMatch[1]}/hqdefault.jpg`;
+    return '';
+  };
 
   useEffect(() => {
     fetchVideos();
@@ -127,7 +137,6 @@ export default function VideoLecturesManagement() {
       level: '',
       videoUrl: '',
       videoType: 'youtube',
-      thumbnailUrl: '',
       instructor: '',
       duration: '',
     });
@@ -143,7 +152,6 @@ export default function VideoLecturesManagement() {
       level: video.level,
       videoUrl: video.videoUrl,
       videoType: video.videoType,
-      thumbnailUrl: video.thumbnailUrl || '',
       instructor: video.instructor || '',
       duration: video.duration || '',
     });
@@ -157,6 +165,7 @@ export default function VideoLecturesManagement() {
     }
 
     try {
+      const thumbnailUrl = extractYouTubeThumbnail(formData.videoUrl);
       const videoData = {
         title: formData.title,
         description: formData.description,
@@ -164,7 +173,7 @@ export default function VideoLecturesManagement() {
         level: formData.level,
         videoUrl: formData.videoUrl,
         videoType: formData.videoType,
-        thumbnailUrl: formData.thumbnailUrl,
+        thumbnailUrl,
         instructor: formData.instructor,
         duration: formData.duration,
         status: 'published' as const,
@@ -529,24 +538,14 @@ export default function VideoLecturesManagement() {
               </Label>
               <Input
                 type="url"
-                placeholder="https://youtube.com/watch?v=..."
+                placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
                 value={formData.videoUrl}
                 onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                 className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                Thumbnail URL
-              </Label>
-              <Input
-                type="url"
-                placeholder="https://example.com/thumbnail.jpg"
-                value={formData.thumbnailUrl}
-                onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-                className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''}
-              />
+              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Thumbnail will be automatically extracted from YouTube URL
+              </p>
             </div>
 
             <div className="space-y-2">

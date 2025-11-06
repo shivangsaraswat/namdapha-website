@@ -122,7 +122,7 @@ export default function ResourcesPage(){
       setNavigating(true);
       router.push('/verify-certificate');
       return;
-    } else if (categoryName === "Join WhatsApp Groups" || categoryName === "WhatsApp Groups") {
+    } else if (categoryName === "Join WhatsApp Group" || categoryName === "Join WhatsApp Groups" || categoryName === "WhatsApp Groups") {
       setNavigating(true);
       router.push('/whatsapp');
       return;

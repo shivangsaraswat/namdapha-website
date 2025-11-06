@@ -3,7 +3,17 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: 'export',
   images: {
-    unoptimized: true
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+    ],
   },
   env: {
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

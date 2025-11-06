@@ -250,15 +250,30 @@ export default function ResourceHub() {
   };
 
   const handleCategoryClick = (categoryName: string) => {
+    // Categories that show resources in dialog
     if (categoryName === 'Student Handbook' || categoryName === 'Grading Document') {
       setSelectedCategory(categoryName);
-    } else if (categoryName === 'Important Links') {
-      window.location.href = '/link-tree';
-    } else if (categoryName === 'Verify Certificate') {
-      window.location.href = '/certificates';
-    } else {
-      window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
+      return;
     }
+    
+    // Categories that redirect to other admin pages
+    if (categoryName === 'Important Links') {
+      window.location.href = '/link-tree';
+      return;
+    }
+    if (categoryName === 'Verify Certificate') {
+      window.location.href = '/certificates';
+      return;
+    }
+    
+    // Categories with dedicated management pages
+    if (categoryName === 'Important Contacts' || categoryName === 'PYQs' || categoryName === 'Notes' || categoryName === 'Video Lectures') {
+      window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
+      return;
+    }
+    
+    // Categories without admin pages (Grade Predictor, Grade Calculator, Join WhatsApp Group)
+    // Do nothing - they're just frontend links
   };
 
   const handleDeleteResourceClick = (resource: Resource) => {
@@ -600,7 +615,7 @@ export default function ResourceHub() {
                         {resourceCounts[category.name] || 0} items
                       </Badge>
                     )}
-                    {!['Important Links', 'Verify Certificate', 'Important Contacts', 'PYQs', 'Notes', 'Join WhatsApp Groups', 'WhatsApp Groups'].includes(category.name) && (
+                    {(category.name === 'Student Handbook' || category.name === 'Grading Document') && (
                       <Button 
                         size="sm" 
                         className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"

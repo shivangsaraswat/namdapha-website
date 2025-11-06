@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     default: 'Namdapha House | General Student Body | IIT Madras',
     template: '%s | Namdapha House'
   },
-  description: 'Namdapha House | General Student Body | IIT Madras',
-  keywords: ['developer tools', 'SDK development', 'open source', 'software engineering', 'developer community', 'tech community', 'cross-platform development', 'Flutter', 'React Native', 'developer experience'],
+  description: 'A vibrant house built on tradition, values, and excellence. Namdapha stands as a beacon of pride within the IIT Madras BS community.',
+  keywords: ['IIT Madras', 'BS Degree', 'Namdapha House', 'IIT Madras BS Degree', 'IIT Madras BS', 'Sundarbans house IIT Madras BS', 'Gir House IIT Madras BS', 'Wayanad House IIT Madras BS', 'Kaziranga House IITM Madras BS', 'Online Degree IIT Madras'],
   authors: [{ name: 'Namdapha House' }],
   creator: 'Namdapha House',
   publisher: 'Namdapha House',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     url: 'https://namdapha.iitmbs.org',
     siteName: 'Namdapha House',
     title: 'Namdapha House | General Student Body | IIT Madras',
-    description: 'Namdapha House | General Student Body | IIT Madras',
+    description: 'A vibrant house built on tradition, values, and excellence. Namdapha stands as a beacon of pride within the IIT Madras BS community.',
     images: [{
       url: '/logo-namdapha.png',
       width: 1200,
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Namdapha House | General Student Body | IIT Madras',
-    description: 'Namdapha House | General Student Body | IIT Madras',
+    description: 'A vibrant house built on tradition, values, and excellence. Namdapha stands as a beacon of pride within the IIT Madras BS community.',
     images: ['/logo-namdapha.png'],
   },
   robots: {

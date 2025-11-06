@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const dynamic = 'force-static'
-export const alt = 'Namdapha House - Empower Community, Engineer Excellence'
+export const alt = 'Namdapha House - Legacy. Leadership. Limitless'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
  
@@ -38,7 +38,7 @@ export default async function Image() {
             Namdapha House
           </div>
           <div style={{ fontSize: 36, color: '#9CA3AF', marginBottom: 10 }}>
-            Empower Community. Engineer Excellence.
+            Legacy. Leadership. Limitless
           </div>
           <div style={{ fontSize: 28, color: '#6B7280' }}>
             General Student Body | IIT Madras

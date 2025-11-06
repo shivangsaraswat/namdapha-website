@@ -23,6 +23,8 @@ export interface DeletePermissions {
   // Resource Hub
   'resource-hub-pyqs'?: boolean;
   'resource-hub-contacts'?: boolean;
+  'resource-hub-notes'?: boolean;
+  'resource-hub-videos'?: boolean;
   
   // Forms
   forms?: boolean;
