@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Namdapha House',
     short_name: 'Namdapha',
-    description: 'Empower Community, Engineer Excellence',
+    description: 'Legacy. Leadership. Limitless.\nGeneral Student Body IIT Madras',
     start_url: '/',
     display: 'standalone',
     background_color: '#0A0A0B',
