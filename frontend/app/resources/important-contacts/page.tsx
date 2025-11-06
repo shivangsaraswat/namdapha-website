@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { contactService, Contact } from "@/lib/contactService";
 import { Crown, Target, ClipboardList, Drama, Briefcase, Phone, User, Inbox } from "lucide-react";
@@ -78,11 +77,7 @@ export default function ImportantContactsPage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-transparent" />
         
-        <div className="relative z-[60]">
-          <Navbar />
-        </div>
-
-        <div className="relative z-10 py-16 md:py-20 px-6 md:px-8 lg:px-12">
+        <div className="relative z-10 py-16 md:py-20 px-6 md:px-8 lg:px-12 pt-28">
           <div className="max-w-[1400px] mx-auto text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-bold text-transparent leading-tight tracking-tight">
               Important Contacts

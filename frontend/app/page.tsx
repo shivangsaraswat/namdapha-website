@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import LightningBackground from "@/components/LightningBackground";
 import DesignGallery from "@/components/DesignGallery";
 import SuccessStories from "@/components/SuccessStories";
@@ -15,12 +14,16 @@ export default function Page() {
   const [stars, setStars] = useState<Array<{top: string, left: string, delay: string, duration: string}>>([]);
 
   useEffect(() => {
-    setStars(Array.from({ length: 50 }, () => ({
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 3}s`,
-      duration: `${2 + Math.random() * 2}s`
-    })));
+    // Reduce stars and defer their creation for better initial load
+    const timer = setTimeout(() => {
+      setStars(Array.from({ length: 30 }, () => ({
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 3}s`,
+        duration: `${2 + Math.random() * 2}s`
+      })));
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -42,21 +45,19 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
     <div className="min-h-screen bg-[#0A0A0B] text-white relative overflow-hidden">
-      <div className="absolute left-1/2 top-0 w-[2842px] max-w-none -translate-x-1/2 opacity-80">
+      <div className="absolute left-1/2 top-0 w-[2842px] max-w-none -translate-x-1/2 opacity-80 will-change-auto">
         <Image
           src="/bg.svg"
           alt="Background pattern"
           width={2842}
           height={1132}
           className="w-[2842px] max-w-none"
-          priority
-          loading="eager"
+          loading="lazy"
+          quality={75}
         />
       </div>
 
-      <Navbar />
-
-      <main className="relative z-10 flex items-center min-h-[60vh] px-6 md:px-8 lg:px-12">
+      <main className="relative z-10 flex items-center min-h-[60vh] px-6 md:px-8 lg:px-12 pt-24">
         <div className="max-w-[1200px] mx-auto w-full grid lg:grid-cols-2 gap-12 items-center pt-4 md:pt-12 pb-20">
           <div className="space-y-6 pt-0">
             <div className="space-y-1 mt-6">
@@ -94,7 +95,7 @@ export default function Page() {
 
       <section id="about" className="relative bg-[rgb(228,229,231)] overflow-hidden py-16 md:py-24 scroll-mt-20">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="hidden lg:block absolute left-0 top-[45%] -translate-y-1/2 opacity-60 transform -translate-x-[30px] scale-105 pointer-events-none z-0">
+          <div className="hidden lg:block absolute left-0 top-[45%] -translate-y-1/2 opacity-60 transform -translate-x-[30px] scale-105 pointer-events-none z-0 will-change-auto">
             <Image
               src="/bg2.svg"
               alt="Pattern left"
@@ -102,10 +103,11 @@ export default function Page() {
               height={1702}
               className="w-[358px] h-auto object-contain"
               loading="lazy"
+              quality={60}
             />
           </div>
 
-          <div className="hidden lg:block absolute right-0 top-[80%] -translate-y-1/2 opacity-60 transform translate-x-[30px] scale-105 pointer-events-none z-0">
+          <div className="hidden lg:block absolute right-0 top-[80%] -translate-y-1/2 opacity-60 transform translate-x-[30px] scale-105 pointer-events-none z-0 will-change-auto">
             <Image
               src="/bg2.svg"
               alt="Pattern right"
@@ -113,6 +115,7 @@ export default function Page() {
               height={1702}
               className="w-[358px] h-auto object-contain transform scale-x-[-1]"
               loading="lazy"
+              quality={60}
             />
           </div>
         </div>
@@ -190,7 +193,7 @@ export default function Page() {
 
       <Activites />
 
-      <section className="z-10 relative text-white bg-black py-16 px-6 md:px-8 lg:px-12 min-h-[400px] transform-gpu contain-paint">
+      <section className="z-10 relative text-white bg-black py-16 px-6 md:px-8 lg:px-12 min-h-[400px]">
         <div className='absolute inset-0 pointer-events-none'>
           {stars.map((star, i) => (
             <div
@@ -227,26 +230,26 @@ export default function Page() {
         </div>
       </section>
 
-      <div className='w-full overflow-hidden leading-[0] bg-black transform-gpu'>
+      <div className='w-full overflow-hidden leading-[0] bg-black'>
         <svg className='relative block w-full h-[100px] md:h-[150px]' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'>
           <path d='M0,120 C360,20 720,20 1080,70 C1200,90 1320,110 1440,70 L1440,120 L0,120 Z' fill='#000000'></path>
         </svg>
       </div>
 
-      <div className="relative overflow-hidden bg-black min-h-[600px] transform-gpu contain-paint">
-        <div className="absolute inset-0 z-0 pointer-events-none bg-black" aria-hidden>
+      <div className="relative overflow-hidden bg-black min-h-[600px]">
+        <div className="absolute inset-0 z-0 pointer-events-none bg-black" aria-hidden="true">
           <Image
             src="/councilbg.svg"
             alt="Success stories background"
             fill
             className="object-cover w-full h-full opacity-100"
-            priority
-            quality={90}
+            loading="lazy"
+            quality={75}
             sizes="100vw"
           />
         </div>
 
-        <section className="relative py-16 md:py-20 lg:py-24 contain-paint">
+        <section className="relative py-16 md:py-20 lg:py-24">
           <div className="relative z-10 px-8 md:px-8 lg:px-12">
             <div className="w-full mx-auto flex justify-between mb-12">
               <div className="md:flex items-center justify-between">
@@ -254,8 +257,8 @@ export default function Page() {
                   <h2 className="text-4xl sm:text-6xl max-md:text-center md:text-[2.5rem] md:leading-12 lg:text-[3.5rem] lg:leading-16 xl:text-6xl font-title md:text-start font-medium text-pretty bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent">Success Stories</h2>
 
                   <div className="min-[500px]:w-10/12 mx-auto md:w-full">
-                    <p className="mt-6 text-sm max-md:text-center w-full md:text-sm md:text-left xl:text-lg mx-auto md:w-full text-gray-300 font-light leading-snug tracking-tight">We&apos;re a thriving community of learners, creators, and innovators — growing by helping one another.</p>
-                    <p className="mt-4 text-sm max-md:text-center w-full md:text-sm md:text-left xl:text-lg mx-auto md:w-full text-gray-300 font-light leading-snug tracking-tight">Here, success isn&apos;t individual — it&apos;s shared.</p>
+                    <p className="mt-6 text-sm max-md:text-center w-full md:text-sm md:text-left xl:text-lg mx-auto md:w-full text-gray-300 font-light leading-snug tracking-tight">We&apos;re a thriving community of learners, creators, and innovators, growing by helping one another.</p>
+                    <p className="mt-4 text-sm max-md:text-center w-full md:text-sm md:text-left xl:text-lg mx-auto md:w-full text-gray-300 font-light leading-snug tracking-tight">Here, success isn&apos;t individual it&apos;s shared.</p>
                   </div>
                 </div>
                 <SuccessStories />
@@ -264,14 +267,14 @@ export default function Page() {
           </div>
         </section>
 
-        <div className='w-full overflow-hidden leading-[0] relative z-10 transform-gpu'>
+        <div className='w-full overflow-hidden leading-[0] relative z-10'>
           <svg className='relative block w-full h-[100px] md:h-[150px]' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'>
             <path d='M0,120 C360,20 720,20 1080,70 C1200,90 1320,110 1440,70 L1440,120 L0,120 Z' fill='#ffffff'></path>
           </svg>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center bg-white px-6 md:px-12 py-16 md:py-32 gap-8 md:gap-0 overflow-hidden min-h-[500px] transform-gpu contain-paint">
+      <div className="flex flex-col md:flex-row justify-between items-center bg-white px-6 md:px-12 py-16 md:py-32 gap-8 md:gap-0 overflow-hidden min-h-[500px]">
         <div className="text-left w-full md:w-[35%] md:order-2">
           <h2 className="text-4xl sm:text-6xl max-md:text-center md:text-[2.5rem] md:leading-12 lg:text-[3.5rem] lg:leading-16 xl:text-6xl font-title md:text-end font-medium text-pretty bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-black">See the Journey <br />Beyond the Wins</h2>
           <div className="min-[500px]:w-10/12 mx-auto md:w-full">

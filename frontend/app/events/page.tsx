@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import EventFooter from "@/components/EventFooter";
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -111,8 +110,7 @@ export default function EventsPage() {
 				<div className="absolute inset-0">
 					<Image src="/events-hero-bg.svg" alt="Hero background" fill className="object-cover" priority />
 				</div>
-				<div className="relative z-[60]"><Navbar /></div>
-				<div className="relative z-10 py-20 px-6 md:px-8 lg:px-12">
+				<div className="relative z-10 py-20 px-6 md:px-8 lg:px-12 pt-32">
 					<div className="max-w-[1400px] mx-auto text-center">
 						<h1 className="text-4xl sm:text-[3rem] md:text-[3.5rem] lg:text-6xl xl:text-[4rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-title font-medium text-transparent leading-[1.1] tracking-tight">
 							Events & Workshops

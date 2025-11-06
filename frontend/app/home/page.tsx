@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import LightningBackground from "@/components/LightningBackground";
 import DesignGallery from "@/components/DesignGallery";
 import SuccessStories from "@/components/SuccessStories";
@@ -23,11 +22,8 @@ export default function Page() {
         />
       </div>
 
-      {/* Navbar */}
-      <Navbar />
-
       {/* Hero Section */}
-      <main className="relative z-10 flex items-center min-h-[60vh] px-6 md:px-8 lg:px-12">
+      <main className="relative z-10 flex items-center min-h-[60vh] px-6 md:px-8 lg:px-12 pt-24">
         <div className="max-w-[1200px] mx-auto w-full grid lg:grid-cols-2 gap-12 items-center pt-4 md:pt-12 pb-20">
           {/* Left Content */}
           <div className="space-y-6 pt-0">

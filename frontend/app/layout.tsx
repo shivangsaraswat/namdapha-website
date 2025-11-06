@@ -4,6 +4,7 @@ import { manrope, montserrat, pacifico, questrial, dancingScript } from './fonts
 import PreloadData from '@/components/PreloadData';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import PageWrapper from './page-wrapper';
+import Navbar from '@/components/Navbar';
 
 
 export const metadata: Metadata = {
@@ -73,6 +74,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${montserrat.variable} ${pacifico.variable} ${questrial.variable} ${dancingScript.variable} antialiased`}
       >
         <PreloadData />
+        <Navbar />
         <PageWrapper>
           {children}
           <ConditionalFooter />

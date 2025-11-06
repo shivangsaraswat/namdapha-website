@@ -1,153 +1,237 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 
 const SSList = [{
     id: 0,
-    name: 'Devansh',
-    profielpic: '/devansh.jpeg',
-    story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
+    name: 'Chess Squad Champions',
+    profielpic: '/Chess.png',
+    story: "Our chess team dominated the inter-house championship, showcasing exceptional strategic thinking and teamwork. Congratulations to all winners!"
 },
 {
     id: 1,
-    name: 'Devansh',
-    profielpic: '/devansh.jpeg',
-    story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
+    name: 'Kho Kho Female Warriors',
+    profielpic: '/KhoKho.png',
+    story: "The female Kho Kho team delivered outstanding performances, demonstrating speed, agility, and remarkable coordination. A proud moment for Namdapha!"
 },
 {
     id: 2,
-    name: 'Devansh',
-    profielpic: '/devansh.jpeg',
-    story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
+    name: 'IPL Auction Winners',
+    profielpic: '/IPLAuction.png',
+    story: "Strategic brilliance and quick thinking led our team to victory in the IPL Auction event. Their analytical skills and teamwork were truly exceptional!"
 },
 {
     id: 3,
-    name: 'Devansh',
-    profielpic: '/devansh.jpeg',
-    story: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquid inventore enim nisi, unde labore recusandae laudantium repudiandae reiciendis ipsam voluptates?"
+    name: 'Sprint Saga & Escape Room',
+    profielpic: '/SprintSagaandescaperoom.png',
+    story: "Amazing achievements in multiple events! From lightning-fast sprints to solving complex puzzles, our champions proved their versatility and determination!"
 },
 ]
 
 export default function SuccessStories() {
-    const [hoverCard, setHover] = useState(2)
+    const [currentIndex, setCurrentIndex] = useState(0)
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const find_card_state = (id: number, currentHover: number) => {
-        if (id == currentHover) {
-            return "hover"
-        }
-        if (id == currentHover - 1 || id == currentHover + 1) {
-            return "beside_hover"
-        }
-        else {
-            return "hidden"
-        }
+    // Rotate to next card
+    const rotateCards = () => {
+        setCurrentIndex((prev) => (prev + 1) % SSList.length);
     }
 
-    const debounce = (list: typeof SSList) => {
+    // Auto-rotate every 4 seconds
+    useEffect(() => {
         if (timerRef.current) clearInterval(timerRef.current);
 
-        // Start new interval
-        timerRef.current = setInterval(() => {
-            setHover((prev) => {
-                return prev == list[list.length - 1]?.id ? 0 : prev + 1
-            });
-        }, 3000);
+        timerRef.current = setInterval(rotateCards, 4000);
 
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
+    }, [])
+
+    // Get the order of cards for display
+    const getOrderedCards = () => {
+        const ordered = [];
+        for (let i = 0; i < SSList.length; i++) {
+            const index = (currentIndex + i) % SSList.length;
+            ordered.push({ ...SSList[index], position: i });
+        }
+        return ordered;
     }
 
-    useEffect(() => {
-        debounce(SSList)
-    }, [hoverCard])
+    const handlePrevious = () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setCurrentIndex((prev) => (prev - 1 + SSList.length) % SSList.length);
+        timerRef.current = setInterval(rotateCards, 4000);
+    }
+
+    const handleNext = () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        rotateCards();
+        timerRef.current = setInterval(rotateCards, 4000);
+    }
 
     return (
         <div className='flex flex-col justify-center items-center md:w-[58%] lg:w-[60%] overflow-hidden contain-paint'>
-            <div className='grid auto-cols-max grid-flow-col justify-around items-center min-[600px]:h-[22rem] lg:h-[28rem] w-full max-[600px]:h-[20rem] max-sm:mb-4 xl:h-[34rem] will-change-transform'>
-                {SSList && SSList.map((story) => {
+            {/* Desktop View - Horizontal Carousel */}
+            <div className='hidden md:flex items-center justify-center gap-3 lg:gap-4 w-full h-[30rem] lg:h-[34rem] xl:h-[38rem] will-change-transform'>
+                {getOrderedCards().map((story, index) => {
+                    const isFeatured = index === 0;
+                    
                     return (
                         <motion.div
-                            key={story.id}
-                            variants={{
-                                hidden: { display: 'var(--non-hover-card-display)', width: 'var(--non-hover-card-width)', height: 'var(--non-hover-card-height)', transition: { delay: 0 }, opacity: 0.3 },
-                                hover: {
-                                    height: 'var(--hover-height)',
-                                    width: 'var(--hover-width)',
-                                    display: 'flex',
-                                    transition: { delay: 0.1 },
-                                    alignItems: 'end',
-                                    flexDirection: 'column',
-                                    justifyContent: 'end',
-                                    opacity: 1
-                                },
-                                beside_hover: {
-                                    height: 'var(--beside-hover-height)',
-                                    width: 'var(--beside-hover-width)',
-                                    display: 'block',
-                                    transition: { delay: 0.1 },
-                                    opacity: 0.7,
-                                    justifyContent: 'start'
-                                }
+                            key={`${story.id}-${currentIndex}`}
+                            layout
+                            initial={false}
+                            animate={{
+                                width: isFeatured ? 'var(--featured-width)' : 'var(--queue-width)',
+                                opacity: isFeatured ? 1 : 0.7,
                             }}
-                            initial='hidden'
-                            animate={find_card_state(story.id, hoverCard)}
-                            exit={find_card_state(story.id, hoverCard)}
-                            onMouseEnter={() => window.innerWidth >= 768 && setHover(story.id)}
-                            className='group border-2 border-gray-600 flex rounded-2xl bg-center bg-cover overflow-hidden relative
-                            [--non-hover-card-display:none] md:[--non-hover-card-display:block]
-                            [--non-hover-card-width:0] md:[--non-hover-card-width:8vw] lg:[--non-hover-card-width:8vw] xl:[--non-hover-card-width:10vw] 2xl:[--non-hover-card-width:8vw]
-                            [--non-hover-card-height:0] md:[--non-hover-card-height:14rem] lg:[--non-hover-card-height:18rem] xl:[--non-hover-card-height:22rem]
+                            transition={{
+                                width: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
+                                opacity: { duration: 0.5 },
+                            }}
+                            className='relative rounded-2xl overflow-hidden border-2 border-gray-600 cursor-pointer flex-shrink-0
+                            [--featured-width:28vw] lg:[--featured-width:26vw] xl:[--featured-width:24vw] 2xl:[--featured-width:22vw]
+                            [--queue-width:6vw] lg:[--queue-width:7vw] xl:[--queue-width:8vw] 2xl:[--queue-width:8vw]
+                            h-[26rem] lg:h-[30rem] xl:h-[34rem]'
+                            onClick={() => !isFeatured && handleNext()}
+                        >
+                            <Image
+                                src={story.profielpic}
+                                alt={story.name}
+                                fill
+                                sizes="(max-width: 1024px) 28vw, 24vw"
+                                quality={85}
+                                loading="lazy"
+                                className="object-cover object-center"
+                            />
+                            
+                            {/* Gradient overlay - stronger for queue cards */}
+                            <motion.div 
+                                initial={false}
+                                animate={{
+                                    opacity: isFeatured ? 1 : 0.5,
+                                }}
+                                transition={{ duration: 0.4 }}
+                                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" 
+                            />
+                            
+                            {/* Featured Content */}
+                            {isFeatured && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                    transition={{ 
+                                        duration: 0.6, 
+                                        delay: 0.2,
+                                        ease: [0.4, 0, 0.2, 1]
+                                    }}
+                                    className='absolute bottom-0 left-0 right-0 p-4 lg:p-6'
+                                >
+                                    <div className='bg-white/10 backdrop-blur-md rounded-xl p-4 lg:p-5 border border-white/20'>
+                                        <h3 className='text-white font-bold text-lg lg:text-xl xl:text-2xl mb-2 lg:mb-3'>
+                                            {story.name}
+                                        </h3>
+                                        <p className='text-white/90 text-sm lg:text-base leading-relaxed'>
+                                            {story.story}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
 
-                            [--hover-width:40vw] min-[425px]:[--hover-width:44vw] md:[--hover-width:28vw] lg:[--hover-width:24vw] xl:[--hover-width:24vw] 2xl:[--hover-width:20vw]
-                            [--hover-height:18rem] min-[600px]:[--hover-height:22rem] lg:[--hover-height:26rem] xl:[--hover-height:32rem]
-
-                            [--beside-hover-width:18vw] min-[425px]:[--beside-hover-width:20vw] md:[--beside-hover-width:8vw] lg:[--beside-hover-width:11vw] xl:[--beside-hover-width:10vw] 2xl:[--beside-hover-width:10vw]
-                            [--beside-hover-height:15rem] min-[600px]:[--beside-hover-height:18rem] lg:[--beside-hover-height:22rem] xl:[--beside-hover-height:26rem]'
-                            style={{ backgroundImage: `url(${story.profielpic})`, justifyContent: "center", alignItems: "end" }}>
-                            <motion.div
-                                transition={{ duration: 0.25 }}
-                                className='flex flex-col justify-center items-center origin-top-left max-sm:gap-1 absolute overflow-hidden h-fit rounded-xl
-                                [--intro-bottom:0rem] md:[--intro-bottom:0rem] lg:[--intro-bottom:0rem]
-
-                                [--intro-rotated-left:25%] md:[--intro-rotated-left:25%] lg:[--intro-rotated-left:30%]
-
-                                [--non-hover-text-top:16rem] lg:[--non-hover-text-top:17rem] xl:[--non-hover-text-top:21rem]
-
-                                [--rotated-text-top:13rem] min-[600px]:[--rotated-text-top:15.5rem] md:[--rotated-text-top:16rem] lg:[--rotated-text-top:20rem] xl:[--rotated-text-top:22rem]'
-                                animate={hoverCard == story.id ? { rotate: 0, bottom: "var(--intro-bottom) !important", top: 'auto', backdropFilter: 'blur(12px)', backgroundColor: 'rgba(255,255,255,0.1)', padding: '8px 0 0 0', width: "90%", margin: '10px 0', left: '5%' } : { rotate: -90, top: (hoverCard == story.id + 1 || hoverCard == story.id - 1) ? 'var(--rotated-text-top)' : 'var(--non-hover-text-top)', left: 'var(--intro-rotated-left)', width: 'fit-content' }}
-                            >
-                                <motion.p
-                                    animate={hoverCard == story.id ? { fontSize: 'var(--normal-text-size)' } : { fontSize: 'var(--rotated-text-size)' }}
-                                    className='w-fit line-clamp-3 text-white/80 h-fit font-extrabold max-sm:tracking-[0.06rem] font-["BBH_Sans_Bartle"]
-                                    [--normal-text-size:0.70rem] min-[600px]:[--normal-text-size:1.2rem]
-
-                                    [--rotated-text-size:1.1rem] min-[600px]:[--rotated-text-size:1.4rem] md:[--rotated-text-size:1.5rem] lg:[--rotated-text-size:1.8rem] xl:[--rotated-text-size:2.2rem]'>{story.name}</motion.p>
-                                <motion.p
-                                    animate={hoverCard == story.id ? { height: 'var(--disc-height)' } : { height: 0 }}
-                                    transition={hoverCard == story.id ? { duration: 1 } : { delay: 0, duration: 0 }}
-                                    className='overflow-hidden px-4 text-center mb-3 max-sm:text-[9px] max-sm:px-1 [--disc-height:5rem] min-[425px]:[--disc-height:4rem] min-[600px]:text-xs lg:text-sm md:[--disc-height:6rem] xl:text-base'>{story.story}</motion.p>
-                            </motion.div>
+                            {/* Rotated title for queue cards */}
+                            {!isFeatured && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.4 }}
+                                    className='absolute inset-0 flex items-center justify-center'
+                                >
+                                    <div className='transform -rotate-90 whitespace-nowrap'>
+                                        <p className='text-white font-bold text-base lg:text-lg xl:text-xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'>
+                                            {story.name}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
                         </motion.div>
-                    )
+                    );
                 })}
             </div>
-            <div className='flex gap-6 md:hidden'>
+
+            {/* Mobile View - Single Card */}
+            <div className='md:hidden w-full h-[22rem] relative'>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -100 }}
+                        transition={{ duration: 0.5 }}
+                        className='absolute inset-0 rounded-2xl overflow-hidden border-2 border-gray-600'
+                    >
+                        <Image
+                            src={SSList[currentIndex].profielpic}
+                            alt={SSList[currentIndex].name}
+                            fill
+                            sizes="100vw"
+                            quality={85}
+                            className="object-cover object-center"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                        
+                        <div className='absolute bottom-0 left-0 right-0 p-4'>
+                            <div className='bg-white/10 backdrop-blur-md rounded-xl p-4'>
+                                <h3 className='text-white font-bold text-lg mb-2'>
+                                    {SSList[currentIndex].name}
+                                </h3>
+                                <p className='text-white/90 text-sm leading-relaxed'>
+                                    {SSList[currentIndex].story}
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className='flex gap-6 mt-6 md:mt-8'>
                 <button
-                    onClick={() => setHover(prev => prev - 1 >= 0 ? prev - 1 : SSList[SSList.length - 1].id)}
-                    className="w-8 h-8 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 border border-gray-600/30">
+                    onClick={handlePrevious}
+                    className="w-10 h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 border border-gray-600/30">
                     <svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <button
-                    onClick={() => setHover(prev => prev+1 <= SSList[SSList.length-1].id ? prev + 1 : 0)}
-                    className="w-8 h-8 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 backdrop-blur-sm border border-gray-600/30">
+                    onClick={handleNext}
+                    className="w-10 h-10 lg:w-12 lg:h-12 relative bg-gray-800/50 hover:bg-gray-700/70 hover:scale-110 rounded-full flex justify-center items-center shrink-0 cursor-pointer transition-all duration-300 backdrop-blur-sm border border-gray-600/30">
                     <svg className="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
+            </div>
+
+            {/* Progress Indicators */}
+            <div className='flex gap-2 mt-4'>
+                {SSList.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => {
+                            if (timerRef.current) clearInterval(timerRef.current);
+                            setCurrentIndex(index);
+                            timerRef.current = setInterval(rotateCards, 4000);
+                        }}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                            index === currentIndex 
+                                ? 'w-8 bg-white' 
+                                : 'w-1.5 bg-white/40 hover:bg-white/60'
+                        }`}
+                    />
+                ))}
             </div>
         </div>
     )

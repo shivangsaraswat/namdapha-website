@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { teamService, type TeamMember } from '@/lib/teamService';
 
@@ -77,11 +76,7 @@ export default function TeamsPage() {
 					</div>
 				</div>
 				
-				<div className="relative z-[60]">
-					<Navbar />
-				</div>
-
-				<div className="relative z-10 py-24 px-6 md:px-8 lg:px-12">
+				<div className="relative z-10 py-32 px-6 md:px-8 lg:px-12 pt-36">
 					<div className="max-w-[1400px] mx-auto text-center">
 						<h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
 							Department Teams
