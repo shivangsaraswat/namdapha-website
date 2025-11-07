@@ -112,9 +112,15 @@ export default function UserManagement() {
 
   const handleDeleteUser = async (userId: string) => {
     const user = users.find(u => u.id === userId);
-    if (user) {
-      await removeAuthorizedUser(user.email);
-      setUsers(users.filter(u => u.id !== userId));
+    if (user && confirm(`Are you sure you want to permanently delete ${user.name} (${user.email})? This action cannot be undone.`)) {
+      try {
+        await removeAuthorizedUser(user.email);
+        setUsers(users.filter(u => u.id !== userId));
+        console.log(`Successfully deleted user: ${user.email}`);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Failed to delete user. Please try again.');
+      }
     }
   };
   

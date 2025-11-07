@@ -74,6 +74,8 @@ export default function ResourcesPage(){
         
         setCategories(uniqueCategories);
         setAllResources(resources);
+        console.log('Loaded categories:', uniqueCategories.map(c => c.name));
+        console.log('All categories with details:', uniqueCategories);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -97,47 +99,58 @@ export default function ResourcesPage(){
   };
 
   const handleCategoryClick = (categoryName: string) => {
-    if (categoryName === "Important Links") {
+    console.log('Category clicked:', categoryName);
+    
+    // Direct navigation categories
+    const navigationMap: {[key: string]: string} = {
+      "Important Links": "/link-tree",
+      "Important Contacts": "/resources/important-contacts", 
+      "PYQs": "/resources/pyqs",
+      "Notes": "/resources/notes",
+      "Video Lectures": "/resources/video-lectures",
+      "Recommended Books": "/resources/recommended-books",
+      "Recommended books": "/resources/recommended-books", // Handle case variation
+      "Verify Certificate": "/verify-certificate"
+    };
+    
+    if (navigationMap[categoryName]) {
+      console.log('Navigating to:', navigationMap[categoryName]);
       setNavigating(true);
-      router.push('/link-tree');
+      window.location.href = navigationMap[categoryName];
       return;
-    } else if (categoryName === "Important Contacts") {
-      setNavigating(true);
-      router.push('/resources/important-contacts');
-      return;
-    } else if (categoryName === "PYQs") {
-      setNavigating(true);
-      router.push('/resources/pyqs');
-      return;
-    } else if (categoryName === "Notes") {
-      setNavigating(true);
-      router.push('/resources/notes');
-      return;
-    } else if (categoryName === "Video Lectures") {
-      setNavigating(true);
-      router.push('/resources/video-lectures');
-      return;
-    } else if (categoryName === "Verify Certificate") {
-      setNavigating(true);
-      router.push('/verify-certificate');
-      return;
-    } else if (categoryName === "Join WhatsApp Group" || categoryName === "Join WhatsApp Groups" || categoryName === "WhatsApp Groups") {
+    }
+    
+    // WhatsApp groups handling
+    if (categoryName.toLowerCase().includes('whatsapp')) {
+      const resources = allResources.filter(r => r.category === categoryName);
+      if (resources.length > 0) {
+        setSelectedCategoryName(categoryName);
+        setCategoryResources(resources);
+        setResourceDialogOpen(true);
+        return;
+      }
       setNavigating(true);
       router.push('/whatsapp');
       return;
     }
     
-    const resources = allResources.filter(r => r.category === categoryName);
-    
-    if (resources.length === 0) {
+    // Grade tools handling
+    if (categoryName.includes('Grade')) {
+      const resources = allResources.filter(r => r.category === categoryName);
+      if (resources.length > 0) {
+        setSelectedCategoryName(categoryName);
+        setCategoryResources(resources);
+        setResourceDialogOpen(true);
+        return;
+      }
       setEmptyDialogCategory(categoryName);
       setEmptyDialogOpen(true);
       return;
     }
     
-    setSelectedCategoryName(categoryName);
-    setCategoryResources(resources);
-    setResourceDialogOpen(true);
+    // For any other category, show empty dialog
+    setEmptyDialogCategory(categoryName);
+    setEmptyDialogOpen(true);
   };
 
   return (
@@ -349,7 +362,7 @@ export default function ResourcesPage(){
               </button>
               <div className="text-center py-8">
                 <h3 className="text-[24px] md:text-[28px] font-bold text-white mb-4">{emptyDialogCategory}</h3>
-                <p className="text-white/90 text-[16px]">No resources available yet. Coming soon!</p>
+                <p className="text-white/90 text-[16px]">No resources available yet.</p>
               </div>
             </div>
           </div>

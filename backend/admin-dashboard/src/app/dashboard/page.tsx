@@ -33,26 +33,39 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [council, teams, resources, pyqs, events] = await Promise.all([
+        const [council, teams, resources, pyqs, events, notes, books] = await Promise.all([
           councilService.getCouncilMembers(),
           teamService.getTeamMembers(),
           resourceService.getAllResources(),
           import('@/lib/pyqService').then(m => m.pyqService.getAllPYQs()),
           import('@/lib/eventService').then(m => m.eventService.getAllEvents()),
+          import('@/lib/notesService').then(m => m.notesService.getAllNotes()).catch(() => []),
+          import('@/lib/bookService').then(m => m.bookService.getAllBooks()).catch(() => []),
         ]);
+
+        // Combine all resources from different sources
+        const allResources = [
+          ...resources.filter(r => r.status === 'published').map(r => ({ title: r.title, category: r.category, status: r.status, createdAt: r.createdAt })),
+          ...notes.filter(n => n.status === 'published').map(n => ({ title: n.title, category: 'Notes', status: n.status, createdAt: n.createdAt })),
+          ...books.filter(b => b.status === 'published').map(b => ({ title: b.title, category: 'Recommended Books', status: b.status, createdAt: b.createdAt })),
+        ].sort((a, b) => {
+          const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+          const timeB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+          return timeB - timeA;
+        });
 
         setStats({
           totalCouncil: council.length,
           totalTeams: teams.length,
-          totalResources: resources.length,
-          publishedResources: resources.filter(r => r.status === 'published').length,
+          totalResources: allResources.length,
+          publishedResources: allResources.length,
           visibleCouncil: council.filter(m => m.isVisible).length,
           visibleTeams: teams.filter(m => m.isVisible).length,
           totalPYQs: pyqs.length,
           totalEvents: events.length,
         });
 
-        setRecentResources(resources.slice(0, 5));
+        setRecentResources(allResources.slice(0, 5));
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

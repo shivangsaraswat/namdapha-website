@@ -17,6 +17,9 @@ import ContactManagement from "./ContactManagement";
 import PYQManagement from "./PYQManagement";
 import NotesManagement from "./NotesManagement";
 import VideoLecturesManagement from "./VideoLecturesManagement";
+import BooksManagement from "./BooksManagement";
+
+
 
 export default function CategoryClient({ categorySlug }: { categorySlug: string }) {
   const { isDarkMode } = useTheme();
@@ -25,6 +28,10 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
   const isPYQsPage = categoryName === 'Pyqs';
   const isNotesPage = categoryName === 'Notes';
   const isVideoLecturesPage = categoryName === 'Video Lectures';
+  const isRecommendedBooksPage = categoryName === 'Recommended Books';
+  const isStudentHandbookPage = categoryName === 'Student Handbook';
+  const isGradingDocumentPage = categoryName === 'Grading Document';
+
   
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,11 +59,13 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
   };
 
   useEffect(() => {
-    if (!isContactsPage && !isPYQsPage && !isNotesPage && !isVideoLecturesPage) {
+    if (!isContactsPage && !isPYQsPage && !isNotesPage && !isVideoLecturesPage && !isRecommendedBooksPage && !isStudentHandbookPage && !isGradingDocumentPage) {
+      fetchResources();
+    } else if (isStudentHandbookPage || isGradingDocumentPage) {
       fetchResources();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryName, isContactsPage, isPYQsPage, isNotesPage, isVideoLecturesPage]);
+  }, [categoryName, isContactsPage, isPYQsPage, isNotesPage, isVideoLecturesPage, isRecommendedBooksPage, isStudentHandbookPage, isGradingDocumentPage]);
 
   const handleDeleteClick = (resource: Resource) => {
     setResourceToDelete(resource);
@@ -177,6 +186,87 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
     );
   }
 
+  if (isRecommendedBooksPage) {
+    return (
+      <PageLayout title="Recommended Books Management" subtitle="Manage recommended books and reading materials" activeItem="Resource Hub">
+        <BooksManagement />
+      </PageLayout>
+    );
+  }
+
+  if (isStudentHandbookPage || isGradingDocumentPage) {
+    const title = isStudentHandbookPage ? 'Student Handbook Management' : 'Grading Document Management';
+    const subtitle = isStudentHandbookPage ? 'Manage student handbook resources' : 'Manage grading document resources';
+    
+    return (
+      <PageLayout title={title} subtitle={subtitle} activeItem="Resource Hub">
+        <div className="space-y-6">
+          <div className="flex items-center justify-end">
+            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleAddResourceClick}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Resource
+            </Button>
+          </div>
+          <Card className={`rounded-2xl shadow-sm border-0 ${isDarkMode ? 'bg-gray-700' : 'bg-white'}`}>
+            <CardHeader>
+              <CardTitle className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                {categoryName} Resources
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Loading resources...</p>
+                </div>
+              ) : resources.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No resources found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {resources.map((resource) => (
+                    <div key={resource.id} className={`flex items-center justify-between p-4 rounded-lg ${isDarkMode ? 'bg-gray-600' : 'bg-gray-50'}`}>
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <h4 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{resource.title}</h4>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>{resource.description}</span>
+                            <Badge className={`${resource.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                              {resource.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className={resource.status === 'published' ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'} title={resource.status === 'published' ? 'Hide' : 'Show'} onClick={() => handleToggleResourceStatus(resource)}>
+                          {resource.status === 'published' ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700" title="Edit" onClick={() => handleEditResource(resource)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" title="Delete" onClick={() => handleDeleteClick(resource)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </PageLayout>
+    );
+  }
+
+
+
   return (
     <PageLayout title={`${categoryName} Management`} subtitle={`Manage ${categoryName.toLowerCase()} resources`} activeItem="Resource Hub">
       <div className="space-y-6">
@@ -270,7 +360,7 @@ export default function CategoryClient({ categorySlug }: { categorySlug: string 
             </div>
             <div className="space-y-2">
               <Label htmlFor="externalLink" className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                External Link <span className="text-red-500">*</span>
+                Link <span className="text-red-500">*</span>
               </Label>
               <Input id="externalLink" type="url" placeholder="https://example.com" value={resourceFormData.externalLink} onChange={(e) => setResourceFormData({ ...resourceFormData, externalLink: e.target.value })} className={isDarkMode ? 'bg-gray-700 text-white border-gray-600' : ''} />
             </div>

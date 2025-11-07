@@ -89,12 +89,15 @@ export async function createUser(email: string, role: UserRole, isActive = true)
 export async function getAllUsers() {
   try {
     const usersSnapshot = await getDocs(collection(db, 'users'));
-    return usersSnapshot.docs.map(doc => ({
-      email: doc.id,
-      ...doc.data(),
-      lastLogin: doc.data().lastLogin?.toDate(),
-      createdAt: doc.data().createdAt?.toDate()
-    }));
+    const blockedUsers = ["ss@gmail.com"];
+    return usersSnapshot.docs
+      .filter(doc => !blockedUsers.includes(doc.id))
+      .map(doc => ({
+        email: doc.id,
+        ...doc.data(),
+        lastLogin: doc.data().lastLogin?.toDate(),
+        createdAt: doc.data().createdAt?.toDate()
+      }));
   } catch (error) {
     console.error('Error getting all users:', error);
     return [];
@@ -108,8 +111,10 @@ export async function addUser(email: string, role: UserRole, isActive = true) {
 export async function removeUser(email: string) {
   try {
     await deleteDoc(doc(db, 'users', email));
+    console.log(`User ${email} permanently deleted from Firestore`);
   } catch (error) {
     console.error('Error removing user:', error);
+    throw error;
   }
 }
 

@@ -21,6 +21,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const [isPending, startTransition] = useTransition();
   const [showPopup, setShowPopup] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -135,20 +136,20 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
             onClick={() => setShowPopup(!showPopup)}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            {user?.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.image}
-                alt="User Avatar"
-                className="rounded-full w-8 h-8 object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                }}
-              />
-            ) : null}
-            <div className={`rounded-full w-8 h-8 flex items-center justify-center bg-gray-200 ${user?.image ? 'hidden' : ''}`}>
-              <User className="w-5 h-5 text-gray-600" />
+            <div className="relative w-8 h-8 flex-shrink-0">
+              {user?.image && !imageError ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.image}
+                  alt="User Avatar"
+                  className="rounded-full w-8 h-8 object-cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="rounded-full w-8 h-8 flex items-center justify-center bg-gray-200">
+                  <User className="w-5 h-5 text-gray-600" />
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0 text-left">
               <p className="text-sm font-medium text-gray-900 truncate">
@@ -297,22 +298,22 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
             isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'
           }`}
         >
-          {user?.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.image}
-              alt="User Avatar"
-              className="rounded-full w-8 h-8 object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-          ) : null}
-          <div className={`rounded-full w-8 h-8 flex items-center justify-center ${
-            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-          } ${user?.image ? 'hidden' : ''}`}>
-            <User className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+          <div className="relative w-8 h-8 flex-shrink-0">
+            {user?.image && !imageError ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.image}
+                alt="User Avatar"
+                className="rounded-full w-8 h-8 object-cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className={`rounded-full w-8 h-8 flex items-center justify-center ${
+                isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+              }`}>
+                <User className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+              </div>
+            )}
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0 text-left">

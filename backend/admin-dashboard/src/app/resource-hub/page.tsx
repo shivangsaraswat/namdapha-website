@@ -14,6 +14,12 @@ import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import { resourceService, Resource, ResourceCategory } from "@/lib/resourceService";
 import { initializeCategories } from "@/lib/initializeCategories";
+import { pyqService } from "@/lib/pyqService";
+import { notesService } from "@/lib/notesService";
+import { videoLectureService } from "@/lib/videoLectureService";
+import { contactService } from "@/lib/contactService";
+import { linkService } from "@/lib/linkService";
+import { bookService } from "@/lib/bookService";
 import { toast } from "sonner";
 
 // Icon mapping
@@ -228,9 +234,15 @@ export default function ResourceHub() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [allResources, allCategories] = await Promise.all([
+      const [allResources, allCategories, pyqs, notes, videos, contacts, links, books] = await Promise.all([
         resourceService.getAllResources(),
-        resourceService.getAllCategories()
+        resourceService.getAllCategories(),
+        pyqService.getAllPYQs().catch(() => []),
+        notesService.getAllNotes().catch(() => []),
+        videoLectureService.getAllVideoLectures().catch(() => []),
+        contactService.getAllContacts().catch(() => []),
+        linkService.getAllLinks().catch(() => []),
+        bookService.getAllBooks().catch(() => [])
       ]);
       
       setResources(allResources);
@@ -239,7 +251,37 @@ export default function ResourceHub() {
       // Calculate counts per category
       const counts: {[key: string]: number} = {};
       allCategories.forEach(category => {
-        counts[category.name] = allResources.filter(r => r.category === category.name).length;
+        let count = 0;
+        
+        // Count based on category type
+        switch (category.name) {
+          case 'PYQs':
+            count = pyqs.filter(p => p.status === 'published').length;
+            break;
+          case 'Notes':
+            count = notes.filter(n => n.status === 'published').length;
+            break;
+          case 'Video Lectures':
+            count = videos.filter(v => v.status === 'published').length;
+            break;
+          case 'Important Contacts':
+            count = contacts.filter(c => c.status === 'active').length;
+            break;
+          case 'Important Links':
+            count = links.filter(l => l.status === 'active').length;
+            break;
+          case 'Recommended Books':
+            count = books.filter(b => b.status === 'published').length;
+            break;
+          default:
+            // For other categories, count resources from resourceService
+            count = allResources.filter(r => 
+              r.category === category.name && r.status === 'published'
+            ).length;
+            break;
+        }
+        
+        counts[category.name] = count;
       });
       setResourceCounts(counts);
     } catch (error) {
@@ -249,14 +291,36 @@ export default function ResourceHub() {
     }
   };
 
+
+
+  // Helper functions to categorize different types
+  const isBasicCategory = (categoryName: string) => {
+    return ['Grade Predictor', 'Grade Calculator', 'Join WhatsApp Group', 'WhatsApp Groups', 'Join WhatsApp Groups'].includes(categoryName);
+  };
+
+  const isFullControlCategory = (categoryName: string) => {
+    return ['Student Handbook', 'Grading Document', 'Important Contacts', 'PYQs', 'Notes', 'Video Lectures', 'Recommended Books'].includes(categoryName);
+  };
+
+  const isInternalCategory = (categoryName: string) => {
+    return ['Important Links', 'Verify Certificate'].includes(categoryName);
+  };
+
+
+
   const handleCategoryClick = (categoryName: string) => {
-    // Categories that show resources in dialog
-    if (categoryName === 'Student Handbook' || categoryName === 'Grading Document') {
-      setSelectedCategory(categoryName);
+    // Basic categories - no click action
+    if (isBasicCategory(categoryName)) {
       return;
     }
     
-    // Categories that redirect to other admin pages
+    // Full control categories that redirect to dedicated pages
+    if (categoryName === 'Student Handbook' || categoryName === 'Grading Document') {
+      window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
+      return;
+    }
+    
+    // Full control categories that redirect to other admin pages
     if (categoryName === 'Important Links') {
       window.location.href = '/link-tree';
       return;
@@ -266,14 +330,17 @@ export default function ResourceHub() {
       return;
     }
     
-    // Categories with dedicated management pages
-    if (categoryName === 'Important Contacts' || categoryName === 'PYQs' || categoryName === 'Notes' || categoryName === 'Video Lectures') {
+    // Full control categories with dedicated management pages
+    if (categoryName === 'Important Contacts' || categoryName === 'PYQs' || categoryName === 'Notes' || categoryName === 'Video Lectures' || categoryName === 'Recommended Books') {
       window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
       return;
     }
     
-    // Categories without admin pages (Grade Predictor, Grade Calculator, Join WhatsApp Group)
-    // Do nothing - they're just frontend links
+    // Other categories - redirect to management page
+    if (!isBasicCategory(categoryName) && !isFullControlCategory(categoryName)) {
+      window.location.href = `/resource-hub/${encodeURIComponent(categoryName.toLowerCase().replace(/\s+/g, '-'))}`;
+      return;
+    }
   };
 
   const handleDeleteResourceClick = (resource: Resource) => {
@@ -417,11 +484,7 @@ export default function ResourceHub() {
     }
   };
 
-  const handleAddResourceClick = (categoryName: string) => {
-    setSelectedCategoryForResource(categoryName);
-    setResourceFormData({ subcategory: '', description: '', externalLink: '' });
-    setIsResourceDialogOpen(true);
-  };
+
 
   const handleSaveResource = async () => {
     if (!resourceFormData.subcategory || !resourceFormData.description || !resourceFormData.externalLink) {
@@ -491,7 +554,7 @@ export default function ResourceHub() {
             <DialogTrigger asChild>
               <Button className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Resource
+                Add Category
               </Button>
             </DialogTrigger>
             <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}>
@@ -539,98 +602,124 @@ export default function ResourceHub() {
           </Dialog>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {categories.map((category) => {
-            const IconComponent = iconMap[category.icon] || Book;
+            // Override icon for Join WhatsApp Group category
+            let IconComponent = iconMap[category.icon] || Book;
+            let iconColor = category.iconColor;
+            let bgColor = category.bgColor;
+            
+            if (category.name === 'Join WhatsApp Group' || category.name === 'WhatsApp Groups' || category.name === 'Join WhatsApp Groups') {
+              console.log('WhatsApp category detected:', category.name);
+              IconComponent = MessageCircle;
+              iconColor = 'text-green-600';
+              bgColor = 'bg-green-50';
+            }
+            
+            const isBasic = isBasicCategory(category.name);
+            const isFullControl = isFullControlCategory(category.name);
+            const isInternal = isInternalCategory(category.name);
+            
             return (
-              <Card 
+              <div 
                 key={category.id} 
-                className={`rounded-2xl shadow-sm border-0 transition-all hover:shadow-lg cursor-pointer relative overflow-hidden group ${
-                  isDarkMode ? 'bg-gray-700' : 'bg-white'
-                } ${selectedCategory === category.name ? 'ring-2 ring-green-500' : ''}`}
-                onClick={() => handleCategoryClick(category.name)}
+                className={`group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 min-h-[280px] sm:min-h-[300px] ${
+                  isBasic 
+                    ? 'opacity-90' 
+                    : 'hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 hover:border-gray-400 dark:hover:border-gray-500 hover:-translate-y-1 cursor-pointer'
+                } ${selectedCategory === category.name ? 'ring-2 ring-blue-500 shadow-lg' : ''}`}
+                onClick={isBasic ? undefined : () => handleCategoryClick(category.name)}
               >
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 ease-in-out rounded-2xl" />
-                <CardContent className="p-6 relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 ${category.bgColor} rounded-xl flex items-center justify-center`}>
-                      <IconComponent className={`w-6 h-6 ${category.iconColor}`} />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleVisibilityClick(category);
-                        }}
-                        className={category.isActive ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}
-                        title={category.isActive ? 'Visible on frontend' : 'Hidden from frontend'}
-                      >
-                        {category.isActive ? (
-                          <Eye className="w-4 h-4" />
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                          </svg>
-                        )}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditCategory(category);
-                        }}
-                        className="text-blue-600 hover:text-blue-700"
-                        title="Edit category"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCategoryClick(category);
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                        title="Delete category"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className={`font-semibold mb-2 ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>{category.name}</h3>
-                    <p className={`text-xs mb-3 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>{category.description}</p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    {(category.name === 'Student Handbook' || category.name === 'Grading Document') && (
-                      <Badge className="bg-gray-100 text-gray-700">
-                        {resourceCounts[category.name] || 0} items
-                      </Badge>
+                {/* Category Type Badge */}
+                <div className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium z-10 ${
+                  isBasic ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 
+                  isFullControl ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 
+                  isInternal ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                }`}>
+                  {isBasic ? 'Basic' : isFullControl ? 'Full Control' : isInternal ? 'Internal' : 'External'}
+                </div>
+
+                {/* Action Buttons - Always Visible */}
+                <div className="absolute top-2 right-2 flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleVisibilityClick(category);
+                    }}
+                    className={`p-1.5 rounded-md transition-colors shadow-sm ${
+                      category.isActive 
+                        ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50' 
+                        : 'bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:hover:bg-orange-900/50'
+                    }`}
+                    title={category.isActive ? 'Visible on frontend' : 'Hidden from frontend'}
+                  >
+                    {category.isActive ? (
+                      <Eye className="w-3 h-3" />
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
                     )}
-                    {(category.name === 'Student Handbook' || category.name === 'Grading Document') && (
-                      <Button 
-                        size="sm" 
-                        className="bg-slate-700 hover:bg-slate-800 text-white shadow-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddResourceClick(category.name);
-                        }}
-                      >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Add
-                      </Button>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditCategory(category);
+                    }}
+                    className="p-1.5 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors shadow-sm"
+                    title="Edit category"
+                  >
+                    <Edit className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCategoryClick(category);
+                    }}
+                    className="p-1.5 rounded-md bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors shadow-sm"
+                    title="Delete category"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {/* Card Content */}
+                <div className="p-3 sm:p-4 pt-10 sm:pt-12 h-full flex flex-col">
+                  {/* Icon */}
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 ${category.name.toLowerCase().includes('whatsapp') ? 'bg-green-50' : bgColor} rounded-lg flex items-center justify-center mb-3 sm:mb-4 flex-shrink-0`}>
+                    {category.name.toLowerCase().includes('whatsapp') ? (
+                      <MessageCircle className={`w-5 h-5 sm:w-6 sm:h-6 text-green-600`} />
+                    ) : (
+                      <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${iconColor}`} />
                     )}
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Title */}
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base mb-2 line-clamp-2 leading-tight">
+                    {category.name}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 leading-relaxed flex-grow">
+                    {category.description}
+                  </p>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between gap-2 mt-auto">
+                    {/* Item Count / Status */}
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                      isBasic 
+                        ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                    }`}>
+                      {isBasic ? 'Basic Card' : `${resourceCounts[category.name] || 0} items`}
+                    </div>
+
+
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -833,7 +922,7 @@ export default function ResourceHub() {
                           }`}>{resource.title}</h4>
                           <div className="flex items-center gap-4 text-sm">
                             <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                              Link • {resource.clicks || 0} clicks
+                              {resource.clicks || 0} clicks
                             </span>
                             <Badge className={`${
                               resource.status === 'published' 

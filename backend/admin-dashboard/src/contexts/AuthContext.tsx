@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
     
     // All authenticated users have access to all dashboard pages
-    const allUserPermissions = ['dashboard', 'events', 'resource-hub', 'council', 'teams', 'certificates', 'link-tree', 'forms'];
+    const allUserPermissions = ['dashboard', 'events', 'activities', 'resource-hub', 'council', 'teams', 'certificates', 'link-tree', 'forms'];
     
     // Super admin has additional user management access
     if (user.role === 'super-admin') {

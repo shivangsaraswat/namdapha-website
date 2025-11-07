@@ -10,6 +10,9 @@ const defaultUsers = {
   "hacksprint01@gmail.com": { role: "secretary" as UserRole, isActive: true },
 };
 
+// Blocked users that should never be recreated
+const blockedUsers = ["ss@gmail.com"];
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -40,8 +43,8 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google") {
         let userData = await getUserData(user.email!);
         
-        // Create user if doesn't exist and is in default users
-        if (!userData && defaultUsers[user.email! as keyof typeof defaultUsers]) {
+        // Create user if doesn't exist and is in default users (but not blocked)
+        if (!userData && defaultUsers[user.email! as keyof typeof defaultUsers] && !blockedUsers.includes(user.email!)) {
           const defaultUser = defaultUsers[user.email! as keyof typeof defaultUsers];
           await createUser(user.email!, defaultUser.role, defaultUser.isActive);
           userData = await getUserData(user.email!);
