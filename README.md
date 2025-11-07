@@ -1,22 +1,5 @@
 # Namdapha Website
 
-A full-stack web application with separate frontend, admin dashboard, and API server.
-
-## 🏗️ Architecture
-
-### Firebase (Recommended)
-```
-Frontend (Next.js) + API (Functions) → Firebase
-Admin Dashboard (Next.js) → Vercel
-```
-
-### Multi-Platform (Alternative)
-```
-Frontend (Next.js) → Vercel
-Admin Dashboard (Next.js) → Vercel
-API Server (Express.js) → Railway
-```
-
 ## 📁 Project Structure
 
 ```
@@ -35,7 +18,7 @@ namdapha-website/
 
 ## 🚀 Quick Start
 
-### Firebase (Recommended)
+### Firebase
 ```bash
 # Install Firebase CLI
 npm install -g firebase-tools
@@ -60,20 +43,6 @@ cd backend/api && npm install && npm run dev
 # Admin Dashboard
 cd backend/admin-dashboard && yarn install && yarn dev
 ```
-
-## 🌐 Deployment
-
-See [DEPLOYMENT.md](deploy/DEPLOYMENT.md) for complete deployment guide.
-
-### Firebase (Recommended)
-```bash
-./deploy/scripts/deploy-firebase.sh
-```
-
-### Multi-Platform
-- **Frontend**: Vercel
-- **Admin Dashboard**: Vercel
-- **API Server**: Railway
 
 ## 🛠️ Tech Stack
 
