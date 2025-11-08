@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
@@ -72,63 +73,75 @@ export default function EventCarousel() {
       <h3 className="text-3xl font-title font-medium mb-8 bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent text-center">
         {isUpcoming ? 'Upcoming Events' : 'Past Events'}
       </h3>
-      <div className="relative bg-gray-900/50 border border-gray-700 rounded-3xl overflow-hidden flex flex-col md:flex-row transition-all duration-500">
-        {/* Image side */}
-        <div className={`h-64 md:h-80 relative overflow-hidden ${isUpcoming ? 'md:w-2/5' : 'md:w-2/5'}`}>
-          <Image 
-            src={currentEvent.image} 
-            alt={currentEvent.title} 
-            fill 
-            className="object-cover" 
-            priority
-            sizes="(max-width: 768px) 100vw, 40vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-gray-900/50 md:to-gray-900/80" />
-        </div>
-
-        {/* Information side */}
-        <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-between">
-          <div>
-            <h4 className="text-2xl md:text-3xl font-semibold text-white mb-3">{currentEvent.title}</h4>
-            <p className="text-sm md:text-base text-gray-300 leading-relaxed mb-6 line-clamp-4">{currentEvent.description}</p>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-sm text-gray-300">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span>{isUpcoming && currentEvent.time ? `${currentEvent.date} • ${currentEvent.time}` : currentEvent.date}</span>
+      <div className="relative bg-gray-900/50 border border-gray-700 rounded-3xl overflow-hidden h-[480px] md:h-80">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            className="flex flex-col md:flex-row h-full"
+          >
+            {/* Image side */}
+            <div className="h-48 md:h-full md:w-2/5 relative overflow-hidden flex-shrink-0">
+              <Image 
+                src={currentEvent.image} 
+                alt={currentEvent.title} 
+                fill 
+                className="object-cover" 
+                priority
+                sizes="(max-width: 768px) 100vw, 40vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-gray-900/50 md:to-gray-900/80" />
             </div>
-            {isUpcoming && (
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+
+            {/* Information side */}
+            <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-between flex-1 overflow-hidden">
+              <div className="flex-1 overflow-hidden">
+                <h4 className="text-xl md:text-2xl font-semibold text-white mb-3 line-clamp-2">{currentEvent.title}</h4>
+                <p className="text-sm md:text-base text-gray-300 leading-relaxed line-clamp-3 md:line-clamp-4">{currentEvent.description}</p>
+              </div>
+              <div className="space-y-2 flex-shrink-0">
+                <div className="flex items-center gap-2 text-xs md:text-sm text-gray-300">
+                  <svg className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span>{currentEvent.venue}</span>
+                  <span className="truncate">{isUpcoming && currentEvent.time ? `${currentEvent.date} • ${currentEvent.time}` : currentEvent.date}</span>
                 </div>
-                {currentEvent.meetLink && (
-                  <a href={`https://${currentEvent.meetLink}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    Join Google Meet
-                  </a>
+                {isUpcoming && (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-300 min-w-0">
+                      <svg className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="truncate">{currentEvent.venue}</span>
+                    </div>
+                    {currentEvent.meetLink && (
+                      <a href={`https://${currentEvent.meetLink}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span className="hidden sm:inline">Join Meet</span>
+                        <span className="sm:hidden">Join</span>
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Indicator dots */}
-        <div className="absolute bottom-4 right-4 flex gap-2">
+        <div className="absolute bottom-2 flex gap-1.5 z-10 left-1/2 -translate-x-1/2 md:!left-auto md:right-4 md:!translate-x-0 md:bottom-4">
           {events.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex ? 'bg-white w-6' : 'bg-gray-500'
+              className={`h-1.5 rounded-full transition-all ${
+                index === currentIndex ? 'bg-white w-4' : 'bg-gray-500 w-1.5'
               }`}
             />
           ))}

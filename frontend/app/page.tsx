@@ -163,7 +163,7 @@ export default function Page() {
                   <h2 className="fs-48 text-center font-title font-medium text-gray-8 mb-6">What We Do</h2>
                   <p className="mx-auto max-w-[720px] text-center text-16 md:text-18 leading-relaxed text-gray-30">From academics to activities, Namdapha offers a holistic experience that nurtures talent, builds character, and creates lasting memories.</p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-12">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mt-12">
                     {[
                       { title: 'Academic Support', desc: 'Study groups, peer tutoring, and resource sharing to help everyone excel academically.', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', bg: '/councilbg.svg' },
                       { title: 'Events & Workshops', desc: 'Tech talks, cultural fests, and skill-building workshops throughout the year.', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9', bg: '/teamsbg.svg' },
@@ -172,14 +172,14 @@ export default function Page() {
                       { title: 'Sports & Recreation', desc: 'Gaming tournaments, fitness challenges, and recreational activities for all.', icon: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', bg: '/council-rc-bg.svg' },
                       { title: 'Leadership Development', desc: 'Opportunities to lead teams, organize events, and develop management skills.', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', bg: '/council-card-bg.svg' }
                     ].map((item, idx) => (
-                      <div key={idx} className="relative rounded-xl p-6 shadow-lg hover:shadow-xl transition-all overflow-hidden border-2 border-[#D4AF37] group">
+                      <div key={idx} className="relative rounded-xl p-3 sm:p-4 md:p-6 shadow-lg hover:shadow-xl transition-all overflow-hidden border-2 border-[#D4AF37] group">
                         <Image src={item.bg} alt="" fill className="object-cover" priority />
                         <div className="relative z-10">
-                          <div className="w-12 h-12 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center mb-4 border border-[#D4AF37]/40">
-                            <svg className="w-6 h-6 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} /></svg>
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center mb-2 sm:mb-3 md:mb-4 border border-[#D4AF37]/40">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} /></svg>
                           </div>
-                          <h3 className="text-lg font-semibold text-white drop-shadow-lg mb-2">{item.title}</h3>
-                          <p className="text-sm text-white drop-shadow-md">{item.desc}</p>
+                          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-white drop-shadow-lg mb-1 sm:mb-2">{item.title}</h3>
+                          <p className="text-xs sm:text-sm text-white drop-shadow-md">{item.desc}</p>
                         </div>
                       </div>
                     ))}

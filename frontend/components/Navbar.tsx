@@ -61,23 +61,23 @@ export default function Navbar() {
   return (
     <header className={`fixed top-0 left-0 right-0 z-[9999] w-full px-6 py-5 md:px-8 lg:px-12 text-white transition-transform duration-500 ease-in-out ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
-    }`}>
+    } max-md:[body[data-dialog-open]_&]:hidden`}>
       <nav className={`flex items-center justify-between mx-auto relative transition-all duration-300 ${
         isScrolled ? 'max-w-[900px] lg:max-w-[1000px]' : 'max-w-[1200px]'
       }`}>
-        {/* Scrolled Background - appears behind content with gradient border */}
+        {/* Glassmorphism Background */}
         <div 
           className={`absolute -left-4 -right-4 -top-2 -bottom-2 rounded-[2rem] transition-all duration-300 ${
             isScrolled ? 'opacity-100' : 'opacity-0'
           }`}
           style={{ 
             zIndex: -1,
-            background: 'linear-gradient(180deg, rgba(226, 227, 233, 0.2), rgba(212, 214, 222, 0.2), rgba(61, 63, 76, 0.2))',
-            padding: '1px'
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
           }}
-        >
-          <div className="w-full h-full bg-black/60 backdrop-blur-md rounded-[2rem]" />
-        </div>
+        />
         
         <div className={`flex items-center relative z-10 transition-all duration-300 ${
           isScrolled ? 'space-x-2' : 'space-x-3'

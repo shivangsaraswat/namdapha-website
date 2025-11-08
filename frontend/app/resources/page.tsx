@@ -54,6 +54,16 @@ export default function ResourcesPage(){
   const [emptyDialogCategory, setEmptyDialogCategory] = useState('');
   const [navigating, setNavigating] = useState(false);
 
+  // Hide navbar on mobile when dialog is open
+  useEffect(() => {
+    if (resourceDialogOpen || emptyDialogOpen) {
+      document.body.setAttribute('data-dialog-open', 'true');
+    } else {
+      document.body.removeAttribute('data-dialog-open');
+    }
+    return () => document.body.removeAttribute('data-dialog-open');
+  }, [resourceDialogOpen, emptyDialogOpen]);
+
   // Fetch categories and resource counts from Firebase
   useEffect(() => {
     let mounted = true;
@@ -134,21 +144,16 @@ export default function ResourcesPage(){
       return;
     }
     
-    // Grade tools handling
-    if (categoryName.includes('Grade')) {
-      const resources = allResources.filter(r => r.category === categoryName);
-      if (resources.length > 0) {
-        setSelectedCategoryName(categoryName);
-        setCategoryResources(resources);
-        setResourceDialogOpen(true);
-        return;
-      }
-      setEmptyDialogCategory(categoryName);
-      setEmptyDialogOpen(true);
+    // For all other categories, check if resources exist
+    const resources = allResources.filter(r => r.category === categoryName);
+    if (resources.length > 0) {
+      setSelectedCategoryName(categoryName);
+      setCategoryResources(resources);
+      setResourceDialogOpen(true);
       return;
     }
     
-    // For any other category, show empty dialog
+    // Show empty dialog only if no resources found
     setEmptyDialogCategory(categoryName);
     setEmptyDialogOpen(true);
   };

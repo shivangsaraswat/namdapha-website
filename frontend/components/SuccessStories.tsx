@@ -80,7 +80,7 @@ export default function SuccessStories() {
                     
                     return (
                         <motion.div
-                            key={`${story.id}-${currentIndex}`}
+                            key={story.id}
                             layout
                             initial={false}
                             animate={{
@@ -88,12 +88,13 @@ export default function SuccessStories() {
                                 opacity: isFeatured ? 1 : 0.7,
                             }}
                             transition={{
-                                width: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
-                                opacity: { duration: 0.5 },
+                                layout: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+                                width: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+                                opacity: { duration: 0.4 },
                             }}
                             className='relative rounded-2xl overflow-hidden border-2 border-gray-600 cursor-pointer flex-shrink-0
-                            [--featured-width:28vw] lg:[--featured-width:26vw] xl:[--featured-width:24vw] 2xl:[--featured-width:22vw]
-                            [--queue-width:6vw] lg:[--queue-width:7vw] xl:[--queue-width:8vw] 2xl:[--queue-width:8vw]
+                            [--featured-width:32vw] lg:[--featured-width:30vw] xl:[--featured-width:28vw] 2xl:[--featured-width:26vw]
+                            [--queue-width:5vw] lg:[--queue-width:5.5vw] xl:[--queue-width:6vw] 2xl:[--queue-width:6vw]
                             h-[26rem] lg:h-[30rem] xl:h-[34rem]'
                             onClick={() => !isFeatured && handleNext()}
                         >
@@ -117,37 +118,15 @@ export default function SuccessStories() {
                                 className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" 
                             />
                             
-                            {/* Featured Content */}
-                            {isFeatured && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                                    transition={{ 
-                                        duration: 0.6, 
-                                        delay: 0.2,
-                                        ease: [0.4, 0, 0.2, 1]
-                                    }}
-                                    className='absolute bottom-0 left-0 right-0 p-4 lg:p-6'
-                                >
-                                    <div className='bg-white/10 backdrop-blur-md rounded-xl p-4 lg:p-5 border border-white/20'>
-                                        <h3 className='text-white font-bold text-lg lg:text-xl xl:text-2xl mb-2 lg:mb-3'>
-                                            {story.name}
-                                        </h3>
-                                        <p className='text-white/90 text-sm lg:text-base leading-relaxed'>
-                                            {story.story}
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            )}
+
 
                             {/* Rotated title for queue cards */}
                             {!isFeatured && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{ duration: 0.4 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.2 }}
                                     className='absolute inset-0 flex items-center justify-center'
                                 >
                                     <div className='transform -rotate-90 whitespace-nowrap'>
@@ -183,16 +162,7 @@ export default function SuccessStories() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                         
-                        <div className='absolute bottom-0 left-0 right-0 p-4'>
-                            <div className='bg-white/10 backdrop-blur-md rounded-xl p-4'>
-                                <h3 className='text-white font-bold text-lg mb-2'>
-                                    {SSList[currentIndex].name}
-                                </h3>
-                                <p className='text-white/90 text-sm leading-relaxed'>
-                                    {SSList[currentIndex].story}
-                                </p>
-                            </div>
-                        </div>
+
                     </motion.div>
                 </AnimatePresence>
             </div>
