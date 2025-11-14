@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { UserPlus, Bell } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
 interface RecommendedUser {
   id: string;
@@ -36,48 +35,48 @@ export default function RecommendationsSidebar() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="sticky top-[88px] space-y-2">
       {/* Recommendations Card */}
-      <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-white rounded-lg border border-[#d4d4d4] overflow-hidden shadow-sm">
         {/* Tabs */}
-        <div className="flex border-b border-[#e5e7eb]">
+        <div className="flex border-b border-[#00000024]">
           <button
             onClick={() => setActiveTab('network')}
-            className={`flex-1 py-3.5 text-xs font-semibold transition-all relative ${
+            className={`flex-1 py-3 text-xs font-semibold transition-colors relative ${
               activeTab === 'network'
-                ? 'text-[#0a66c2]'
-                : 'text-[#666] hover:text-[#191919]'
+                ? 'text-[#01754f]'
+                : 'text-[#0000009a] hover:text-[#000000e6]'
             }`}
           >
             Network
             {activeTab === 'network' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0a66c2] rounded-t-full"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#01754f]"></div>
             )}
           </button>
           <button
             onClick={() => setActiveTab('jobs')}
-            className={`flex-1 py-3.5 text-xs font-semibold transition-all relative ${
+            className={`flex-1 py-3 text-xs font-semibold transition-colors relative ${
               activeTab === 'jobs'
-                ? 'text-[#0a66c2]'
-                : 'text-[#666] hover:text-[#191919]'
+                ? 'text-[#01754f]'
+                : 'text-[#0000009a] hover:text-[#000000e6]'
             }`}
           >
             Jobs
             {activeTab === 'jobs' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0a66c2] rounded-t-full"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#01754f]"></div>
             )}
           </button>
           <button
             onClick={() => setActiveTab('groups')}
-            className={`flex-1 py-3.5 text-xs font-semibold transition-all relative ${
+            className={`flex-1 py-3 text-xs font-semibold transition-colors relative ${
               activeTab === 'groups'
-                ? 'text-[#0a66c2]'
-                : 'text-[#666] hover:text-[#191919]'
+                ? 'text-[#01754f]'
+                : 'text-[#0000009a] hover:text-[#000000e6]'
             }`}
           >
             Groups
             {activeTab === 'groups' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0a66c2] rounded-t-full"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#01754f]"></div>
             )}
           </button>
         </div>
@@ -109,7 +108,7 @@ export default function RecommendationsSidebar() {
                       <p className="text-xs text-[#0000009a] truncate leading-[1.4]">{user.role}</p>
                       <p className="text-xs text-[#0000009a] mt-1">{user.mutualConnections} mutuals</p>
                     </div>
-                    <button className="flex-shrink-0 w-9 h-9 rounded-full border-2 border-[#0a66c2] hover:bg-[#e8f4fb] flex items-center justify-center transition-all hover:scale-105 mt-1">
+                    <button className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[#0a66c2] hover:bg-[#e8f4fb] flex items-center justify-center transition-colors mt-1">
                       <UserPlus className="w-4 h-4 text-[#0a66c2]" />
                     </button>
                   </div>
@@ -118,55 +117,32 @@ export default function RecommendationsSidebar() {
 
               <div className="mt-4 pt-4 border-t border-[#00000024]">
                 <h4 className="text-base font-semibold text-[#000000e6] mb-1">
-                  Important Notifications
+                  People you may know from NYU
                 </h4>
-                <Link href="/community/notifications" className="text-xs text-[#0000009a] hover:text-[#0a66c2] hover:underline font-semibold mb-4 inline-block">
-                  See all
-                </Link>
+                <button className="text-xs text-[#0000009a] hover:text-[#0a66c2] hover:underline font-semibold mb-4">
+                  See more
+                </button>
                 
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 hover:bg-[#0000000a] -mx-3 px-3 py-2 rounded-lg transition-colors cursor-pointer">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] flex items-center justify-center flex-shrink-0">
-                      <Bell className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-xs font-semibold text-[#000000e6]">Rajesh Kumar</span>
-                        <span className="text-[10px] text-[#00000099]">•</span>
-                        <span className="text-[10px] text-[#00000099]">Secretary</span>
+                  {nyuUsers.map((user) => (
+                    <div key={user.id} className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ec4899] to-[#8b5cf6] flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold text-sm">
+                          {user.name.split(' ').map(n => n[0]).join('')}
+                        </span>
                       </div>
-                      <p className="text-xs text-[#000000e6] leading-[1.4] line-clamp-2">Annual General Meeting scheduled for March 15th at 6 PM in the community hall.</p>
-                      <span className="text-[10px] text-[#00000099] mt-1 inline-block">2h ago</span>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 hover:bg-[#0000000a] -mx-3 px-3 py-2 rounded-lg transition-colors cursor-pointer">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] flex items-center justify-center flex-shrink-0">
-                      <Bell className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-xs font-semibold text-[#000000e6]">Priya Sharma</span>
-                        <span className="text-[10px] text-[#00000099]">•</span>
-                        <span className="text-[10px] text-[#00000099]">Deputy Secretary</span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm text-[#000000e6] hover:text-[#0a66c2] hover:underline cursor-pointer truncate">
+                          {user.name}
+                        </h4>
+                        <p className="text-xs text-[#0000009a] truncate leading-[1.4]">{user.role}</p>
+                        <p className="text-xs text-[#0000009a] mt-1">{user.mutualConnections} mutuals</p>
                       </div>
-                      <p className="text-xs text-[#000000e6] leading-[1.4] line-clamp-2">Reminder: Monthly maintenance dues are due by the 5th of each month.</p>
-                      <span className="text-[10px] text-[#00000099] mt-1 inline-block">1d ago</span>
+                      <button className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[#0a66c2] hover:bg-[#e8f4fb] flex items-center justify-center transition-colors mt-1">
+                        <UserPlus className="w-4 h-4 text-[#0a66c2]" />
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3 hover:bg-[#0000000a] -mx-3 px-3 py-2 rounded-lg transition-colors cursor-pointer">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] flex items-center justify-center flex-shrink-0">
-                      <Bell className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-xs font-semibold text-[#000000e6]">Rajesh Kumar</span>
-                        <span className="text-[10px] text-[#00000099]">•</span>
-                        <span className="text-[10px] text-[#00000099]">Secretary</span>
-                      </div>
-                      <p className="text-xs text-[#000000e6] leading-[1.4] line-clamp-2">Water supply will be interrupted on Sunday from 10 AM to 2 PM for maintenance.</p>
-                      <span className="text-[10px] text-[#00000099] mt-1 inline-block">3d ago</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 

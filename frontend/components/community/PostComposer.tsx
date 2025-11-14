@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { ImageIcon, Video, Calendar, FileText, X, Loader2 } from 'lucide-react';
 import { uploadImage } from '@/lib/cloudinary';
@@ -13,24 +13,15 @@ interface PostComposerProps {
     image?: string;
   };
   onPostCreated: () => void;
-  editingPost?: any;
-  onCancelEdit?: () => void;
 }
 
-export default function PostComposer({ user, onPostCreated, editingPost, onCancelEdit }: PostComposerProps) {
+export default function PostComposer({ user, onPostCreated }: PostComposerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [content, setContent] = useState('');
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviewUrls, setMediaPreviewUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editingPost) {
-      setContent(editingPost.content);
-      setIsExpanded(true);
-    }
-  }, [editingPost]);
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -54,38 +45,34 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
 
     setIsUploading(true);
     try {
-      if (editingPost) {
-        // Update existing post
-        const response = await fetch(`/api/community/posts/${editingPost.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: content.trim() }),
-        });
-
-        if (!response.ok) throw new Error('Failed to update post');
-        
-        if (onCancelEdit) onCancelEdit();
-      } else {
-        // Upload media files to Cloudinary
-        const uploadedUrls: string[] = [];
-        for (const file of mediaFiles) {
-          const result = await uploadImage(file, 'community');
-          const url = typeof result === 'string' ? result : result.url;
-          uploadedUrls.push(url);
-        }
-
-        // Create post
-        const response = await fetch('/api/community/posts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content,
-            imageUrls: uploadedUrls,
-          }),
-        });
-
-        if (!response.ok) throw new Error('Failed to create post');
+      console.log('Starting post creation...');
+      
+      // Upload media files to Cloudinary
+      const uploadedUrls: string[] = [];
+      for (const file of mediaFiles) {
+        console.log('Uploading file:', file.name);
+        const result = await uploadImage(file, 'community');
+        const url = typeof result === 'string' ? result : result.url;
+        uploadedUrls.push(url);
       }
+
+      console.log('Creating post with:', { content, imageUrls: uploadedUrls });
+      
+      // Create post
+      const response = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content,
+          imageUrls: uploadedUrls,
+        }),
+      });
+
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (!response.ok) throw new Error(data.error || 'Failed to create post');
 
       // Reset form
       setContent('');
@@ -96,8 +83,8 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
       
       onPostCreated();
     } catch (error) {
-      console.error('Error:', error);
-      alert(`Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error creating post:', error);
+      alert(`Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsUploading(false);
     }
@@ -105,7 +92,7 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
 
   if (isExpanded) {
     return (
-      <div className="bg-white rounded-2xl border border-[#e5e7eb] shadow-md">
+      <div className="bg-white rounded-lg border border-[#d4d4d4] shadow-sm">
         {/* Header */}
         <div className="p-4 border-b border-[#00000024] flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -115,14 +102,14 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
                 alt={user.name} 
                 width={48} 
                 height={48} 
-                className="rounded-full object-cover w-12 h-12" 
+                className="rounded-full object-cover" 
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-[#6b7280] flex items-center justify-center">
                 <span className="text-white font-semibold text-base">{user.name[0].toUpperCase()}</span>
               </div>
             )}
-            <span className="text-sm font-semibold text-[#000000e6]">{editingPost ? 'Edit post' : user.name}</span>
+            <span className="text-sm font-semibold text-[#000000e6]">{user.name}</span>
           </div>
           <button 
             onClick={() => {
@@ -131,7 +118,6 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
               setMediaFiles([]);
               mediaPreviewUrls.forEach(url => URL.revokeObjectURL(url));
               setMediaPreviewUrls([]);
-              if (editingPost && onCancelEdit) onCancelEdit();
             }}
             className="p-2 hover:bg-[#0000000a] rounded-full transition-colors"
           >
@@ -198,7 +184,7 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
             className="px-6 py-2 bg-[#0a66c2] text-white text-sm font-semibold rounded-full hover:bg-[#004182] disabled:bg-[#0000001a] disabled:text-[#00000061] disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isUploading ? (editingPost ? 'Updating...' : 'Posting...') : (editingPost ? 'Update' : 'Post')}
+            {isUploading ? 'Posting...' : 'Post'}
           </button>
         </div>
 
@@ -216,7 +202,7 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e5e7eb] p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg border border-[#d4d4d4] p-3 shadow-sm">
       {/* Input Section */}
       <div className="flex items-start gap-2">
         {/* User Avatar */}
@@ -227,7 +213,7 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
               alt={user.name} 
               width={48} 
               height={48} 
-              className="rounded-full object-cover w-12 h-12" 
+              className="rounded-full object-cover" 
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-[#6b7280] flex items-center justify-center">
@@ -240,7 +226,7 @@ export default function PostComposer({ user, onPostCreated, editingPost, onCance
         <div className="flex-1">
           <button
             onClick={() => setIsExpanded(true)}
-            className="w-full px-5 py-3.5 text-left text-sm text-[#666] font-medium bg-white border border-[#e5e7eb] rounded-full hover:bg-[#f3f6f8] transition-all"
+            className="w-full px-4 py-3 text-left text-sm text-[#0000009a] font-semibold bg-white border border-[#d4d4d4] rounded-full hover:bg-[#0000000a] transition-colors"
           >
             Start a post...
           </button>
