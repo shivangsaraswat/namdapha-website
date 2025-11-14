@@ -26,11 +26,14 @@ export default function EventsPage() {
 	const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
 	const [pastEventsData, setPastEventsData] = useState<Event[]>([]);
 	const [visibleCount, setVisibleCount] = useState<{[key: string]: number}>({
-		"Paradox": 4,
-		"Workshops": 4,
-		"Meetups": 4,
-		"Other Events": 4
+		"Paradox": 8,
+		"Workshops": 8,
+		"Meetups": 8,
+		"Other Events": 8
 	});
+	const [collapseTimers, setCollapseTimers] = useState<{[key: string]: NodeJS.Timeout}>({});
+	const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	useEffect(() => {
 		const fetchEvents = async () => {
@@ -253,8 +256,11 @@ export default function EventsPage() {
 							<div className="space-y-12">
 								{categories.slice(1).map((category) => {
 									const categoryEvents = pastEventsData.filter(e => e.category === category);
-									const displayedEvents = categoryEvents.slice(0, visibleCount[category] || 4);
-									const hasMore = categoryEvents.length > (visibleCount[category] || 4);
+									const currentVisible = visibleCount[category] || 8;
+									const displayedEvents = categoryEvents.slice(0, currentVisible);
+									const hasMore = categoryEvents.length > currentVisible;
+									const isExpanded = currentVisible > 8;
+									const remainingCount = categoryEvents.length - currentVisible;
 
 									if (categoryEvents.length === 0) return null;
 
@@ -266,7 +272,7 @@ export default function EventsPage() {
 											</div>
 											<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
 												{displayedEvents.map((event) => (
-													<article key={event.id} className="group bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+													<article key={event.id} onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }} className="group bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
 														<div className="relative w-full aspect-[3/4]">
 															<Image src={event.image} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
 														</div>
@@ -278,13 +284,26 @@ export default function EventsPage() {
 													</article>
 												))}
 											</div>
-											{hasMore && (
-												<div className="flex justify-center mt-6">
-													<button onClick={() => { setVisibleCount(prev => ({...prev, [category]: (prev[category] || 4) + 4})); setTimeout(() => { setVisibleCount(prev => ({...prev, [category]: 4})); }, 5000); }} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
-														Load More
+											<div className="flex justify-center gap-3 mt-6">
+												{hasMore && (
+													<button onClick={() => { 
+														if (collapseTimers[category]) clearTimeout(collapseTimers[category]);
+														setVisibleCount(prev => ({...prev, [category]: currentVisible + 8})); 
+														const timer = setTimeout(() => { setVisibleCount(prev => ({...prev, [category]: 8})); }, 60000);
+														setCollapseTimers(prev => ({...prev, [category]: timer}));
+													}} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
+														Load More {remainingCount > 0 && `(${remainingCount} remaining)`}
 													</button>
-												</div>
-											)}
+												)}
+												{isExpanded && (
+													<button onClick={() => { 
+														if (collapseTimers[category]) clearTimeout(collapseTimers[category]);
+														setVisibleCount(prev => ({...prev, [category]: 8})); 
+													}} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
+														Show Less
+													</button>
+												)}
+											</div>
 										</div>
 									);
 								})}
@@ -292,8 +311,8 @@ export default function EventsPage() {
 						) : (
 							<div>
 								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-									{pastEventsData.filter(e => e.category === selectedCategory).slice(0, visibleCount[selectedCategory] || 4).map((event) => (
-										<article key={event.id} className="group bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+									{pastEventsData.filter(e => e.category === selectedCategory).slice(0, visibleCount[selectedCategory] || 8).map((event) => (
+										<article key={event.id} onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }} className="group bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
 											<div className="relative w-full aspect-[3/4]">
 												<Image src={event.image} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
 											</div>
@@ -305,13 +324,35 @@ export default function EventsPage() {
 										</article>
 									))}
 								</div>
-								{pastEventsData.filter(e => e.category === selectedCategory).length > (visibleCount[selectedCategory] || 4) && (
-									<div className="flex justify-center mt-6">
-										<button onClick={() => { setVisibleCount(prev => ({...prev, [selectedCategory]: (prev[selectedCategory] || 4) + 4})); setTimeout(() => { setVisibleCount(prev => ({...prev, [selectedCategory]: 4})); }, 5000); }} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
-											Load More
-										</button>
-									</div>
-								)}
+								{(() => {
+									const filteredEvents = pastEventsData.filter(e => e.category === selectedCategory);
+									const currentVisible = visibleCount[selectedCategory] || 8;
+									const hasMore = filteredEvents.length > currentVisible;
+									const isExpanded = currentVisible > 8;
+									const remainingCount = filteredEvents.length - currentVisible;
+									return (
+										<div className="flex justify-center gap-3 mt-6">
+											{hasMore && (
+												<button onClick={() => { 
+													if (collapseTimers[selectedCategory]) clearTimeout(collapseTimers[selectedCategory]);
+													setVisibleCount(prev => ({...prev, [selectedCategory]: currentVisible + 8})); 
+													const timer = setTimeout(() => { setVisibleCount(prev => ({...prev, [selectedCategory]: 8})); }, 60000);
+													setCollapseTimers(prev => ({...prev, [selectedCategory]: timer}));
+												}} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
+													Load More {remainingCount > 0 && `(${remainingCount} remaining)`}
+												</button>
+											)}
+											{isExpanded && (
+												<button onClick={() => { 
+													if (collapseTimers[selectedCategory]) clearTimeout(collapseTimers[selectedCategory]);
+													setVisibleCount(prev => ({...prev, [selectedCategory]: 8})); 
+												}} className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-medium">
+													Show Less
+												</button>
+											)}
+										</div>
+									);
+								})()}
 							</div>
 						)}
 						</>
@@ -321,6 +362,70 @@ export default function EventsPage() {
 			</main>
 
 			<EventFooter />
+
+			{/* Event Details Modal */}
+			{isModalOpen && selectedEvent && (
+				<div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto'>
+					<div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-white max-w-4xl w-full relative overflow-hidden my-auto'>
+						<button onClick={() => setIsModalOpen(false)} className='absolute top-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors'>
+							×
+						</button>
+						
+						{/* Mobile: Background with poster */}
+						<div className='md:hidden absolute inset-0 z-0'>
+							<Image src={selectedEvent.image} alt={selectedEvent.title} fill className='object-cover opacity-20' />
+						</div>
+						
+						{/* Desktop: Two column layout */}
+						<div className='flex flex-col md:flex-row gap-6 relative z-10'>
+							{/* Left side - Poster (Desktop only) */}
+							<div className='hidden md:flex md:w-1/2 flex-col'>
+								<div className='relative w-full aspect-[3/4] rounded-xl overflow-hidden'>
+									<Image src={selectedEvent.image} alt={selectedEvent.title} fill className='object-cover' />
+								</div>
+							</div>
+							
+							{/* Right side - Content */}
+							<div className='md:w-1/2 flex flex-col py-4 md:py-0'>
+								<h3 className='text-2xl md:text-3xl font-bold text-white mb-4 drop-shadow-lg'>{selectedEvent.title}</h3>
+								
+								<div className='space-y-3 mb-4'>
+									<div className='flex items-center gap-2 text-sm text-white/90'>
+										<svg className='w-5 h-5 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' /></svg>
+										<span className='font-medium'>{selectedEvent.date}{selectedEvent.time && ` • ${selectedEvent.time}`}</span>
+									</div>
+									
+									{selectedEvent.venue && (
+										<div className='flex items-center gap-2 text-sm text-white/90'>
+											<svg className='w-5 h-5 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' /><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' /></svg>
+											<span className='font-medium'>{selectedEvent.venue}</span>
+										</div>
+									)}
+									
+									<div className='flex items-center gap-2 text-sm text-white/90'>
+										<svg className='w-5 h-5 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' /></svg>
+										<span className='font-medium'>{selectedEvent.category}</span>
+									</div>
+								</div>
+								
+								<div className='border-t border-white/20 pt-4 mb-4'>
+									<h4 className='text-lg font-semibold text-white mb-2'>Description</h4>
+									<p className='text-white/90 text-sm md:text-base leading-relaxed drop-shadow-md'>{selectedEvent.description}</p>
+								</div>
+								
+								{selectedEvent.meetLink && (
+									<div className='mt-auto pt-4'>
+										<a href={`https://${selectedEvent.meetLink}`} target='_blank' rel='noopener noreferrer' className='flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors w-full font-medium'>
+											<svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' /></svg>
+											Join Google Meet
+										</a>
+									</div>
+								)}
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

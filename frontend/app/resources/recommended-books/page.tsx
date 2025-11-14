@@ -149,8 +149,8 @@ function BookCard({ book }: BookCardProps) {
             {book.title}
           </h3>
           
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex flex-col gap-2 items-start">
               {book.author && (
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-gray-500" />
