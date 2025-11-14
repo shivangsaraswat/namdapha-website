@@ -57,6 +57,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
 
   const superAdminItems = [
     { name: "Maintenance", icon: Power, href: "/admin/maintenance", permission: "*" },
+    { name: "Community Users", icon: Users2, href: "/admin/community-users", permission: "*" },
   ];
 
   const menuItems = isLoading ? allMenuItems : allMenuItems.filter(item => hasPermission(item.permission));

@@ -111,6 +111,10 @@ export default function Navbar() {
           <button onClick={() => handleNavigation('/resources')} className="text-white hover:opacity-90 transition-colors text-base px-3 py-1 cursor-pointer">
             Resource Hub
           </button>
+
+          <button onClick={() => handleNavigation('/community')} className="text-white hover:opacity-90 transition-colors text-base px-3 py-1 cursor-pointer">
+            Community
+          </button>
         </div>
 
         {/* Desktop CTA + Mobile Hamburger */}
@@ -208,6 +212,13 @@ export default function Navbar() {
                     className="block text-white/90 hover:text-white transition-colors text-lg py-2 w-full text-left"
                   >
                     Resource Hub
+                  </button>
+
+                  <button
+                    onClick={() => { setIsMenuOpen(false); handleNavigation('/community'); }}
+                    className="block text-white/90 hover:text-white transition-colors text-lg py-2 w-full text-left"
+                  >
+                    Community
                   </button>
                 </div>
               </div>

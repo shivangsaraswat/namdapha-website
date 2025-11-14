@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { manrope, montserrat, pacifico, questrial, dancingScript } from './fonts';
-import PreloadData from '@/components/PreloadData';
-import ConditionalFooter from '@/components/ConditionalFooter';
-import PageWrapper from './page-wrapper';
-import Navbar from '@/components/Navbar';
+import { Providers } from './providers';
+import ConditionalLayout from './ConditionalLayout';
 
 
 export const metadata: Metadata = {
@@ -73,12 +71,11 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${montserrat.variable} ${pacifico.variable} ${questrial.variable} ${dancingScript.variable} antialiased`}
       >
-        <PreloadData />
-        <Navbar />
-        <PageWrapper>
-          {children}
-          <ConditionalFooter />
-        </PageWrapper>
+        <Providers>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
+        </Providers>
       </body>
     </html>
   );
