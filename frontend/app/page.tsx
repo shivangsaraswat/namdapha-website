@@ -29,14 +29,23 @@ export default function Page() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Namdapha House',
+    alternateName: 'Namdapha House IIT Madras BS',
     url: 'https://namdapha.iitmbs.org',
-    logo: 'https://namdapha.iitmbs.org/logo-namdapha.png',
-    description: 'Namdapha House | General Student Body | IIT Madras',
+    logo: 'https://namdapha.iitmbs.org/logo-namdapha.webp',
+    description: 'Namdapha House is the premier student community at IIT Madras BS Degree program with 5000+ students.',
+    foundingDate: '2020',
+    memberOf: {
+      '@type': 'EducationalOrganization',
+      name: 'IIT Madras',
+      url: 'https://www.iitm.ac.in'
+    },
     sameAs: [
-      'https://github.com/namdaphahouse',
+      'https://www.instagram.com/namdaphahouse',
       'https://twitter.com/namdaphahouse',
+      'https://www.linkedin.com/company/namdapha-house',
+      'https://github.com/namdaphahouse'
     ],
-  };
+  }
 
   return (
     <>
