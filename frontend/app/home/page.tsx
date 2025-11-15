@@ -226,7 +226,7 @@ export default function Page() {
           <p className='text-center text-sm lg:text-base font-light text-gray-300 text-pretty'>Namdapha Activities brings together a vibrant mix of 11 communities — from gaming and coding to art, storytelling, and debate. It’s where students connect, collaborate, and grow by pursuing what they love beyond the classroom.</p>
         </div>
         <div className="flex flex-wrap mx-auto justify-center items-center w-full my-6 gap-4">
-          <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.jpg")' }} >
+          <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.webp")' }} >
             <div className="absolute left-0 top-0 w-full h-full z-0 bg-cover bg-gradient-to-b from-black/10 via-60% via-black/70 to-black/100" />
             <h3 className="text-base md:text-lg font-medium mt-4 px-4 text-pretty z-10 relative">React Native Firebase Roadmap</h3>
             <div className="flex items-center gap-2 mt-3 px-4 z-10 relative">
@@ -236,7 +236,7 @@ export default function Page() {
             </div>
             <p className="text-xs md:text-sm lg:text-base mt-2 px-4 mb-4 text-pretty text-gray-300 font-light relative z-10">Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum tempora culpa alias, atque exercitationem tenetur, placeat debitis voluptas veritatis sed</p>
           </div>
-                    <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.jpg")' }} >
+                    <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.webp")' }} >
             <div className="absolute left-0 top-0 w-full h-full z-0 bg-cover bg-gradient-to-b from-black/10 via-60% via-black/70 to-black/100" />
             <h3 className="text-base md:text-lg font-medium mt-4 px-4 text-pretty z-10 relative">React Native Firebase Roadmap</h3>
             <div className="flex items-center gap-2 mt-3 px-4 z-10 relative">
@@ -246,7 +246,7 @@ export default function Page() {
             </div>
             <p className="text-xs md:text-sm lg:text-base mt-2 px-4 mb-4 text-pretty text-gray-300 font-light relative z-10">Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum tempora culpa alias, atque exercitationem tenetur, placeat debitis voluptas veritatis sed</p>
           </div>
-                    <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.jpg")' }} >
+                    <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.webp")' }} >
             <div className="absolute left-0 top-0 w-full h-full z-0 bg-cover bg-gradient-to-b from-black/10 via-60% via-black/70 to-black/100" />
             <h3 className="text-base md:text-lg font-medium mt-4 px-4 text-pretty z-10 relative">React Native Firebase Roadmap</h3>
             <div className="flex items-center gap-2 mt-3 px-4 z-10 relative">
@@ -256,7 +256,7 @@ export default function Page() {
             </div>
             <p className="text-xs md:text-sm lg:text-base mt-2 px-4 mb-4 text-pretty text-gray-300 font-light relative z-10">Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum tempora culpa alias, atque exercitationem tenetur, placeat debitis voluptas veritatis sed</p>
           </div>
-          <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.jpg")' }} >
+          <div className="w-64 h-80 md:w-72 border border-gray-700 rounded-xl relative md:h-96 flex flex-col justify-end overflow-hidden bg-cover" style={{ backgroundImage: 'url("/bgmi.webp")' }} >
             <div className="absolute left-0 top-0 w-full h-full z-0 bg-cover bg-gradient-to-b from-black/10 via-60% via-black/70 to-black/100" />
             <h3 className="text-base md:text-lg font-medium mt-4 px-4 text-pretty z-10 relative">React Native Firebase Roadmap</h3>
             <div className="flex items-center gap-2 mt-3 px-4 z-10 relative">
