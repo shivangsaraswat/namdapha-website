@@ -67,7 +67,7 @@ export default function Page() {
             </div>
 
             <p className="text-sm md:text-base lg:text-lg text-gray-300 max-w-[480px] leading-relaxed font-normal">
-              A vibrant house built on tradition, values, and excellence. Namdapha stands as a beacon of pride within the IIT Madras BS community.
+              Namdapha House is the premier student community at IIT Madras BS Degree program, uniting 5000+ students through academics, events, and leadership.
             </p>
           </div>
 
@@ -127,7 +127,7 @@ export default function Page() {
                 <div className="max-w-4xl mx-auto text-center px-4">
                   <h2 className="fs-48 text-center font-title font-medium text-gray-8">Who we are !</h2>
 
-                  <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">Namdapha House is a dynamic student community at IIT Madras BS Degree that thrives on unity, growth, and excellence. More than a house, it is a community where students find support in academics, opportunities in co-curriculars, and encouragement in extra-curriculars.</p>
+                  <p className="mx-auto mt-6 max-w-[688px] text-center text-18 leading-snug tracking-tight text-gray-30 sm:mt-4 sm:text-16">Namdapha House IIT Madras BS is a dynamic student community that thrives on unity, growth, and excellence. As part of the IIT Madras BS Degree program, we provide support in academics, opportunities in co-curriculars, and encouragement in extra-curriculars for all Namdapha House students.</p>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center mt-8 max-w-2xl mx-auto">
                     <div className="text-center space-y-2">
