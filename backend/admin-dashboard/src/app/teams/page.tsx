@@ -68,7 +68,12 @@ export default function Teams() {
       try {
         if (form.poster) {
           setUploadingImage(true);
-          toast.loading('Uploading image...', { id: 'upload' });
+          const fileSize = form.poster.size / 1024 / 1024;
+          if (fileSize > 10) {
+            toast.loading(`Compressing large image (${fileSize.toFixed(2)} MB)...`, { id: 'upload' });
+          } else {
+            toast.loading('Uploading image...', { id: 'upload' });
+          }
         }
         
         const allMembers = [...webops, ...multimedia, ...outreach];
