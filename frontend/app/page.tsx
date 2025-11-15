@@ -78,7 +78,7 @@ export default function Page() {
                 <div className="absolute inset-4 flex items-center justify-center z-10">
                   <div className="w-full h-full flex items-center justify-center">
                     <Image
-                      src="/logo-namdapha.png"
+                      src="/logo-namdapha.webp"
                       alt="NAMP Logo"
                       width={560}
                       height={560}

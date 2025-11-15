@@ -4,14 +4,14 @@ import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
 const initialImages = [
-  "/_MG_0268.jpg",
-  "/_MG_0296.jpg",
-  "/_MG_0303.jpg",
-  "/_MG_0307.jpg",
-  "/_MG_0312.jpg",
-  "/_MG_0336.jpg",
-  "/_MG_0354.jpg",
-  "/_MG_0355.jpg",
+  "/_MG_0268.webp",
+  "/_MG_0296.webp",
+  "/_MG_0303.webp",
+  "/_MG_0307.webp",
+  "/_MG_0312.webp",
+  "/_MG_0336.webp",
+  "/_MG_0354.webp",
+  "/_MG_0355.webp",
 ];
 
 export default function DesignGallery() {
