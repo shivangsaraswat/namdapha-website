@@ -1,58 +1,20 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { getMaintenanceStatus } from '@/lib/maintenanceService';
 import { Construction, Clock, RefreshCw } from 'lucide-react';
-import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function PageWrapper({ children }: { children: React.ReactNode }) {
-  const [isChecking, setIsChecking] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
   const [maintenanceData, setMaintenanceData] = useState<{
     isEnabled: boolean;
     message: string;
     estimatedEndTime?: string;
   } | null>(null);
   const [checking, setChecking] = useState(false);
-  const pathname = usePathname();
-  const hasLoadedRef = useRef(false);
-  const loadingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     checkMaintenance();
   }, []);
-
-  useEffect(() => {
-    if (hasLoadedRef.current) {
-      return;
-    }
-
-    setIsLoading(true);
-    
-    if (loadingTimeoutRef.current) {
-      clearTimeout(loadingTimeoutRef.current);
-    }
-
-    const handleComplete = () => {
-      loadingTimeoutRef.current = setTimeout(() => {
-        setIsLoading(false);
-        hasLoadedRef.current = true;
-      }, 500);
-    };
-
-    if (document.readyState === 'complete') {
-      handleComplete();
-    } else {
-      window.addEventListener('load', handleComplete);
-      return () => {
-        window.removeEventListener('load', handleComplete);
-        if (loadingTimeoutRef.current) {
-          clearTimeout(loadingTimeoutRef.current);
-        }
-      };
-    }
-  }, [pathname]);
 
   const checkMaintenance = async () => {
     try {
@@ -60,16 +22,12 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
       
       if (status.isEnabled) {
         if (process.env.NODE_ENV === 'development' && !status.testInDevelopment) {
-          setIsChecking(false);
           return;
         }
         setMaintenanceData(status);
       }
-      
-      setIsChecking(false);
     } catch (error) {
       console.error('Error checking maintenance:', error);
-      setIsChecking(false);
     }
   };
 
@@ -87,8 +45,6 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
       setChecking(false);
     }
   };
-
-  const showLoading = (isChecking && !hasLoadedRef.current) || isLoading;
 
   if (maintenanceData?.isEnabled) {
     return (
@@ -142,12 +98,5 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     );
   }
 
-  return (
-    <>
-      {showLoading && <LoadingSpinner />}
-      <div style={showLoading ? { position: 'absolute', visibility: 'hidden', pointerEvents: 'none', overflow: 'hidden', height: 0 } : undefined}>
-        {children}
-      </div>
-    </>
-  );
+  return <>{children}</>;
 }
