@@ -18,30 +18,16 @@ namdapha-website/
 
 ## 🚀 Quick Start
 
-### Firebase
+### Development
 ```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Start local development
-cd deploy/firebase
-firebase emulators:start
-
-# In another terminal
-cd frontend
-npm install && npm run dev
-```
-
-### Legacy Development
-```bash
-# Frontend
+# Frontend (deployed to Vercel)
 cd frontend && npm install && npm run dev
 
-# API Server
-cd backend/api && npm install && npm run dev
-
-# Admin Dashboard
+# Admin Dashboard (deployed to Firebase)
 cd backend/admin-dashboard && yarn install && yarn dev
+
+# Firebase Functions (backend)
+cd deploy/firebase && firebase emulators:start
 ```
 
 ## 🛠️ Tech Stack
@@ -49,4 +35,7 @@ cd backend/admin-dashboard && yarn install && yarn dev
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS
 - **Backend**: Firebase Functions, Firestore Database
 - **Admin**: Next.js 15, TypeScript, Tailwind CSS
-- **Deployment**: Firebase, Vercel (alternative: Railway, Docker)
+- **Deployment**: 
+  - Frontend: Vercel
+  - Admin Dashboard: Firebase Hosting
+  - Backend: Firebase Functions
