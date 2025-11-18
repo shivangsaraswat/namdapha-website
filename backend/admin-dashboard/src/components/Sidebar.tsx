@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTransition, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User, Power, Sparkles, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Grid3X3, Calendar, BookOpen, Link2, Shield, Users2, Award, FileText, Moon, Sun, LogOut, Settings, User, Power, Sparkles, PanelLeftClose, PanelLeft, Bell } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -53,6 +53,7 @@ export default function Sidebar({ activeItem = "Dashboard" }: SidebarProps) {
     { name: "Teams", icon: Users2, href: "/teams", permission: "teams" },
     { name: "Certificates", icon: Award, href: "/certificates", permission: "certificates" },
     { name: "Forms", icon: FileText, href: "/forms", permission: "forms" },
+    { name: "Notifications", icon: Bell, href: "/notifications", permission: "notifications" },
   ];
 
   const superAdminItems = [

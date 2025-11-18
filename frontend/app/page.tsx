@@ -9,6 +9,7 @@ import SuccessStories from "@/components/SuccessStories";
 import Activites from "@/components/Activites";
 import ImageGallery from "@/components/ImageGallery";
 import EventCarousel from "@/components/EventCarousel";
+import NotificationPopup from "@/components/NotificationPopup";
 
 export default function Page() {
   const [stars, setStars] = useState<Array<{top: string, left: string, delay: string, duration: string}>>([]);
@@ -293,6 +294,7 @@ export default function Page() {
         <ImageGallery />
       </div>
     </div>
+    <NotificationPopup />
     </>
   );
 }
