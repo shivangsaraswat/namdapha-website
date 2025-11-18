@@ -267,7 +267,7 @@ export default function EventsPage() {
 									return (
 										<div key={category}>
 											<div className="flex items-center gap-4 mb-6">
-												<h3 className="text-2xl font-semibold text-gray-800 whitespace-nowrap">{category} Events</h3>
+												<h3 className="text-2xl font-semibold text-gray-800 whitespace-nowrap">{category}</h3>
 												<div className="flex-1 h-px bg-gray-300"></div>
 											</div>
 											<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
