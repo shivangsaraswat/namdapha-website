@@ -149,12 +149,12 @@ function TeamHeader({ team, id }: { team: string, id?: string }) {
         offset: ["start end", "end start"]
     });
 
-    const smoothProgress = useSpring(scrollYProgress, { stiffness: 40, damping: 20 });
+    const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 30, restDelta: 0.001 });
 
-    const opacity = useTransform(smoothProgress, [0, 0.4, 0.6, 1], [0, 1, 1, 0]);
-    const scale = useTransform(smoothProgress, [0, 0.4, 0.6, 1], [0.8, 1, 1, 0.8]);
-    const y = useTransform(smoothProgress, [0, 0.4, 0.6, 1], [100, 0, 0, -100]);
-    const blur = useTransform(smoothProgress, [0, 0.4, 0.6, 1], ["10px", "0px", "0px", "10px"]);
+    const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+    const scale = useTransform(smoothProgress, [0, 0.25, 0.75, 1], [0.92, 1, 1, 0.92]);
+    const y = useTransform(smoothProgress, [0, 0.3, 0.7, 1], [60, 0, 0, -60]);
+    const blur = useTransform(smoothProgress, [0, 0.25, 0.75, 1], ["8px", "0px", "0px", "8px"]);
 
     return (
         <motion.div
@@ -183,29 +183,17 @@ function TeamHeader({ team, id }: { team: string, id?: string }) {
 
 function ContributorCard({ contributor, index }: { contributor: Contributor, index: number }) {
     const isEven = index % 2 === 0;
-    const [flashColor, setFlashColor] = useState(false);
     const ref = useRef(null);
     const { scrollYProgress } = useScroll({
         target: ref,
         offset: ["start end", "end start"]
     });
 
-    const smoothProgress = useSpring(scrollYProgress, { stiffness: 40, damping: 20 });
+    const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 30, restDelta: 0.001 });
 
-    const opacity = useTransform(smoothProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-    const scale = useTransform(smoothProgress, [0, 0.3, 0.7, 1], [0.8, 1, 1, 0.8]);
-    const y = useTransform(smoothProgress, [0, 0.3, 0.7, 1], [100, 0, 0, -100]);
-
-    // Trigger flash color when entering the "active" zone (0.3)
-    useEffect(() => {
-        const unsubscribe = smoothProgress.on("change", (latest) => {
-            if (latest > 0.3 && latest < 0.35) {
-                setFlashColor(true);
-                setTimeout(() => setFlashColor(false), 500);
-            }
-        });
-        return () => unsubscribe();
-    }, [smoothProgress]);
+    const opacity = useTransform(smoothProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
+    const scale = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0.95, 1, 1, 0.95]);
+    const y = useTransform(smoothProgress, [0, 0.25, 0.75, 1], [50, 0, 0, -50]);
 
     return (
         <motion.section
@@ -213,15 +201,15 @@ function ContributorCard({ contributor, index }: { contributor: Contributor, ind
             style={{ opacity, scale, y }}
             className="relative w-full max-w-[1400px] mx-auto px-6 md:px-12 py-12 flex items-center justify-center min-h-[60vh]"
         >
-            <div className={`relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center w-full ${isEven ? '' : 'lg:grid-flow-dense'}`}>
+            <div className={`relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 xl:gap-32 items-center w-full ${isEven ? '' : 'lg:grid-flow-dense'}`}>
                 {/* Image Section */}
                 <div className={`relative group ${isEven ? 'lg:col-start-1' : 'lg:col-start-2'}`}>
-                    <div className="relative aspect-[3/4] w-full max-w-[450px] mx-auto overflow-hidden rounded-sm bg-[#111]">
+                    <div className="relative aspect-[3/4] w-full max-w-[350px] lg:max-w-[380px] xl:max-w-[450px] mx-auto overflow-hidden rounded-sm bg-[#111]">
                         <Image
                             src={contributor.imageUrl}
                             alt={contributor.name}
                             fill
-                            className={`object-cover transition-all duration-700 group-hover:scale-105 ${flashColor ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`}
+                            className="object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105 group-active:grayscale-0"
                         />
                         {/* Overlay Gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -241,14 +229,14 @@ function ContributorCard({ contributor, index }: { contributor: Contributor, ind
                             </h3>
                         </div>
                         <h2
-                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight whitespace-nowrap"
+                            className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight whitespace-nowrap"
                             style={{ fontFamily: 'var(--font-montserrat)' }}
                         >
                             {contributor.name}
                         </h2>
                     </div>
 
-                    <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-xl font-light text-left">
+                    <p className="text-gray-400 text-base md:text-lg xl:text-xl leading-relaxed max-w-xl font-light text-left">
                         {contributor.description}
                     </p>
 
