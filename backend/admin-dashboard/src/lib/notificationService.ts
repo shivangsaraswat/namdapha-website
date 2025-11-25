@@ -1,14 +1,14 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  orderBy, 
+import {
+  collection,
+  doc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
   serverTimestamp,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -54,7 +54,7 @@ export const notificationService = {
       const notificationsRef = collection(db, 'notifications');
       const q = query(notificationsRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      
+
       return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -71,13 +71,28 @@ export const notificationService = {
   async createNotification(data: CreateNotificationData): Promise<string> {
     try {
       const notificationsRef = collection(db, 'notifications');
-      const docRef = await addDoc(notificationsRef, {
-        ...data,
+
+      // Filter out undefined values to prevent Firestore errors
+      const cleanData: Record<string, unknown> = {
+        title: data.title,
+        message: data.message,
+        type: data.type,
+        priority: data.priority,
         isActive: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         expiresAt: data.expiresAt ? Timestamp.fromDate(data.expiresAt) : null,
-      });
+      };
+
+      // Only add optional fields if they have values
+      if (data.actionButton) {
+        cleanData.actionButton = data.actionButton;
+      }
+      if (data.imageUrl) {
+        cleanData.imageUrl = data.imageUrl;
+      }
+
+      const docRef = await addDoc(notificationsRef, cleanData);
       return docRef.id;
     } catch (error) {
       console.error('Error creating notification:', error);
@@ -88,11 +103,23 @@ export const notificationService = {
   async updateNotification(id: string, data: UpdateNotificationData): Promise<void> {
     try {
       const notificationRef = doc(db, 'notifications', id);
-      await updateDoc(notificationRef, {
-        ...data,
+
+      // Filter out undefined values to prevent Firestore errors
+      const cleanData: Record<string, unknown> = {
         updatedAt: serverTimestamp(),
         expiresAt: data.expiresAt ? Timestamp.fromDate(data.expiresAt) : null,
-      });
+      };
+
+      // Only add defined fields
+      if (data.title !== undefined) cleanData.title = data.title;
+      if (data.message !== undefined) cleanData.message = data.message;
+      if (data.type !== undefined) cleanData.type = data.type;
+      if (data.priority !== undefined) cleanData.priority = data.priority;
+      if (data.isActive !== undefined) cleanData.isActive = data.isActive;
+      if (data.actionButton !== undefined) cleanData.actionButton = data.actionButton;
+      if (data.imageUrl !== undefined) cleanData.imageUrl = data.imageUrl;
+
+      await updateDoc(notificationRef, cleanData);
     } catch (error) {
       console.error('Error updating notification:', error);
       throw error;

@@ -61,7 +61,7 @@ export default function NotificationsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim() || !formData.message.trim()) {
       toast.error('Title and message are required');
       return;
@@ -78,11 +78,24 @@ export default function NotificationsPage() {
     }
 
     try {
-      const notificationData = {
-        ...formData,
-        actionButton: showActionButton ? actionButtonData : undefined,
-        imageUrl: showImage ? imageData.url : undefined
+      // Build notification data, only including optional fields if they have values
+      const notificationData: CreateNotificationData = {
+        title: formData.title,
+        message: formData.message,
+        type: formData.type,
+        priority: formData.priority,
       };
+
+      // Add optional fields only if they have values
+      if (formData.expiresAt) {
+        notificationData.expiresAt = formData.expiresAt;
+      }
+      if (showActionButton && actionButtonData.text && actionButtonData.url) {
+        notificationData.actionButton = actionButtonData;
+      }
+      if (showImage && imageData.url) {
+        notificationData.imageUrl = imageData.url;
+      }
 
       if (editingNotification) {
         await notificationService.updateNotification(editingNotification.id, notificationData);
@@ -91,7 +104,7 @@ export default function NotificationsPage() {
         await notificationService.createNotification(notificationData);
         toast.success('Notification created successfully');
       }
-      
+
       setIsDialogOpen(false);
       setEditingNotification(null);
       setFormData({ title: '', message: '', type: 'announcement', priority: 1 });
@@ -137,7 +150,7 @@ export default function NotificationsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this notification?')) return;
-    
+
     try {
       await notificationService.deleteNotification(id);
       toast.success('Notification deleted successfully');
@@ -221,10 +234,10 @@ export default function NotificationsPage() {
               Manage website notifications and announcements
             </p>
           </div>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 onClick={() => {
                   setEditingNotification(null);
                   setFormData({ title: '', message: '', type: 'announcement', priority: 1 });
@@ -235,14 +248,14 @@ export default function NotificationsPage() {
                 Create Notification
               </Button>
             </DialogTrigger>
-            
+
             <DialogContent className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} max-w-2xl max-h-[90vh] overflow-y-auto`}>
               <DialogHeader>
                 <DialogTitle>
                   {editingNotification ? 'Edit Notification' : 'Create New Notification'}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
@@ -254,7 +267,7 @@ export default function NotificationsPage() {
                     className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="message">Message <span className="text-red-500">*</span></Label>
                   <Textarea
@@ -266,7 +279,7 @@ export default function NotificationsPage() {
                     className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="type">Type <span className="text-red-500">*</span></Label>
@@ -285,7 +298,7 @@ export default function NotificationsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority <span className="text-red-500">*</span></Label>
                     <Select
@@ -303,16 +316,16 @@ export default function NotificationsPage() {
                     </Select>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="expiresAt">Expires At (Optional)</Label>
                   <Input
                     id="expiresAt"
                     type="datetime-local"
                     value={formData.expiresAt ? new Date(formData.expiresAt.getTime() - formData.expiresAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      expiresAt: e.target.value ? new Date(e.target.value) : undefined 
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      expiresAt: e.target.value ? new Date(e.target.value) : undefined
                     })}
                     className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}
                   />
@@ -348,7 +361,7 @@ export default function NotificationsPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       {imageData.uploadMethod === 'upload' ? (
                         <div className="space-y-2">
                           <Label htmlFor="imageFile">Image File <span className="text-red-500">*</span></Label>
@@ -375,7 +388,7 @@ export default function NotificationsPage() {
                           />
                         </div>
                       )}
-                      
+
                       {imageData.url && imageData.url.trim() && (
                         <div className="space-y-2">
                           <Label>Preview</Label>
@@ -419,7 +432,7 @@ export default function NotificationsPage() {
                           className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor="buttonUrl">Button URL <span className="text-red-500">*</span></Label>
                         <Input
@@ -430,7 +443,7 @@ export default function NotificationsPage() {
                           className={isDarkMode ? 'bg-gray-700 border-gray-600' : ''}
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor="buttonStyle">Button Style</Label>
                         <Select
@@ -449,7 +462,7 @@ export default function NotificationsPage() {
                     </div>
                   )}
                 </div>
-                
+
               </div>
               <div className="flex gap-2 pt-4">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
@@ -497,7 +510,7 @@ export default function NotificationsPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
@@ -528,12 +541,12 @@ export default function NotificationsPage() {
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent>
                   <p className={`mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     {notification.message}
                   </p>
-                  
+
                   <div className={`flex items-center justify-between text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     <span>
                       Created: {notification.createdAt.toLocaleDateString()}
