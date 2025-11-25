@@ -6,11 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 export default function VerifyCertificatePage() {
   const [certificateId, setCertificateId] = useState("");
-  const [verificationResult, setVerificationResult] = useState<{valid: boolean; name?: string; course?: string; issueDate?: string; certificateId?: string} | null>(null);
+  const [verificationResult, setVerificationResult] = useState<{valid: boolean; name?: string; course?: string; issueDate?: string; certificateId?: string; maintenance?: boolean} | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
@@ -19,11 +19,8 @@ export default function VerifyCertificatePage() {
     setLoading(true);
     setTimeout(() => {
       setVerificationResult({
-        valid: true,
-        name: "John Doe",
-        course: "Web Development Bootcamp",
-        issueDate: "January 15, 2025",
-        certificateId: certificateId
+        valid: false,
+        maintenance: true
       });
       setLoading(false);
     }, 1500);
@@ -92,19 +89,23 @@ export default function VerifyCertificatePage() {
               <div className={`mt-6 p-6 rounded-lg border-2 ${
                 verificationResult.valid 
                   ? 'border-green-500 bg-green-50' 
-                  : 'border-red-500 bg-red-50'
+                  : (verificationResult.maintenance ? 'border-yellow-500 bg-yellow-50' : 'border-red-500 bg-red-50')
               }`}>
                 <div className="flex items-start gap-4">
                   {verificationResult.valid ? (
                     <CheckCircle className="w-8 h-8 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-8 h-8 text-red-600 flex-shrink-0" />
+                    verificationResult.maintenance ? (
+                      <AlertTriangle className="w-8 h-8 text-yellow-600 flex-shrink-0" />
+                    ) : (
+                      <XCircle className="w-8 h-8 text-red-600 flex-shrink-0" />
+                    )
                   )}
                   <div className="flex-1">
                     <h3 className={`text-lg font-bold mb-2 ${
-                      verificationResult.valid ? 'text-green-900' : 'text-red-900'
+                      verificationResult.valid ? 'text-green-900' : (verificationResult.maintenance ? 'text-yellow-900' : 'text-red-900')
                     }`}>
-                      {verificationResult.valid ? 'Certificate Verified ✓' : 'Certificate Not Found'}
+                      {verificationResult.valid ? 'Certificate Verified ✓' : (verificationResult.maintenance ? 'System Under Maintenance' : 'Certificate Not Found')}
                     </h3>
                     {verificationResult.valid ? (
                       <div className="space-y-2 text-sm text-green-800">
@@ -114,9 +115,15 @@ export default function VerifyCertificatePage() {
                         <p><span className="font-semibold">Certificate ID:</span> {verificationResult.certificateId}</p>
                       </div>
                     ) : (
-                      <p className="text-sm text-red-800">
-                        The certificate ID you entered could not be found in our records. Please check the ID and try again.
-                      </p>
+                      verificationResult.maintenance ? (
+                        <p className="text-sm text-yellow-800">
+                          The certificate verification system is currently under maintenance. Please try again later.
+                        </p>
+                      ) : (
+                        <p className="text-sm text-red-800">
+                          The certificate ID you entered could not be found in our records. Please check the ID and try again.
+                        </p>
+                      )
                     )}
                   </div>
                 </div>

@@ -19,7 +19,7 @@ export default function Footer() {
       {/* CTA Section */}
       <section className="relative z-10 py-8 md:py-12 px-6 md:px-8 lg:px-12">
         <div className="max-w-[1200px] mx-auto text-center">
-          
+
           {/* Title + Subtitle + CTA */}
           <div className="space-y-6 max-w-2xl mx-auto">
             <h1 className="text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[3.25rem] xl:text-[3.75rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.1] tracking-tight mb-4">
@@ -52,7 +52,7 @@ export default function Footer() {
             {/* Logo and Social */}
             <div className="lg:col-span-1">
               <div className="flex items-center space-x-2 mb-6">
-              
+
                 <span className="text-white font-semibold text-lg">Namdapha House</span>
               </div>
 
@@ -84,7 +84,7 @@ export default function Footer() {
             <div>
               <h3 className="text-white font-semibold text-base mb-4">Visit</h3>
               <ul className="space-y-3">
-                 <li>
+                <li>
                   <Link href="/link-tree" className="text-gray-400 hover:text-white transition-colors text-sm">
                     LinkTree
                   </Link>
@@ -123,7 +123,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link href="resources" className="text-gray-400 hover:text-white transition-colors text-sm">
-                   Resource Hub
+                    Resource Hub
                   </Link>
                 </li>
               </ul>
@@ -140,10 +140,10 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                   Grade Calculator
+                    Grade Calculator
                   </Link>
                 </li>
-               
+
               </ul>
             </div>
 
@@ -161,6 +161,21 @@ export default function Footer() {
                     Blogs
                   </Link>
                 </li>
+                <li>
+                  <Link href="/credits" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Credits
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Terms of Service
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -171,10 +186,10 @@ export default function Footer() {
               Copyright © {new Date().getFullYear()} Namdapha House. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              
-               <p className="text-gray-500 text-sm mb-4 md:mb-0">
-              Build & Maintained by Web-Ops Team Namdapha
-            </p>
+
+              <p className="text-gray-500 text-sm mb-4 md:mb-0">
+                Build & Maintained by Web-Ops Team Namdapha
+              </p>
             </div>
           </div>
         </div>

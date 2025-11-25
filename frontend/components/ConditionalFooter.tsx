@@ -5,11 +5,11 @@ import Footer from './Footer';
 
 export default function ConditionalFooter() {
   const pathname = usePathname();
-  
+
   // Don't show footer on maintenance and whatsapp pages
-  if (pathname === '/maintenance' || pathname === '/whatsapp' || pathname?.startsWith('/whatsapp')) {
+  if (pathname === '/maintenance' || pathname === '/whatsapp' || pathname?.startsWith('/whatsapp') || pathname === '/credits') {
     return null;
   }
-  
+
   return <Footer />;
 }
