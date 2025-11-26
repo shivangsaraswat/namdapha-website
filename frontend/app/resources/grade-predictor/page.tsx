@@ -6,10 +6,13 @@ import { SUBJECTS, ComponentId, COMPONENTS, getGrade, getRequiredMarks, DegreeTy
 
 import { BookOpen, AlertCircle, CheckCircle2, XCircle, TrendingUp, Layers, School } from 'lucide-react';
 
+import ReportDiscrepancyModal from '@/components/ReportDiscrepancyModal';
+
 export default function GradePredictor() {
     const [selectedDegreeType, setSelectedDegreeType] = useState<DegreeType | ''>('');
     const [selectedLevel, setSelectedLevel] = useState<'Foundation' | 'Diploma' | 'Degree' | ''>('');
     const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     // Custom Dropdown State
     const [openDropdown, setOpenDropdown] = useState<'degree' | 'level' | 'subject' | null>(null);
@@ -28,7 +31,8 @@ export default function GradePredictor() {
         roe: 0, project1: 0, project2: 0,
         gla: 0, bpta: 0,
         gaa_sql: 0, gaa_prog: 0, gaa_obj: 0,
-        vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0
+        vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0,
+        ka: 0
     });
 
 
@@ -63,6 +67,30 @@ export default function GradePredictor() {
         });
     }, [selectedSubject, touchedFields]);
 
+    const eligibilityStatus = useMemo(() => {
+        if (!selectedSubject) return { eligible: true };
+
+        // 1. Check subject-specific eligibility if defined
+        if (selectedSubject.schema.checkEligibility) {
+            return selectedSubject.schema.checkEligibility(scores);
+        }
+
+        // 2. Default Fallback: Standard Quiz Rule (Must attend at least one quiz)
+        const hasQuiz1 = selectedSubject.schema.components.includes('quiz1');
+        const hasQuiz2 = selectedSubject.schema.components.includes('quiz2');
+
+        if (hasQuiz1 && hasQuiz2) {
+            // If both quizzes are 0, ineligible
+            if ((scores.quiz1 || 0) === 0 && (scores.quiz2 || 0) === 0) {
+                return {
+                    eligible: false,
+                    reason: "According to grading rules, you must appear for at least one quiz to be eligible for the End Term Exam. Since both Quiz 1 and Quiz 2 scores are 0, you are not eligible."
+                };
+            }
+        }
+        return { eligible: true };
+    }, [selectedSubject, scores]);
+
     const handleScoreChange = (id: ComponentId, value: string) => {
         const numValue = Math.min(Math.max(Number(value) || 0, 0), COMPONENTS[id].maxScore);
         setScores(prev => ({ ...prev, [id]: numValue }));
@@ -78,7 +106,8 @@ export default function GradePredictor() {
             roe: 0, project1: 0, project2: 0,
             gla: 0, bpta: 0,
             gaa_sql: 0, gaa_prog: 0, gaa_obj: 0,
-            vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0
+            vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0,
+            ka: 0
         });
         setTouchedFields(new Set());
     }, [selectedSubjectId]);
@@ -349,7 +378,8 @@ export default function GradePredictor() {
                                                         roe: 0, project1: 0, project2: 0,
                                                         gla: 0, bpta: 0,
                                                         gaa_sql: 0, gaa_prog: 0, gaa_obj: 0,
-                                                        vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0
+                                                        vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0,
+                                                        ka: 0
                                                     });
                                                     setTouchedFields(new Set());
                                                 }}
@@ -419,9 +449,24 @@ export default function GradePredictor() {
                                                 className="space-y-6"
                                             >
                                                 {/* Main Score Card */}
-                                                <div className={`relative overflow-hidden rounded-3xl p-8 border ${isPassed ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
+                                                {!eligibilityStatus.eligible && (
+                                                    <div className="rounded-2xl p-6 border bg-red-500/10 border-red-500/20 flex items-start gap-4 mb-6">
+                                                        <div className="p-3 rounded-full bg-red-500/20 text-red-400">
+                                                            <AlertCircle className="w-6 h-6" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-lg font-semibold text-red-100">
+                                                                Not Eligible for End Term Exam
+                                                            </h4>
+                                                            <p className="mt-1 text-sm text-red-200">
+                                                                {eligibilityStatus.reason}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className={`relative overflow-hidden rounded-3xl p-8 border ${isPassed && eligibilityStatus.eligible ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
                                                     <div className="absolute top-0 right-0 p-4 opacity-10">
-                                                        {isPassed ? <CheckCircle2 className="w-32 h-32" /> : <XCircle className="w-32 h-32" />}
+                                                        {isPassed && eligibilityStatus.eligible ? <CheckCircle2 className="w-32 h-32" /> : <XCircle className="w-32 h-32" />}
                                                     </div>
 
                                                     <div className="relative z-10">
@@ -540,6 +585,17 @@ export default function GradePredictor() {
                                             <p className="text-sm mt-2">Fill all fields to see your prediction</p>
                                         </div>
                                     )}
+
+                                    {/* Report Discrepancy Button */}
+                                    <div className="flex justify-center mt-8">
+                                        <button
+                                            onClick={() => setIsReportModalOpen(true)}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors text-sm border border-white/5 hover:border-white/20"
+                                        >
+                                            <AlertCircle className="w-4 h-4" />
+                                            Report a Discrepancy
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         ) : (
@@ -562,11 +618,27 @@ export default function GradePredictor() {
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Report Discrepancy Button */}
+                                <div className="flex justify-center mt-8 relative z-20">
+                                    <button
+                                        onClick={() => setIsReportModalOpen(true)}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors text-sm border border-white/5 hover:border-white/20 cursor-pointer"
+                                    >
+                                        <AlertCircle className="w-4 h-4" />
+                                        Report a Discrepancy
+                                    </button>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
             </div>
+
+            <ReportDiscrepancyModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+            />
         </div>
     );
 

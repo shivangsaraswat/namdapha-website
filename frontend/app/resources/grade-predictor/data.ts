@@ -5,7 +5,9 @@ export type ComponentId =
     | 'roe' | 'project1' | 'project2'
     | 'gla' | 'bpta'
     | 'gaa_sql' | 'gaa_prog' | 'gaa_obj'
-    | 'vmt' | 'nppe' | 'le' | 'lv' | 'd' | 'we' | 'id';
+    | 'vmt' | 'nppe' | 'le' | 'lv' | 'd' | 'we' | 'id'
+    // New Components
+    | 'ka'; // Kaggle Assignments
 
 export type DegreeType = 'BS_DS' | 'BS_ES';
 
@@ -19,6 +21,7 @@ export interface GradeComponent {
 export interface GradingSchema {
     components: ComponentId[];
     calculateScore: (scores: Record<ComponentId, number>) => number;
+    checkEligibility?: (scores: Record<ComponentId, number>) => { eligible: boolean; reason?: string };
 }
 
 export interface Subject {
@@ -57,7 +60,8 @@ export const COMPONENTS: Record<ComponentId, GradeComponent> = {
     lv: { id: 'lv', label: 'Lab Viva', maxScore: 100 },
     d: { id: 'd', label: 'Design Assignment', maxScore: 100 },
     we: { id: 'we', label: 'Weekly Experiment', maxScore: 100 },
-    id: { id: 'id', label: 'In-Person Demonstration', maxScore: 100 },
+    id: { id: 'id', label: 'In-person Demonstration', maxScore: 100, description: 'In-person Demonstration' },
+    ka: { id: 'ka', label: 'Kaggle Assignments', maxScore: 100, description: 'Average of best 3 out of 4 Kaggle Assignments' },
 };
 
 
@@ -263,6 +267,20 @@ const embeddedCFormula = (scores: Record<ComponentId, number>) => {
     return Math.min(100, total);
 };
 
+// Machine Learning Practice: T = 0.1 GAA + 0.3 F + 0.2 OPPE1 + 0.2 OPPE2 + 0.2 KA
+const mlpFormula = (scores: Record<ComponentId, number>) => {
+    const gaa = scores.gaa || 0;
+    const f = scores.endTerm || 0;
+    const oppe1 = scores.oppe1 || 0;
+    const oppe2 = scores.oppe2 || 0;
+    const ka = scores.ka || 0;
+    const bonus = scores.bonus || 0;
+
+    let total = 0.1 * gaa + 0.3 * f + 0.2 * oppe1 + 0.2 * oppe2 + 0.2 * ka;
+    total += bonus;
+    return Math.min(100, total);
+};
+
 // Embedded C Lab: T = 0.2(Attendance) + 0.8(Lab experiment and Viva)
 // Assuming 'cp' for Attendance and 'le' for Lab Experiment/Viva
 const embeddedCLabFormula = (scores: Record<ComponentId, number>) => {
@@ -464,8 +482,18 @@ export const SUBJECTS: Subject[] = [
         level: 'Diploma',
         degreeType: 'BS_DS',
         schema: {
-            components: ['gaa', 'quiz1', 'quiz2', 'endTerm', 'bonus'],
-            calculateScore: standardFoundationFormula,
+            components: ['gaa', 'oppe1', 'oppe2', 'endTerm', 'ka', 'bonus'],
+            calculateScore: mlpFormula,
+            checkEligibility: (scores) => {
+                const oppe1 = scores.oppe1 || 0;
+                const oppe2 = scores.oppe2 || 0;
+
+                // Eligibility: Attend End Term AND (OPPE1 >= 40 OR OPPE2 >= 40)
+                if (Math.max(oppe1, oppe2) < 40) {
+                    return { eligible: false, reason: "You must score at least 40/100 in one of the OPPEs (Programming Exams) to be eligible for the final grade." };
+                }
+                return { eligible: true };
+            }
         }
     },
     {
