@@ -62,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="canonical" href="https://namdapha.iitmbs.org" />
         <meta name="google-site-verification" content="mpSdF5WiiPmGlysMAibZs4zuVdXTrNi00Teo5ikUe_4" />
