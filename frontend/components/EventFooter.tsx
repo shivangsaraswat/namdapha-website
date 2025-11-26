@@ -38,16 +38,16 @@ const EventFooter = () => {
                 <a href="#" aria-label="X" className="text-gray-400 hover:text-white transition-colors">
                   <FaTwitter className="w-5 h-5" />
                 </a>
-                <a href="#" aria-label="YouTube" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://www.youtube.com/@Namdapha_IITM" aria-label="YouTube" className="text-gray-400 hover:text-white transition-colors">
                   <FaYoutube className="w-5 h-5" />
                 </a>
                 <a href="#" aria-label="GitHub" className="text-gray-400 hover:text-white transition-colors">
                   <FaGithub className="w-5 h-5" />
                 </a>
-                <a href="#" aria-label="LinkedIn" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://www.linkedin.com/company/namdapha-iitm" aria-label="LinkedIn" className="text-gray-400 hover:text-white transition-colors">
                   <FaLinkedin className="w-5 h-5" />
                 </a>
-                <a href="#" aria-label="Instagram" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://www.instagram.com/namdapha_iitm" aria-label="Instagram" className="text-gray-400 hover:text-white transition-colors">
                   <FaInstagram className="w-5 h-5" />
                 </a>
               </div>
