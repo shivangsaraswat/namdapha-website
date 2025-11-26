@@ -16,7 +16,7 @@ import {
 import { resourceService, ResourceCategory, Resource } from "@/lib/resourceService";
 
 // Icon mapping
-const iconMap: {[key: string]: React.ComponentType<{className?: string}>} = {
+const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   'FaBook': FaBook,
   'FaChartLine': FaChartLine,
   'FaFileAlt': FaFileAlt,
@@ -40,7 +40,7 @@ const iconMap: {[key: string]: React.ComponentType<{className?: string}>} = {
   'FaClipboardList': FaClipboardList
 };
 
-export default function ResourcesPage(){
+export default function ResourcesPage() {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string>("Filter");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -74,14 +74,29 @@ export default function ResourcesPage(){
           resourceService.getActiveCategories(),
           resourceService.getPublishedResources()
         ]);
-        
+
         if (!mounted) return;
 
         // Remove duplicates by ID
         const uniqueCategories = Array.from(
           new Map(fetchedCategories.map(cat => [cat.id, cat])).values()
         );
-        
+
+        // Manually inject Grade Predictor if not present
+        if (!uniqueCategories.find(c => c.name === 'Grade Predictor')) {
+          uniqueCategories.unshift({
+            id: 'grade-predictor-static',
+            name: 'Grade Predictor',
+            icon: 'FaCalculator',
+            iconColor: 'text-emerald-500',
+            description: 'Calculate your potential grades with precision',
+            isActive: true,
+            order: -1,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          } as ResourceCategory);
+        }
+
         setCategories(uniqueCategories);
         setAllResources(resources);
         console.log('Loaded categories:', uniqueCategories.map(c => c.name));
@@ -110,26 +125,27 @@ export default function ResourcesPage(){
 
   const handleCategoryClick = (categoryName: string) => {
     console.log('Category clicked:', categoryName);
-    
+
     // Direct navigation categories
-    const navigationMap: {[key: string]: string} = {
+    const navigationMap: { [key: string]: string } = {
       "Important Links": "/link-tree",
-      "Important Contacts": "/resources/important-contacts", 
+      "Important Contacts": "/resources/important-contacts",
       "PYQs": "/resources/pyqs",
       "Notes": "/resources/notes",
       "Video Lectures": "/resources/video-lectures",
       "Recommended Books": "/resources/recommended-books",
       "Recommended books": "/resources/recommended-books", // Handle case variation
-      "Verify Certificate": "/verify-certificate"
+      "Verify Certificate": "/verify-certificate",
+      "Grade Predictor": "/resources/grade-predictor"
     };
-    
+
     if (navigationMap[categoryName]) {
       console.log('Navigating to:', navigationMap[categoryName]);
       setNavigating(true);
       window.location.href = navigationMap[categoryName];
       return;
     }
-    
+
     // WhatsApp groups handling
     if (categoryName.toLowerCase().includes('whatsapp')) {
       const resources = allResources.filter(r => r.category === categoryName);
@@ -143,7 +159,7 @@ export default function ResourcesPage(){
       router.push('/whatsapp');
       return;
     }
-    
+
     // For all other categories, check if resources exist
     const resources = allResources.filter(r => r.category === categoryName);
     if (resources.length > 0) {
@@ -152,7 +168,7 @@ export default function ResourcesPage(){
       setResourceDialogOpen(true);
       return;
     }
-    
+
     // Show empty dialog only if no resources found
     setEmptyDialogCategory(categoryName);
     setEmptyDialogOpen(true);
@@ -185,7 +201,7 @@ export default function ResourcesPage(){
             priority
           />
         </div>
-        
+
         <div className="relative z-10 py-12 px-6 md:px-8 lg:px-12 pt-28">
           <div className="max-w-[1400px] mx-auto text-center">
             <h1 className="text-[3rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] xl:text-[5rem] bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text font-medium text-transparent leading-[1.05] tracking-tight">
@@ -220,7 +236,7 @@ export default function ResourcesPage(){
               className="w-[358px] h-auto object-contain transform scale-x-[-1]"
             />
           </div>
-          
+
           {/* Search Bar and Filter Row */}
           <div className="flex items-center justify-between mb-8 gap-4">
             <div className="flex-1 lg:flex-initial lg:max-w-md">
@@ -232,10 +248,10 @@ export default function ResourcesPage(){
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-5 py-3 pl-12 bg-white backdrop-blur-sm border-2 border-black rounded-xl text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm transition-all"
                 />
-                <svg 
+                <svg
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
-                  fill="none" 
-                  stroke="currentColor" 
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -261,20 +277,20 @@ export default function ResourcesPage(){
           {/* Resources Grid */}
           {(loading || navigating) && <LoadingSpinner />}
           {!loading && !navigating && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {!loading && categories.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-600">No resource categories available</p>
-              </div>
-            ) : !loading ? (
-              categories.map((category) => {
-                const IconComponent = iconMap[category.icon] || FaBook;
-                return (
-                  <div 
-                    key={category.id} 
-                    onClick={() => handleCategoryClick(category.name)}
-                    className="relative rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer group overflow-hidden border-2 border-black"
-                  >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+              {!loading && categories.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-600">No resource categories available</p>
+                </div>
+              ) : !loading ? (
+                categories.map((category) => {
+                  const IconComponent = iconMap[category.icon] || FaBook;
+                  return (
+                    <div
+                      key={category.id}
+                      onClick={() => handleCategoryClick(category.name)}
+                      className="relative rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer group overflow-hidden border-2 border-black"
+                    >
                       <div className="absolute inset-0 z-0">
                         <Image
                           src="/councilbg.svg"
@@ -283,7 +299,7 @@ export default function ResourcesPage(){
                           className="object-cover"
                         />
                       </div>
-                      
+
                       <div className="relative z-10">
                         <div className="w-14 h-14 bg-white rounded-xl shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <IconComponent className={`w-7 h-7 ${category.iconColor}`} />
@@ -297,11 +313,11 @@ export default function ResourcesPage(){
                           {getUserCentricDescription(category.description)}
                         </p>
                       </div>
-                  </div>
-                );
-              })
-            ) : null}
-          </div>
+                    </div>
+                  );
+                })
+              ) : null}
+            </div>
           )}
 
         </div>
@@ -320,13 +336,13 @@ export default function ResourcesPage(){
                     const category = categories.find(c => c.name === selectedCategoryName);
                     const IconComponent = category ? iconMap[category.icon] || FaBook : FaBook;
                     const iconColor = category?.iconColor || 'text-blue-600';
-                    
+
                     return (
-                      <a 
-                        key={resource.id} 
-                        href={resource.fileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        key={resource.id}
+                        href={resource.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={() => resource.id && resourceService.incrementClicks(resource.id)}
                         className="relative rounded-xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all cursor-pointer group overflow-hidden border border-gray-400/30"
                       >

@@ -109,7 +109,7 @@ const EventFooter = () => {
                 <h3 className="text-white font-medium mb-4">Tools</h3>
                 <ul className="space-y-2 text-sm text-gray-400">
                   <li>
-                    <Link href="#" className="hover:text-white transition-colors">
+                    <Link href="resources/grade-predictor" className="hover:text-white transition-colors">
                       Grade Predictor
                     </Link>
                   </li>
