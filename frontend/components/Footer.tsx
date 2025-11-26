@@ -134,7 +134,7 @@ export default function Footer() {
               <h3 className="text-white font-semibold text-base mb-4">Tools</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/resources/grade-predictor" className="text-gray-400 hover:text-white transition-colors text-sm">
                     Grade Predictor
                   </Link>
                 </li>
