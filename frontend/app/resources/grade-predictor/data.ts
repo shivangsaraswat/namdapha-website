@@ -235,7 +235,7 @@ const labFormula = (scores: Record<ComponentId, number>) => {
     const tla = scores.gla || 0;
     const il = scores.id || 0; // In-person Demonstration
 
-    let total = 0.5 * tla + 0.5 * il;
+    const total = 0.5 * tla + 0.5 * il;
     return Math.min(100, total);
 };
 
@@ -244,7 +244,7 @@ const electronicsLabFormula = (scores: Record<ComponentId, number>) => {
     const we = scores.we || 0;
     const id = scores.id || 0;
 
-    let total = 0.4 * we + 0.6 * id;
+    const total = 0.4 * we + 0.6 * id;
     return Math.min(100, total);
 };
 
@@ -269,7 +269,7 @@ const embeddedCLabFormula = (scores: Record<ComponentId, number>) => {
     const attendance = scores.cp || 0;
     const lab = scores.le || 0;
 
-    let total = 0.2 * attendance + 0.8 * lab;
+    const total = 0.2 * attendance + 0.8 * lab;
     return Math.min(100, total);
 };
 

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SUBJECTS, Subject, ComponentId, COMPONENTS, getGrade, getRequiredMarks, DegreeType } from './data';
+import { SUBJECTS, ComponentId, COMPONENTS, getGrade, getRequiredMarks, DegreeType } from './data';
 
-import { GraduationCap, BookOpen, AlertCircle, CheckCircle2, XCircle, TrendingUp, Layers, School } from 'lucide-react';
+import { BookOpen, AlertCircle, CheckCircle2, XCircle, TrendingUp, Layers, School } from 'lucide-react';
 
 export default function GradePredictor() {
     const [selectedDegreeType, setSelectedDegreeType] = useState<DegreeType | ''>('');
@@ -30,7 +30,7 @@ export default function GradePredictor() {
         gaa_sql: 0, gaa_prog: 0, gaa_obj: 0,
         vmt: 0, nppe: 0, le: 0, lv: 0, d: 0, we: 0, id: 0
     });
-    const [searchTerm, setSearchTerm] = useState('');
+
 
 
     const selectedSubject = useMemo(() =>
@@ -259,7 +259,7 @@ export default function GradePredictor() {
                                                         <div
                                                             key={level}
                                                             className="px-4 py-3 hover:bg-white/5 cursor-pointer text-gray-300 hover:text-white transition-colors flex items-center gap-2"
-                                                            onClick={() => { setSelectedLevel(level as any); setOpenDropdown(null); }}
+                                                            onClick={() => { setSelectedLevel(level as 'Foundation' | 'Diploma' | 'Degree'); setOpenDropdown(null); }}
                                                         >
                                                             <div className={`w-2 h-2 rounded-full ${selectedLevel === level ? 'bg-emerald-500' : 'bg-transparent'}`} />
                                                             {level} Level
