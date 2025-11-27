@@ -365,8 +365,8 @@ export default function EventsPage() {
 
 			{/* Event Details Modal */}
 			{isModalOpen && selectedEvent && (
-				<div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto'>
-					<div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-white max-w-4xl w-full relative overflow-hidden my-auto'>
+				<div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto' onClick={() => setIsModalOpen(false)}>
+					<div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-white max-w-4xl w-full relative overflow-hidden my-auto' onClick={(e) => e.stopPropagation()}>
 						<button onClick={() => setIsModalOpen(false)} className='absolute top-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors'>
 							×
 						</button>

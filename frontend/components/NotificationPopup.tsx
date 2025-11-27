@@ -136,8 +136,9 @@ const NotificationPopup = () => {
   const typeBadge = getTypeBadge(currentNotification.type);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 pt-28 sm:pt-20 md:pt-24 bg-black/30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 pt-28 sm:pt-20 md:pt-24 bg-black/30" onClick={handleDismissAll}>
       <div 
+        onClick={(e) => e.stopPropagation()}
         className={`relative w-full mx-auto transform transition-all duration-300 ${
           isClosing ? 'scale-95 opacity-0 translate-y-4' : 'scale-100 opacity-100 translate-y-0'
         } ${currentNotification.imageUrl ? 'max-w-xs sm:max-w-sm md:max-w-md lg:max-w-2xl xl:max-w-3xl' : 'max-w-xs sm:max-w-sm lg:max-w-xl xl:max-w-2xl'} max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-6rem)]`}

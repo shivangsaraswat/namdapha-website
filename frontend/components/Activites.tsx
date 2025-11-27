@@ -291,8 +291,8 @@ export default function Activites() {
 
             {/* No Registration Link Dialog */}
             {noLinkDialogOpen && (
-                <div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4'>
-                    <div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-10 border-2 border-white max-w-md w-full relative'>
+                <div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4' onClick={() => setNoLinkDialogOpen(false)}>
+                    <div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-10 border-2 border-white max-w-md w-full relative' onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => setNoLinkDialogOpen(false)} className='absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors'>
                             ×
                         </button>
@@ -306,8 +306,8 @@ export default function Activites() {
 
             {/* Activity Details Dialog */}
             {detailsDialogOpen && selectedActivityDetails && (
-                <div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto'>
-                    <div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-white max-w-4xl w-full relative overflow-hidden my-auto'>
+                <div className='fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto' onClick={() => setDetailsDialogOpen(false)}>
+                    <div className='bg-black/70 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-white max-w-4xl w-full relative overflow-hidden my-auto' onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => setDetailsDialogOpen(false)} className='absolute top-4 right-4 z-20 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors'>
                             ×
                         </button>

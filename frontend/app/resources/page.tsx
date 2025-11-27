@@ -321,8 +321,8 @@ export default function ResourcesPage() {
 
         {/* Unified Resource Dialog */}
         {resourceDialogOpen && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setResourceDialogOpen(false)}>
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-5xl w-full relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setResourceDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors z-10">
                 ×
               </button>
@@ -373,8 +373,8 @@ export default function ResourcesPage() {
 
         {/* Empty Category Dialog */}
         {emptyDialogOpen && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-md w-full relative">
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setEmptyDialogOpen(false)}>
+            <div className="bg-black/70 backdrop-blur-sm rounded-2xl p-8 md:p-10 border-2 border-white max-w-md w-full relative" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setEmptyDialogOpen(false)} className="absolute top-4 right-4 bg-white/50 hover:bg-white/70 text-gray-900 rounded-lg px-4 py-2 text-xl transition-colors">
                 ×
               </button>
