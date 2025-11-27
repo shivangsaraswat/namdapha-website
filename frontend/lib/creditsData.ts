@@ -73,17 +73,17 @@ export const CONTRIBUTORS: Contributor[] = [
             linkedin: "#"
         }
     },
-    {
-        id: "6",
-        name: "Devansh Malhotra",
-        role: "House Secretary",
-        team: "Web Operations Team",
-        description: "Managed and curated all informational resources for the platform, including PYQs, notes, reference material and essential academic documents. Ensured that all content was collected, verified, organized and made readily accessible for integration into the website.",
-        imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764064167/devansh_diikdf.jpg",
-        socials: {
-            linkedin: "#"
-        }
-    },
+    // {
+    //     id: "6",
+    //     name: "Devansh Malhotra",
+    //     role: "House Secretary",
+    //     team: "Web Operations Team",
+    //     description: "Managed and curated all informational resources for the platform, including PYQs, notes, reference material and essential academic documents. Ensured that all content was collected, verified, organized and made readily accessible for integration into the website.",
+    //     imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764064167/devansh_diikdf.jpg",
+    //     socials: {
+    //         linkedin: "#"
+    //     }
+    // },
     // Multimedia Team
     {
         id: "7",
