@@ -93,6 +93,10 @@ export default function NotesPage() {
     filteredNotes = diverseNotes.length === 12 ? diverseNotes : filteredNotes.slice(0, 12);
   }
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   const FilterSidebar = () => (
     <div className="space-y-6">
       <div>
@@ -240,8 +244,7 @@ export default function NotesPage() {
                 </p>
               </div>
 
-              {loading && <LoadingSpinner />}
-              {!loading && filteredNotes.length > 0 ? (
+              {filteredNotes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 max-w-md md:max-w-none mx-auto">
                   {filteredNotes.map((note) => (
                     <Card key={note.id} className="relative overflow-hidden border-2 border-gray-900 shadow-lg hover:shadow-xl transition-all group bg-gradient-to-br from-blue-50 to-indigo-50">

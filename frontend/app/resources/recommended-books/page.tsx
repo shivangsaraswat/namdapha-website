@@ -216,10 +216,11 @@ export default function RecommendedBooksPage() {
       try {
         setLoading(true);
         const fetchedBooks = await bookService.getPublishedBooks();
-        console.log('Fetched books:', fetchedBooks);
         setBooks(fetchedBooks);
       } catch (error) {
-        console.error('Error fetching books:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching books:', error);
+        }
         setBooks([{
           id: 'fallback-1',
           title: 'Introduction to Computer Science',
@@ -250,6 +251,10 @@ export default function RecommendedBooksPage() {
     const subjectMatch = selectedSubject === "All" || book.subject === selectedSubject;
     return levelMatch && subjectMatch;
   });
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
@@ -320,8 +325,7 @@ export default function RecommendedBooksPage() {
             </div>
           </div>
 
-          {loading && <LoadingSpinner />}
-          {!loading && (
+          {(
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {filteredBooks.length === 0 ? (
                 <div className="col-span-full text-center py-12">

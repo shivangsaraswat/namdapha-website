@@ -71,6 +71,10 @@ export default function LinkTreePage() {
     }
   };
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
       {/* Background Pattern */}
@@ -154,12 +158,11 @@ export default function LinkTreePage() {
 
           {/* Important Links Section */}
           <div>
-            {loading && <LoadingSpinner />}
-            {!loading && importantLinks.length === 0 ? (
+            {importantLinks.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-600">No links available yet</p>
               </div>
-            ) : !loading ? (
+            ) : (
               <div className="space-y-4">
                 {importantLinks.map((link) => (
                   <a
@@ -193,7 +196,7 @@ export default function LinkTreePage() {
                   </a>
                 ))}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </main>

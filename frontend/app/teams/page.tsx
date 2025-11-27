@@ -19,22 +19,19 @@ export default function TeamsPage() {
     const fetchTeamData = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Fetching team data...');
         const [webops, multimedia, outreach] = await Promise.all([
           teamService.getMembersByCategory('webops'),
           teamService.getMembersByCategory('multimedia'),
           teamService.getMembersByCategory('outreach')
         ]);
         
-        console.log('Webops:', webops);
-        console.log('Multimedia:', multimedia);
-        console.log('Outreach:', outreach);
-        
         if (mounted) {
           setTeamData({ webops, multimedia, outreach });
         }
       } catch (error) {
-        console.error('Error fetching team data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching team data:', error);
+        }
       } finally {
         if (mounted) {
           setLoading(false);

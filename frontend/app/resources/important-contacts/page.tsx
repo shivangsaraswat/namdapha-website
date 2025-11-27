@@ -60,6 +60,10 @@ export default function ImportantContactsPage() {
     return 'w-3/5';
   };
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Background Pattern */}
@@ -114,9 +118,7 @@ export default function ImportantContactsPage() {
       {/* Main Content */}
       <main className="relative pb-24 px-6 md:px-8 lg:px-12">
         <div className="max-w-[1200px] mx-auto relative z-10">
-          {loading ? (
-            <LoadingSpinner />
-          ) : filteredContacts.length === 0 ? (
+          {filteredContacts.length === 0 ? (
             <div className="text-center py-20">
               <Inbox className="w-16 h-16 mx-auto mb-4 text-gray-600" />
               <p className="text-gray-400 text-lg">No contacts available in this category yet</p>

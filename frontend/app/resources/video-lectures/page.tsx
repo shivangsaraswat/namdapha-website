@@ -50,6 +50,10 @@ export default function VideoLecturesPage() {
     ? videosData 
     : videosData.filter(v => v.level === selectedLevel);
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-[rgb(228,229,231)] text-black relative overflow-hidden">
       <section className="relative overflow-hidden">
@@ -91,8 +95,7 @@ export default function VideoLecturesPage() {
             </Select>
           </div>
 
-          {loading && <LoadingSpinner />}
-          {!loading && displayVideos.length > 0 ? (
+          {displayVideos.length > 0 ? (
             selectedLevel === "All" ? (
               <div className="space-y-16">
                 {levels.map((level) => {

@@ -52,7 +52,6 @@ export default function ResourcesPage() {
   const [allResources, setAllResources] = useState<Resource[]>([]);
   const [emptyDialogOpen, setEmptyDialogOpen] = useState(false);
   const [emptyDialogCategory, setEmptyDialogCategory] = useState('');
-  const [navigating, setNavigating] = useState(false);
 
   // Hide navbar on mobile when dialog is open
   useEffect(() => {
@@ -99,10 +98,10 @@ export default function ResourcesPage() {
 
         setCategories(uniqueCategories);
         setAllResources(resources);
-        console.log('Loaded categories:', uniqueCategories.map(c => c.name));
-        console.log('All categories with details:', uniqueCategories);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching data:', error);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -123,9 +122,11 @@ export default function ResourcesPage() {
       .replace(/manage\s+/gi, 'access ');
   };
 
-  const handleCategoryClick = (categoryName: string) => {
-    console.log('Category clicked:', categoryName);
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
+  const handleCategoryClick = (categoryName: string) => {
     // Direct navigation categories
     const navigationMap: { [key: string]: string } = {
       "Important Links": "/link-tree",
@@ -140,9 +141,7 @@ export default function ResourcesPage() {
     };
 
     if (navigationMap[categoryName]) {
-      console.log('Navigating to:', navigationMap[categoryName]);
-      setNavigating(true);
-      window.location.href = navigationMap[categoryName];
+      router.push(navigationMap[categoryName]);
       return;
     }
 
@@ -155,7 +154,6 @@ export default function ResourcesPage() {
         setResourceDialogOpen(true);
         return;
       }
-      setNavigating(true);
       router.push('/whatsapp');
       return;
     }
@@ -275,8 +273,7 @@ export default function ResourcesPage() {
           </div>
 
           {/* Resources Grid */}
-          {(loading || navigating) && <LoadingSpinner />}
-          {!loading && !navigating && (
+          {(
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
               {!loading && categories.length === 0 ? (
                 <div className="col-span-full text-center py-12">

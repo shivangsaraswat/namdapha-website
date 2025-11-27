@@ -5,6 +5,7 @@ import PreloadData from '@/components/PreloadData';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import PageWrapper from './page-wrapper';
 import Navbar from '@/components/Navbar';
+import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 
 
 export const metadata: Metadata = {
@@ -70,11 +71,28 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
         <meta name="theme-color" content="#0A0A0B" />
+        <script dangerouslySetInnerHTML={{__html: `
+          document.addEventListener('contextmenu', e => e.preventDefault());
+          if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            (function() {
+              const noop = () => {};
+              ['log', 'debug', 'info', 'warn', 'table', 'trace', 'dir', 'group', 'groupCollapsed', 'clear', 'count', 'assert', 'profile', 'time', 'timeEnd'].forEach(m => console[m] = noop);
+              setInterval(() => console.clear(), 1000);
+              document.addEventListener('keydown', e => {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.metaKey && e.altKey && ['i','j','c'].includes(e.key))) {
+                  e.preventDefault();
+                  return false;
+                }
+              });
+            })();
+          }
+        `}} />
       </head>
       <body
         className={`${manrope.variable} ${montserrat.variable} ${pacifico.variable} ${questrial.variable} ${dancingScript.variable} antialiased`}
       >
         <PreloadData />
+        <KeyboardShortcuts />
         <Navbar />
         <PageWrapper>
           {children}

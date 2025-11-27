@@ -110,6 +110,10 @@ export default function PYQsPage() {
     filteredPYQs = diversePYQs.length === 12 ? diversePYQs : filteredPYQs.slice(0, 12);
   }
 
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   const FilterSidebar = () => (
     <div className="space-y-6">
       <div>
@@ -305,8 +309,7 @@ export default function PYQsPage() {
               </div>
 
               {/* PYQs Grid */}
-              {loading && <LoadingSpinner />}
-              {!loading && filteredPYQs.length > 0 ? (
+              {filteredPYQs.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredPYQs.map((pyq) => (
                     <Card key={pyq.id} className="relative overflow-hidden border-2 border-gray-900 shadow-lg hover:shadow-xl transition-all group">

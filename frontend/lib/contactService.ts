@@ -18,13 +18,11 @@ const COLLECTION_NAME = 'contacts';
 
 export const contactService = {
   async getActiveContacts(): Promise<Contact[]> {
-    console.log('Fetching from Firebase...');
     const q = query(
       collection(db, COLLECTION_NAME),
       where('status', '==', 'active')
     );
     const snapshot = await getDocs(q);
-    console.log('Firebase snapshot size:', snapshot.size);
     const contacts = snapshot.docs.map(doc => {
       const rawData = doc.data();
       const data = { 
@@ -32,7 +30,6 @@ export const contactService = {
         ...rawData,
         category: (rawData as Record<string, unknown>).category || (rawData as Record<string, unknown>).type
       } as Contact;
-      console.log('Contact data:', data);
       return data;
     });
     return contacts.sort((a, b) => a.order - b.order);
