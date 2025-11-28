@@ -15,17 +15,17 @@ export interface Contributor {
 
 export const CONTRIBUTORS: Contributor[] = [
     // Web Operations Team
-    {
-        id: "1",
-        name: "Harshita Dudeja",
-        role: "Web Administrator",
-        team: "Web Operations Team",
-        description: "Handles routine platform oversight, monitors daily activity and supports basic maintenance tasks. Assists the technical team by ensuring smooth day-to-day website operations.",
-        imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764064167/hr_kuecrj.webp",
-        socials: {
-            linkedin: "#"
-        }
-    },
+    // {
+    //     id: "1",
+    //     name: "Harshita Dudeja",
+    //     role: "Web Administrator",
+    //     team: "Web Operations Team",
+    //     description: "Handles routine platform oversight, monitors daily activity and supports basic maintenance tasks. Assists the technical team by ensuring smooth day-to-day website operations.",
+    //     imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764064167/hr_kuecrj.webp",
+    //     socials: {
+    //         linkedin: "#"
+    //     }
+    // },
     {
         id: "2",
         name: "Shivang Saraswat",
@@ -50,29 +50,29 @@ export const CONTRIBUTORS: Contributor[] = [
             github: "#"
         }
     },
-    {
-        id: "4",
-        name: "Jagadish Prasad",
-        role: "Backend Developer",
-        team: "Web Operations Team",
-        description: "Worked on backend modules and core service logic. Assisted in shaping API structures, integrating backend processes and improving the reliability and performance of server-side components.",
-        imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764064167/jk_fub8cg.jpg",
-        socials: {
-            linkedin: "#",
-            github: "#"
-        }
-    },
-    {
-        id: "5",
-        name: "Arya Sinha",
-        role: "UI/UX Designer",
-        team: "Web Operations Team",
-        description: "Played a key role in shaping the early user experience direction. Contributed to user flows, wireframes and initial interface concepts that guided the visual and functional evolution of the platform.",
-        imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764066908/arya_axmqyk.png",
-        socials: {
-            linkedin: "#"
-        }
-    },
+    // {
+    //     id: "4",
+    //     name: "Jagadish Prasad",
+    //     role: "Backend Developer",
+    //     team: "Web Operations Team",
+    //     description: "Worked on backend modules and core service logic. Assisted in shaping API structures, integrating backend processes and improving the reliability and performance of server-side components.",
+    //     imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764064167/jk_fub8cg.jpg",
+    //     socials: {
+    //         linkedin: "#",
+    //         github: "#"
+    //     }
+    // },
+    // {
+    //     id: "5",
+    //     name: "Arya Sinha",
+    //     role: "UI/UX Designer",
+    //     team: "Web Operations Team",
+    //     description: "Played a key role in shaping the early user experience direction. Contributed to user flows, wireframes and initial interface concepts that guided the visual and functional evolution of the platform.",
+    //     imageUrl: "https://res.cloudinary.com/dogq9gvo8/image/upload/v1764066908/arya_axmqyk.png",
+    //     socials: {
+    //         linkedin: "#"
+    //     }
+    // },
     // {
     //     id: "6",
     //     name: "Devansh Malhotra",
