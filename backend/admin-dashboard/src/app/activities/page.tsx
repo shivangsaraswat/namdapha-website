@@ -13,7 +13,7 @@ import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { useTheme } from "@/contexts/ThemeContext";
 import { activitiesService, Activity } from "@/lib/activitiesService";
-import { uploadImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/imagekit";
 import { toast } from "sonner";
 import Image from "next/image";
 

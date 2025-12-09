@@ -111,28 +111,18 @@ export default function CouncilPage(){
                      {councilData.houseLeadership.map((member) => (
                        <div key={member.id} className="relative group">
                          {member.imageUrl ? (
-                           member.imageUrl.includes('.svg') || member.imageUrl.includes('data:image/svg') ? (
-                             <Image
-                               src={member.imageUrl}
-                               alt={member.name}
-                               width={360}
-                               height={480}
-                               className="w-auto h-auto max-w-[360px]"
-                               unoptimized
-                             />
-                           ) : (
-                             <Image
-                               src={member.imageUrl}
-                               alt={member.name}
-                               width={360}
-                               height={480}
-                               className="w-auto h-auto max-w-[360px]"
-                               unoptimized
-                             />
-                           )
+                           <Image
+                             src={member.imageUrl}
+                             alt={member.name}
+                             width={360}
+                             height={480}
+                             className="w-auto h-auto max-w-[360px]"
+                             unoptimized
+                           />
                          ) : (
-                           <div className="w-[360px] h-[480px] flex items-center justify-center bg-gray-200">
-                             <span className="text-gray-500">No Image</span>
+                           <div className="w-[360px] h-[480px] flex flex-col items-center justify-center bg-gray-200 rounded-lg">
+                             <span className="text-gray-600 font-medium">{member.name}</span>
+                             <span className="text-gray-500 text-sm mt-2">{member.position}</span>
                            </div>
                          )}
                        </div>
@@ -160,28 +150,18 @@ export default function CouncilPage(){
                       return (
                         <div key={member.id} className="relative group">
                           {imageSrc ? (
-                            imageSrc.includes('.svg') || imageSrc.includes('data:image/svg') ? (
-                              <Image
-                                src={imageSrc}
-                                alt={member.name}
-                                width={400}
-                                height={386}
-                                className="w-full h-auto max-w-[400px]"
-                                unoptimized
-                              />
-                            ) : (
-                              <Image
-                                src={imageSrc}
-                                alt={member.name}
-                                width={400}
-                                height={386}
-                                className="w-full h-auto max-w-[400px]"
-                                unoptimized
-                              />
-                            )
+                            <Image
+                              src={imageSrc}
+                              alt={member.name}
+                              width={400}
+                              height={386}
+                              className="w-full h-auto max-w-[400px]"
+                              unoptimized
+                            />
                           ) : (
-                            <div className="w-[400px] h-[386px] flex items-center justify-center bg-gray-200">
-                              <span className="text-gray-500">No Image</span>
+                            <div className="w-[400px] h-[386px] flex flex-col items-center justify-center bg-gray-200 rounded-lg">
+                              <span className="text-gray-600 font-medium">{member.name}</span>
+                              <span className="text-gray-500 text-sm mt-2">{member.position}</span>
                             </div>
                           )}
                         </div>

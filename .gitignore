@@ -94,3 +94,9 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Firebase Backup (contains sensitive data)
+firebase-backup/
+**/service-account*.json
+**/firebase-config*.json
+**/serviceAccountKey.json

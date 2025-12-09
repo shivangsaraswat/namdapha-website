@@ -1,5 +1,6 @@
 import { db } from './firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, Timestamp } from 'firebase/firestore';
+import { deleteImage } from './imagekit';
 
 export interface Event {
   id?: string;
@@ -94,6 +95,17 @@ export const eventService = {
   },
 
   async deleteEvent(id: string): Promise<void> {
+    const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const event = snapshot.docs.find(d => d.id === id)?.data();
+    
+    if (event?.imageUrl) {
+      try {
+        await deleteImage(event.imageUrl);
+      } catch (error) {
+        console.error('Error deleting image:', error);
+      }
+    }
+    
     await deleteDoc(doc(db, COLLECTION_NAME, id));
   },
 

@@ -1,15 +1,15 @@
 {
   "projects": {
-    "default": "namdapha-website"
+    "default": "namdapha-house-website-7c920"
   },
   "targets": {
-    "namdapha-website": {
+    "namdapha-house-website-7c920": {
       "hosting": {
         "frontend": [
-          "namdapha-website"
+          "namdapha-house-website-7c920"
         ],
         "admin": [
-          "admin-namdapha-website"
+          "admin-namdapha-house-website-7c920"
         ]
       }
     }

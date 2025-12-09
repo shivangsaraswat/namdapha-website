@@ -211,7 +211,7 @@ export default function Activites() {
                 <div className='max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start'>
                     {/* Left Side - Heading and Category Selector */}
                     <div className='w-full lg:w-2/5 flex flex-col gap-6'>
-                        <h2 className='text-4xl md:text-5xl xl:text-6xl font-title font-medium bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent'>Namdapha Activites</h2>
+                        <h2 className='text-4xl md:text-5xl xl:text-6xl font-title font-medium bg-[radial-gradient(89.47%_51.04%_at_44.27%_50%,_#E2E3E9_0%,_#D4D6DE_52.73%,_#3D3F4C_100%)] bg-clip-text text-transparent'>Namdapha Activites +</h2>
                         <p className='text-sm lg:text-base font-light text-gray-300 text-pretty'>Namdapha Activities brings together a vibrant mix of 11 communities — from gaming and coding to art, storytelling, and debate. It&apos;s where students connect, collaborate, and grow by pursuing what they love beyond the classroom.</p>
                         
                         <div className='flex flex-col gap-3 mt-4'>

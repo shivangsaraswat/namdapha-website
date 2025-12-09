@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
-import { uploadImage } from './cloudinary';
+import { uploadImage, deleteImage } from './imagekit';
 
 export interface TeamMember {
   id: string;
@@ -32,9 +32,6 @@ export async function saveTeamMember(member: Omit<TeamMember, 'id'>, imageFile?:
   if (imageFile) {
     const result = await uploadImage(imageFile, 'teams');
     imageUrl = result.url;
-    if (result.message) {
-      console.info(result.message);
-    }
   }
 
   const docRef = await addDoc(collection(db, COLLECTION_NAME), {
@@ -51,11 +48,19 @@ export async function updateTeamMember(id: string, updates: Partial<TeamMember>,
   let imageUrl = updates.imageUrl;
 
   if (imageFile) {
+    const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const currentMember = snapshot.docs.find(d => d.id === id)?.data();
+    
+    if (currentMember?.imageUrl && typeof currentMember.imageUrl === 'string') {
+      try {
+        await deleteImage(currentMember.imageUrl);
+      } catch (error) {
+        console.error('Error deleting old image:', error);
+      }
+    }
+    
     const result = await uploadImage(imageFile, 'teams');
     imageUrl = result.url;
-    if (result.message) {
-      console.info(result.message);
-    }
   }
 
   const docRef = doc(db, COLLECTION_NAME, id);
@@ -67,6 +72,17 @@ export async function updateTeamMember(id: string, updates: Partial<TeamMember>,
 }
 
 export async function deleteTeamMember(id: string): Promise<void> {
+  const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+  const currentMember = snapshot.docs.find(d => d.id === id)?.data();
+  
+  if (currentMember?.imageUrl && typeof currentMember.imageUrl === 'string') {
+    try {
+      await deleteImage(currentMember.imageUrl);
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    }
+  }
+  
   await deleteDoc(doc(db, COLLECTION_NAME, id));
 }
 
