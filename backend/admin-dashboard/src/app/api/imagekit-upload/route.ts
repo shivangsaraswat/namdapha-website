@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import ImageKit from 'imagekit';
 import sharp from 'sharp';
 
+// Configure route to handle larger payloads
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 const getImageKitInstance = (folder: string) => {
   const isAccount1 = ['council', 'teams'].includes(folder);
   
