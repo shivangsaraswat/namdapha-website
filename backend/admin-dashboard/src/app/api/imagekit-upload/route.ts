@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import ImageKit from 'imagekit';
 import sharp from 'sharp';
 
+// Increase body size limit to 10MB
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 const getImageKitInstance = (folder: string) => {
   const isAccount1 = ['council', 'teams'].includes(folder);
   
