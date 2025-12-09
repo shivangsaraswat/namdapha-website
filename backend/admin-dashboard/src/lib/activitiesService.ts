@@ -1,5 +1,6 @@
 import { db } from './firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, Timestamp } from 'firebase/firestore';
+import { deleteImage } from './imagekit';
 
 export interface Activity {
   id?: string;
@@ -60,6 +61,26 @@ export const activitiesService = {
   },
 
   async deleteActivity(id: string): Promise<void> {
+    const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const activity = snapshot.docs.find(d => d.id === id)?.data();
+    
+    if (activity) {
+      if (activity.logo) {
+        try {
+          await deleteImage(activity.logo);
+        } catch (error) {
+          console.error('Error deleting logo:', error);
+        }
+      }
+      if (activity.poster) {
+        try {
+          await deleteImage(activity.poster);
+        } catch (error) {
+          console.error('Error deleting poster:', error);
+        }
+      }
+    }
+    
     const activityRef = doc(db, COLLECTION_NAME, id);
     await deleteDoc(activityRef);
   },

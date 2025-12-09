@@ -15,7 +15,7 @@ import PageLayout from "@/components/PageLayout";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { eventService, Event } from "@/lib/eventService";
-import { uploadImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/imagekit";
 import { toast } from "sonner";
 import Image from "next/image";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';

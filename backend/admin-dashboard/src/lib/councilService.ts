@@ -1,6 +1,6 @@
 import { collection, doc, setDoc, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { uploadImage, deleteImage } from './cloudinary';
+import { uploadImage, deleteImage } from './imagekit';
 
 export interface CouncilMember {
   id: string;
